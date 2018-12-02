@@ -1,5 +1,6 @@
 package GUIMain;
 
+import Controller.Controller;
 import Model.Model;
 import View.View;
 import javafx.application.Application;
@@ -12,12 +13,17 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("mainWindow.fxml"));
+        FXMLLoader loader = new FXMLLoader();
+        Parent root = loader.load(getClass().getClassLoader().getResource("mainWindow.fxml").openStream());
         primaryStage.setTitle("Engine");
         primaryStage.setScene(new Scene(root, 500, 500));
 
-        View view = new View();
-        Model model = new Model();
+        Controller controller = loader.getController();
+        View view = new View(controller);
+        Model model = new Model(controller);
+
+        controller.setView(view);
+        controller.setModel(model);
 
         primaryStage.show();
     }
