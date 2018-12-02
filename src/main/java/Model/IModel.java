@@ -1,12 +1,13 @@
 package Model;
 
 import Engine.Engine;
-import java.util.HashMap;
 import java.util.TreeMap;
 
 public interface IModel {
 
+    void setTargetPath(String path);
+    void setCorpusPath(String path);
     void setEngine(Engine engine);
-    void runEngine(String corpusPath,String targetPath,boolean stemmerStatus);
+    void runEngine(boolean stemmerStatus);
     TreeMap getDictionary();
 }
