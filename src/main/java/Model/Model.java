@@ -15,6 +15,15 @@ public class Model implements IModel {
     }
 
 
+    @Override
+    public void setTargetPath(String path) {
+        this.engine.setTargetPath(path);
+    }
+
+    @Override
+    public void setCorpusPath(String path) {
+        this.engine.setCorpusPath(path);
+    }
 
     @Override
     public void setEngine(Engine engine) {
@@ -22,12 +31,12 @@ public class Model implements IModel {
     }
 
     @Override
-    public void runEngine(String corpusPath, String targetPath, boolean stemmerStatus) {
-        this.engine.run(corpusPath,targetPath,stemmerStatus);
+    public void runEngine(boolean stemmerStatus) {
+        this.engine.run(stemmerStatus);
     }
 
     @Override
     public TreeMap<String,Integer> getDictionary() {
-        return this.engine.getSortedTermDictionary();
+        return this.engine.getTermIDDictionary();
     }
 }

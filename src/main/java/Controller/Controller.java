@@ -45,7 +45,9 @@ public class Controller {
             return;
         }
 
-        this.model.runEngine(corpusPath,targetPath,stemmerStatus);
+        this.model.setCorpusPath(corpusPath);
+        this.model.setTargetPath(targetPath);
+        this.model.runEngine(stemmerStatus);
     }
 
     public void handleBrowseButtonTargetPath(){

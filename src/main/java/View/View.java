@@ -28,6 +28,12 @@ public class View implements IView {
     public void showDictionary(TreeMap dictionary) {
 
         //show it and stuff
+        if(dictionary == null){
+            ErrorBox box = new ErrorBox();
+            box.getErrorBoxStage("Could'nt get dictionary");
+            return;
+        }
+        System.out.println(dictionary.size());
     }
 
     @Override
