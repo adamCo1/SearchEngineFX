@@ -9,7 +9,7 @@ class EngineTest {
 
         String corpusPath = "C:\\Users\\adam\\Corpus2";
         Engine engine = new Engine(true,corpusPath);
-        engine.run();
+       // engine.run();
     }
 
 

@@ -5,16 +5,16 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<AnchorPane fx:id="anchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
-      <Button layoutX="103.0" layoutY="55.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="114.0" text="Browse " />
+      <Button layoutX="68.0" layoutY="55.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" onAction="#handleBrowseButtonCorpusPath" />
       <TextField fx:id="corpusPathField" layoutX="250.0" layoutY="55.0" />
-      <Button layoutX="103.0" layoutY="108.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="114.0" text="Browse" />
-      <TextField fx:id="targetPathField" layoutX="250.0" layoutY="108.0" />
-      <CheckBox fx:id="stemmerCheckBox" layoutX="288.0" layoutY="179.0" mnemonicParsing="false" onAction="#handleShowDictionary" prefHeight="21.0" prefWidth="149.0" text="Stemmer Status" />
+      <Button layoutX="68.0" layoutY="108.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Browse Target Path" />
+      <TextField fx:id="targetPathField" layoutX="250.0" layoutY="108.0" onAction="#handleBrowseButtonTargetPath"/>
+      <CheckBox fx:id="stemmerCheckBox" layoutX="288.0" layoutY="179.0" mnemonicParsing="false"  prefHeight="21.0" prefWidth="149.0" text="Stemmer Status" />
       <Button layoutX="214.0" layoutY="232.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="114.0" text="Reset Engine" />
       <Button layoutX="214.0" layoutY="285.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Show Dictionary" />
       <Button layoutX="214.0" layoutY="337.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Load Dictionary" />
-      <Button layoutX="103.0" layoutY="164.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="114.0" text="Run Engine" onAction="#handleRunEngine"/>
+      <Button layoutX="103.0" layoutY="164.0" mnemonicParsing="false" onAction="#handleRunEngine" prefHeight="31.0" prefWidth="114.0" text="Run Engine" />
    </children>
 </AnchorPane>

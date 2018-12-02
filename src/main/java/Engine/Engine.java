@@ -1,9 +1,7 @@
 package Engine;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.TreeMap;
-
 import Structures.Doc;
 import IO.ReadFile;
 import Indexer.SpimiInverter;
@@ -14,7 +12,6 @@ import Indexer.SpimiInverter;
 
     public class Engine {
 
-        private String corpusPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
         private HashMap<String,Integer> termIdMap;
@@ -25,11 +22,9 @@ import Indexer.SpimiInverter;
         private Thread readThread , indexThread , parseThread;
 
         public Engine(boolean stemmerOn , String corpusPath) {
-            this.corpusPath = corpusPath;
+
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
-            this.stemmerOn = stemmerOn;
-            this.spimi = new SpimiInverter(termIdMap, idTermMap);
             this.docController = new DocController();
             this.reader = new ReadFile(docController);
         }
@@ -43,8 +38,12 @@ import Indexer.SpimiInverter;
         }
 
         public Engine(){
-            this.spimi = new SpimiInverter(idTermMap, termIdMap);
             this.parser = new Parser();
+            this.termIdMap = new HashMap<>();
+            this.idTermMap = new HashMap<>();
+            this.docController = new DocController();
+            this.reader = new ReadFile(docController);
+            this.spimi = new SpimiInverter(idTermMap, termIdMap);
         }
 
         public Engine(Parser parser){
@@ -67,7 +66,7 @@ import Indexer.SpimiInverter;
 
             try {
 
-                readThread = new Thread(() -> this.reader.read(this.corpusPath));
+                readThread = new Thread(() -> this.reader.read(corpusPath));
                 indexThread = new Thread(() -> this.spimi.index(maxsize));
                 parseThread = new Thread(() -> parse());
                 System.out.println("Starting");
@@ -115,10 +114,6 @@ import Indexer.SpimiInverter;
 
         public void setParser(Parser parser){
             this.parser = parser;
-        }
-
-        public void setCorpusPath(String path){
-            this.corpusPath = path;
         }
 
     }

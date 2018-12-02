@@ -2,8 +2,6 @@ package Model;
 
 import Controller.Controller;
 import Engine.Engine;
-
-import java.util.HashMap;
 import java.util.TreeMap;
 
 public class Model implements IModel {
@@ -13,7 +11,10 @@ public class Model implements IModel {
 
     public Model(Controller controller){
         this.controller = controller;
+        this.engine = new Engine();
     }
+
+
 
     @Override
     public void setEngine(Engine engine) {
