@@ -45,13 +45,13 @@ public class Parser {
     private boolean done ;
     private Stemmer porterStemmer;
 
-    public Parser(String path) throws IOException {
+    public Parser() {
         this.strategies = new ParsingStrategies();
         this.tokenListBuffers = new LinkedList<>();
         this.termList = new ArrayList<>();
         //this.buffers = new LinkedList<TreeMap<Integer, HashMap<Integer,Data>>>();
         this.stopWordsTrietree = new TrieTree();
-        this.stopWordsTrietree.insertFromTextFile(path+"\\stoplist.txt");
+       // this.stopWordsTrietree.insertFromTextFile(path+"\\stoplist.txt");
         this.done = false;
         this.porterStemmer = new Stemmer();
         this.cityDict = new HashMap<>();
@@ -575,5 +575,11 @@ public class Parser {
         this.termIdMap = termIdMap;
     }
 
-
+    public void initializeStopWordsTree(String path) {
+        try {
+            this.stopWordsTrietree.insertFromTextFile(path + "\\stoplist.txt");
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
 }

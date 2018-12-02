@@ -33,9 +33,8 @@ public class SpimiInverter {
     private PostingWriter writer ;
     private byte[] mainBuffer = new byte[4096];
 
-    public SpimiInverter(HashMap termIdMap , HashMap idTermMap , boolean stemOn) {
+    public SpimiInverter(HashMap termIdMap , HashMap idTermMap) {
 
-        this.stemOn = stemOn;
         titleSet = new HashSet<>();
         porterStemmer = new Stemmer();
         this.termIdMap = termIdMap;
@@ -541,6 +540,10 @@ public class SpimiInverter {
             this.termIdMap.put(upperTerm,termid);
         }
 
+    }
+
+    public void setStemOn(boolean stemStatus){
+        this.stemOn = stemStatus;
     }
 
 }
