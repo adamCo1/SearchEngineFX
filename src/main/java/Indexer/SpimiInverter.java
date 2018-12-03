@@ -205,7 +205,7 @@ public class SpimiInverter {
                         }
                     } else {
                         //its lower check if it stored with capitals
-                        if (checkExistInDicWithCapitalLetters(term)) {
+                        if (onlyLetters(term) && checkExistInDicWithCapitalLetters(term)) {
                             //then fix and replace with small letters
                             replaceUpperWithLower(term);
                             //and then add to the dict

@@ -82,17 +82,17 @@ public class Controller {
 
     public void handleDisplayDicitionary(){
         TreeMap<String,Integer>d = model.getDictionary();
-        if (d==null){
+
+        if(d == null)
             return;
-        }
         else {
             this.dictResult = FXCollections.observableArrayList();
             this.dictResult.addAll(d.keySet());
-            System.out.println(d);
-            termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-            idCol.setCellValueFactory(cellData -> new SimpleStringProperty((d.get(cellData.getValue())).toString()));
-            this.tableView.setItems(dictResult);
-        }
+        System.out.println(d);
+        termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+        idCol.setCellValueFactory(cellData -> new SimpleStringProperty((d.get(cellData.getValue())).toString()));
+        this.tableView.setItems(dictResult);
+    }
 
 
 

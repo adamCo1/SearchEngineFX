@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<AnchorPane fx:id="anchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
       <Button layoutX="396.0" layoutY="55.0" mnemonicParsing="false" onAction="#handleBrowseButtonCorpusPath" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" />
       <TextField fx:id="corpusPathField" layoutX="178.0" layoutY="55.0" />
       <Button layoutX="396.0" layoutY="102.0" mnemonicParsing="false" onAction="#handleBrowseButtonTargetPath" prefHeight="31.0" prefWidth="149.0" text="Browse Target Path" />
       <TextField fx:id="targetPathField" layoutX="178.0" layoutY="102.0" />
       <CheckBox fx:id="stemmerCheckBox" layoutX="315.0" layoutY="179.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="96.0" text="Stemmer" />
-      <Button layoutX="214.0" layoutY="330.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" onAction="#handleResetButton" />
+      <Button layoutX="214.0" layoutY="330.0" mnemonicParsing="false" onAction="#handleResetButton" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" />
       <Button layoutX="214.0" layoutY="230.0" mnemonicParsing="false" onAction="#handleShowDictionary" prefHeight="31.0" prefWidth="149.0" text="Show Dictionary" />
       <Button layoutX="214.0" layoutY="276.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Load Dictionary" />
       <Button layoutX="142.0" layoutY="174.0" mnemonicParsing="false" onAction="#handleRunEngine" prefHeight="31.0" prefWidth="114.0" text="Run Engine" />
@@ -24,8 +23,8 @@
       <Label layoutX="45.0" layoutY="97.0" prefHeight="31.0" prefWidth="114.0" text="Enter target path" />
       <TableView fx:id="tableView" layoutX="14.0" layoutY="177.0" prefHeight="171.0" prefWidth="200.0">
         <columns>
-          <TableColumn fx:id="termCol" prefWidth="123.0" text="term" />
           <TableColumn fx:id="idCol" prefWidth="76.0" text="id" />
+          <TableColumn fx:id="termCol" prefWidth="123.0" text="term" />
         </columns>
       </TableView>
    </children>
