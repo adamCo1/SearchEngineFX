@@ -5,6 +5,7 @@ import sun.awt.Mutex;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 
+
 /**
  * class that uses 2 semaphores to control the flow of documents to the parser
  */
