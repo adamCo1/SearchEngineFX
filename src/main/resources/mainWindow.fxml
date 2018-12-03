@@ -13,7 +13,7 @@
       <Button layoutX="396.0" layoutY="102.0" mnemonicParsing="false" onAction="#handleBrowseButtonTargetPath" prefHeight="31.0" prefWidth="149.0" text="Browse Target Path" />
       <TextField fx:id="targetPathField" layoutX="178.0" layoutY="102.0" />
       <CheckBox fx:id="stemmerCheckBox" layoutX="315.0" layoutY="179.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="96.0" text="Stemmer" />
-      <Button layoutX="214.0" layoutY="330.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" />
+      <Button layoutX="214.0" layoutY="330.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" onAction="#handleResetButton" />
       <Button layoutX="214.0" layoutY="230.0" mnemonicParsing="false" onAction="#handleShowDictionary" prefHeight="31.0" prefWidth="149.0" text="Show Dictionary" />
       <Button layoutX="214.0" layoutY="276.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Load Dictionary" />
       <Button layoutX="142.0" layoutY="174.0" mnemonicParsing="false" onAction="#handleRunEngine" prefHeight="31.0" prefWidth="114.0" text="Run Engine" />

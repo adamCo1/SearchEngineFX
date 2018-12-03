@@ -12,19 +12,21 @@ import java.util.LinkedList;
 
 public class PostingBufferMerger {
 
+    private String targetPath ;
     private final int BLOCK_SIZE = 4096, ID_BAR = 20000;
     private VariableByteCode vb;
     private ArrayList<PostingBuffer> buffers;
     private byte[] mainBuffer;
     private int bufferIndex, pathIndex;
     private ArrayList<String> outPaths;
-    private HashMap<Integer, Pair<Integer, Byte>> termToPostingMap;
     private PostingWriter writer;
+    private SpimiInverter spimi;
 
-    public PostingBufferMerger(VariableByteCode vb, ArrayList<String> paths, HashMap<Integer, Pair<Integer, Byte>> termToPostingMap) {
+    public PostingBufferMerger(VariableByteCode vb,SpimiInverter spimi, ArrayList<String> paths,String targetPath) {
+        this.spimi = spimi;
+        this.targetPath = targetPath;
         this.vb = vb;
         this.buffers = new ArrayList<>();
-        this.termToPostingMap = termToPostingMap;
         this.bufferIndex = 0;
         this.pathIndex = 0;
         this.outPaths = new ArrayList<String>() {{
@@ -76,6 +78,8 @@ public class PostingBufferMerger {
         try {
             this.writer.write(mainBuffer);
             this.bufferIndex = 0;
+            this.writer.flush();
+
         } catch (IOException e) {
             System.out.println("error in writing main buffer");
             e.printStackTrace();
@@ -172,7 +176,7 @@ public class PostingBufferMerger {
             mainBuffer = new byte[maxBlockSize];
             int currentID = 1, bufferStatus = 0;
             byte[] termDelimiter = {0,0};
-            openWriterOnPath(this.outPaths.get(pathIndex));
+            openWriterOnPath(this.targetPath+"\\"+this.outPaths.get(pathIndex));
 
             while (this.buffers.size() != 0) {
 
@@ -181,15 +185,13 @@ public class PostingBufferMerger {
                     closeWriterOnPath();
                     pathIndex++;
                     this.outPaths.add(pathIndex, "out" + pathIndex);
-                    openWriterOnPath(this.outPaths.get(this.pathIndex));
+                    openWriterOnPath(this.targetPath+"\\"+this.outPaths.get(this.pathIndex));
                 }
 
                 for(int i = 0 ; i < buffers.size() ; i++){
-
                     PostingBuffer buffer = buffers.get(i);
                     try {
 
-                      //  LinkedList<Byte> termID = buffer.getNextNumber();
                         int id = buffer.readTermID(vb,currentID);
 
                         if (id != -1) {//move all data to the main buffer
@@ -199,22 +201,17 @@ public class PostingBufferMerger {
                             }};
 
                                 LinkedList<Integer> termTF = new LinkedList<Integer>() {{
-                                    add(termToPostingMap.get(id).getFirstValue());
+                                    add(spimi.getTermTF(id));
                                 }};
                                 LinkedList<Byte> allData = buffer.readToEndOfTerm();
-                                /**
-                                LinkedList<Byte> docid = buffer.getNextNumber();
-                                LinkedList<Byte> docTF = buffer.getNextNumber();
-                                LinkedList<Byte> onTitle = buffer.getNextNumber();
-                                LinkedList<Byte> positions = buffer.readToZero();
-**/
+
                                // moveDataToMainBuffer(termID, termTF, docid, docTF, onTitle, positions);
                                 moveDataToMainBuffer(vb.encode(termID),termTF,allData);
                             }
                     } catch (Exception e) {
                         if(e instanceof EOFException){
                             toRemove.add(buffer);
-                            delete(buffer.getTempPostingPath());
+                           // delete(this.targetPath);
                        //     e.printStackTrace();
                         }
                     }
@@ -229,6 +226,7 @@ public class PostingBufferMerger {
             }catch(IOException e){
                 e.printStackTrace();
             }
+        this.writer.close();
         System.out.println("Done merging . out list : " + this.outPaths);
         }
     }

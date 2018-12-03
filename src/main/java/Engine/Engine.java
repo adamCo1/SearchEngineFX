@@ -8,8 +8,10 @@ import java.util.TreeMap;
 import Structures.Doc;
 import IO.ReadFile;
 import Indexer.SpimiInverter;
+import Structures.Pair;
+import org.apache.commons.io.FileUtils;
 
-    /**
+/**
      * Class for the engine itself . holds all the parts needed for a search engine to work
      */
 
@@ -19,8 +21,8 @@ import Indexer.SpimiInverter;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
-        private TreeMap<String,Integer> termIdTreeMap;
-        private HashMap<String,Integer> termIdMap;
+        private TreeMap<String,Pair<Integer,Integer>> termIdTreeMap;
+        private HashMap<String, Pair<Integer,Integer>> termIdMap;
         private Parser parser ;
         private SpimiInverter spimi;
         private ReadFile reader;
@@ -56,17 +58,18 @@ import Indexer.SpimiInverter;
             this.parser = parser;
         }
 
-        public void run(boolean stemerStatus) {
+        public void run(boolean stemmerStatus) {
 
             int maxsize = 40 * 1000;
 
             this.parser.initializeStopWordsTree(corpusPath);
-            this.spimi.setStemOn(stemerStatus);
+            this.spimi.setStemOn(stemmerStatus);
+            this.spimi.setTargetPath(this.targetPath);
             //initialize target path for spimi
 
-            String stemmerStatus = "OFF";
-            if (stemmerOn)
-                stemmerStatus = "ON";
+            String status = "OFF";
+            if (stemmerStatus)
+                status = "ON";
 
             this.spimi.setParser(this.parser);
 
@@ -90,7 +93,7 @@ import Indexer.SpimiInverter;
 
                 System.out.println("Total time in seconds : " + ((System.nanoTime() - t1) / (1000 * 1000 * 1000)));
                 System.out.println("Number of unique terms found : " + this.termIdMap.size());
-                System.out.println("Stemmer status : " + stemmerStatus);
+                System.out.println("Stemmer status : " + status);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -173,7 +176,16 @@ import Indexer.SpimiInverter;
             Iterator iterator = this.termIdMap.entrySet().iterator();
             while(iterator.hasNext()){
                 Map.Entry entry = (Map.Entry)iterator.next();
-                this.termIdTreeMap.put((String)entry.getKey(),(Integer)entry.getValue());
+                this.termIdTreeMap.put((String)entry.getKey(),new Pair(((Pair)entry.getValue()).getFirstValue(),((Pair)entry.getValue()).getSecondValue()));
+            }
+        }
+
+        public void deleteAllFiles(File file){
+            try{
+                FileUtils.cleanDirectory(file);
+
+            }catch (IOException e){
+                e.printStackTrace();
             }
         }
     }
