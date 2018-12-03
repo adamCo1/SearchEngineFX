@@ -108,13 +108,13 @@ public class ParsingStrategies {
         };
 
         this.partialCleanDict = new HashSet<Character>(){{
-            int i = 47;
-            while(i++ < 57)
-                add((char)i);
+            int i = 48;
+            while(i < 58)
+                add((char)i++);
 
-            i = 64;
-            while(i++ < 90)
-                add((char)i);
+            i = 65;
+            while(i <= 90)
+                add((char)i++);
 
             i = 96;
             while(i++ < 122)
@@ -128,13 +128,13 @@ public class ParsingStrategies {
         }};
 
         this.cleanSigns = new HashSet<Character>(){{
-            int i = 47;
-            while(i++ < 57)
-                add((char)i);
+            int i = 48;
+            while(i < 58)
+                add((char)i++);
 
-            i = 64;
-            while(i++ < 90)
-                add((char)i);
+            i = 65;
+            while(i <= 90)
+                add((char)i++);
 
             i = 96;
             while(i++ < 122)

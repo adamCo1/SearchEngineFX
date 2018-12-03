@@ -194,7 +194,7 @@ public class SpimiInverter {
                 //this term is no special , check wether it starts with upper or lower
 
                 if (isOneWord(term)) {
-                    if (term.charAt(0) >= 64 && term.charAt(0) < 90) {
+                    if (term.charAt(0) >= 65 && term.charAt(0) < 90) {
                         //so its capital , check if we saw it with small letters
                         if (checkExistInDicWithSmallLetters(stem(term))) {
                             //so store it with letter case
@@ -235,7 +235,7 @@ public class SpimiInverter {
 
         while(i < word.length()){
             c = word.charAt(i++);
-            if(c < 57 && c >= 47)
+            if(c < 58 && c >= 48)
                 return false;
         }
 
@@ -554,9 +554,12 @@ public class SpimiInverter {
                 Integer termid = (Integer)pair.getSecondValue();
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
                 Integer tf = (Integer) pair.getFirstValue();
-                this.idTermMap.replace(termid, term.toLowerCase());
-                this.termIdMap.remove(upperTerm);
+               // this.idTermMap.replace(termid, term.toLowerCase());
+                //this.termIdMap.remove(upperTerm);
                 //this.termIdMap.put(upperTerm,termid);
+                this.idTermMap.remove(termid);
+                this.idTermMap.put(termid,term);
+                this.termIdMap.remove(upperTerm);
                 this.termIdMap.put(term, new Pair<Integer, Integer>(tf, termid));
             }
         }catch (Exception e){
@@ -568,6 +571,9 @@ public class SpimiInverter {
 
         try {
             String term = this.idTermMap.get(id);
+            if(term == null){
+                System.out.println("id = [" + id + "]");
+            }
             return this.termIdMap.get(term).getFirstValue();
         }catch (Exception e) {
             e.printStackTrace();
