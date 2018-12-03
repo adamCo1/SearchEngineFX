@@ -33,7 +33,7 @@ public class View implements IView {
             box.getErrorBoxStage("Could'nt get dictionary");
             return;
         }
-        System.out.println(dictionary.size());
+        this.controller.handleDisplayDicitionary();
     }
 
     @Override

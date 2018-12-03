@@ -58,6 +58,7 @@ public class ReadFromWeb {
         }
         JsonParser parser = new JsonParser();
         JsonElement jsonTree = parser.parse(APIAnswer);
+
         JsonArray allCountries = jsonTree.getAsJsonArray();
 
         //get the city full information
