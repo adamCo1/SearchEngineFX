@@ -20,6 +20,10 @@ public class PostingWriter {
         this.out = new PrintStream(path);
     }
 
+    public void flush(){
+        this.out.flush();
+    }
+
     public void close(){
         this.out.close();
     }

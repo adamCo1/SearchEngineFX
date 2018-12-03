@@ -1,5 +1,6 @@
 package Indexer;
 
+import java.io.EOFException;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
 
@@ -76,9 +77,6 @@ public class PostingBuffer {
         }
         currentID = vb.decode(temp).get(0).intValue();
 
-     //   if(currentID ==1)
-       //     System.out.println("vb = [" + vb + "], wantedID = [" + wantedID + "]");
-
         if(changed)
             nextID = currentID; // so we don't need to go back in the buffer
 
@@ -120,16 +118,21 @@ public class PostingBuffer {
     /**
      * fill the buffer from the temp posting list
      */
-    private void fillBuffer() throws Exception{
+    private void fillBuffer() throws Exception {
 
+        RandomAccessFile in = new RandomAccessFile(this.tempPostingPath,"r");
+        try {
             blockChanged = true;
-            RandomAccessFile in = new RandomAccessFile(this.tempPostingPath, "r");
+            in = new RandomAccessFile(this.tempPostingPath, "r");
             in.seek(blockSize * blocksRead++);
             in.readFully(this.buffer);
             this.index = 0;
             in.close();
+        } catch (Exception e) {
+            in.close();
+            throw e;
+        }
     }
-
     public String getTempPostingPath(){
         return this.tempPostingPath;
     }

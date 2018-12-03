@@ -9,6 +9,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import javax.swing.plaf.PanelUI;
+import java.io.File;
 
 public class Controller {
 
@@ -34,6 +35,10 @@ public class Controller {
     public void handleShowDictionary(){
 
         this.view.showDictionary(this.model.getDictionary());
+    }
+
+    public void handleResetButton(){
+        this.model.deleteOutputFiles(new File(this.targetPathField.getText()));
     }
 
     public void handleRunEngine(){
