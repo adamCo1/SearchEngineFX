@@ -152,14 +152,6 @@ import java.util.TreeMap;
             }
         }
 
-        /**
-         *
-         * @return sorted term dictionary
-         */
-        public TreeMap<String, Integer> getSortedTermDictionary(){
-            return null;
-        }
-
         public void setParser(Parser parser){
             this.parser = parser;
         }
