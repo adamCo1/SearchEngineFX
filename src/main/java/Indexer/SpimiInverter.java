@@ -554,9 +554,7 @@ public class SpimiInverter {
                 Integer termid = (Integer)pair.getSecondValue();
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
                 Integer tf = (Integer) pair.getFirstValue();
-               // this.idTermMap.replace(termid, term.toLowerCase());
-                //this.termIdMap.remove(upperTerm);
-                //this.termIdMap.put(upperTerm,termid);
+                    //this.termIdMap.put(upperTerm,termid);
                 this.idTermMap.remove(termid);
                 this.idTermMap.put(termid,term);
                 this.termIdMap.remove(upperTerm);

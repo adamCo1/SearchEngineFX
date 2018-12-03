@@ -1,15 +1,16 @@
 package Engine;
 
+import IO.ReadFile;
+import Indexer.SpimiInverter;
+import Structures.Doc;
+import Structures.Pair;
+import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import Structures.Doc;
-import IO.ReadFile;
-import Indexer.SpimiInverter;
-import Structures.Pair;
-import org.apache.commons.io.FileUtils;
 
 /**
      * Class for the engine itself . holds all the parts needed for a search engine to work

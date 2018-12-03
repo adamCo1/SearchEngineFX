@@ -440,7 +440,7 @@ public class Parser {
 
                 if(words[0].length() > 1) {//OUR RULE - 1 char rule
                     if(noUpper(words[0]))
-                        currentTokenList.add(this.porterStemmer.stripAffixes(words[0]));
+                        currentTokenList.add(words[0]);
                     else
                         currentTokenList.add(words[0]);
 

@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.IModel;
+import Structures.Pair;
 import View.IView;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -81,20 +82,19 @@ public class Controller {
     }
 
     public void handleDisplayDicitionary(){
-        TreeMap<String,Integer>d = model.getDictionary();
 
-        if(d == null)
+        TreeMap<String,Pair<Integer,Integer>>d = model.getDictionary();
+        if (d==null){
             return;
         else {
             this.dictResult = FXCollections.observableArrayList();
             this.dictResult.addAll(d.keySet());
-        System.out.println(d);
-        termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-        idCol.setCellValueFactory(cellData -> new SimpleStringProperty((d.get(cellData.getValue())).toString()));
-        this.tableView.setItems(dictResult);
-    }
-
-
+            System.out.println(d);
+            termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+            idCol.setCellValueFactory(cellData -> new SimpleStringProperty(((Pair)d.get(cellData.getValue())).getSecondValue().toString()));
+            tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(((Pair)d.get(cellData.getValue())).getFirstValue().toString()));
+            this.tableView.setItems(dictResult);
+        }
 
 
     }
