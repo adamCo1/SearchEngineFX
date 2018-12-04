@@ -22,8 +22,8 @@ import java.util.TreeMap;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
-        private TreeMap<String,Pair<Integer,Integer>> termIdTreeMap;
-        private HashMap<String, Pair<Integer,Integer>> termIdMap;
+        private TreeMap<String,Integer[]> termIdTreeMap;
+        private HashMap<String, Integer[]> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
         private Parser parser ;
         private SpimiInverter spimi;
         private ReadFile reader;
@@ -59,10 +59,51 @@ import java.util.TreeMap;
             this.parser = parser;
         }
 
+
+        public TreeMap sampleRun(String text , boolean stemmerOn){
+
+            int maxsize = 40*1000;
+            this.targetPath = "D:\\sample";
+            this.parser.initializeStopWordsTree("C:\\Users\\adam\\Corpus2");
+            this.spimi.setStemOn(stemmerOn);
+            this.spimi.setTargetPath(this.targetPath);
+            this.spimi.setParser(this.parser);
+
+            String status = "OFF";
+            if (stemmerOn)
+                status = "ON";
+
+            try {
+
+                indexThread = new Thread(() -> this.spimi.index(maxsize));
+                parseThread = new Thread(() -> parser.parse(text));
+                System.out.println("Starting Sample");
+                long t1 = System.nanoTime();
+
+                indexThread.start();
+                parseThread.start();
+                parseThread.join();
+                Thread.sleep(100);
+                this.parser.setDone(true);
+                indexThread.join();
+
+               convertTermIdToTreeMap();
+               // storeDictionariesOnDisk();
+
+                System.out.println("Total time in seconds : " + ((System.nanoTime() - t1) / (1000 * 1000 * 1000)));
+                System.out.println("Number of unique terms found : " + this.termIdMap.size());
+                System.out.println("Stemmer status : " + status);
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return this.termIdTreeMap;
+        }
+
         public void run(boolean stemmerStatus) {
 
             int maxsize = 40 * 1000;
-
+            this.spimi.setParser(this.parser);
             this.parser.initializeStopWordsTree(corpusPath);
             this.spimi.setStemOn(stemmerStatus);
             this.spimi.setTargetPath(this.targetPath);
@@ -71,8 +112,6 @@ import java.util.TreeMap;
             String status = "OFF";
             if (stemmerStatus)
                 status = "ON";
-
-            this.spimi.setParser(this.parser);
 
             try {
 
@@ -124,7 +163,7 @@ import java.util.TreeMap;
                 out.close();
                 stream.close();
 
-                out = new FileOutputStream(ID_TERM_MAP_PATH);
+                out = new FileOutputStream(targetPath+"\\"+ID_TERM_MAP_PATH);
                 stream = new ObjectOutputStream(out);
                 stream.writeObject(this.idTermMap);
                 out.close();
@@ -169,7 +208,8 @@ import java.util.TreeMap;
             Iterator iterator = this.termIdMap.entrySet().iterator();
             while(iterator.hasNext()){
                 Map.Entry entry = (Map.Entry)iterator.next();
-                this.termIdTreeMap.put((String)entry.getKey(),new Pair(((Pair)entry.getValue()).getFirstValue(),((Pair)entry.getValue()).getSecondValue()));
+                Integer[] data =(Integer[]) entry.getValue();
+                this.termIdTreeMap.put((String)entry.getKey(),new Integer[]{data[0],data[1],data[2],data[3],data[4]});
             }
         }
 

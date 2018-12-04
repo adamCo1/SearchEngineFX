@@ -6,8 +6,10 @@ import Engine.Parser;
 import Engine.Stemmer;
 import IO.PostingReader;
 import IO.PostingWriter;
+import ReadFromWeb.City;
 import Structures.Pair;
-
+import jdk.nashorn.internal.runtime.ECMAException;
+import static ReadFromWeb.ReadFromWeb.allCities;
 import java.io.FileInputStream;
 import java.io.PrintStream;
 import java.util.*;
@@ -27,12 +29,12 @@ public class SpimiInverter {
     private Engine engine ;
     private Parser parser;
     private VariableByteCode vb;
-    private HashMap<Integer, Pair<Integer,Byte>> termToPostingMap;
+    private HashMap<Integer,ABufferData> cityBuffer;
     private HashMap<Integer,HashMap<Integer, Data>> termInfoMap ;
     private HashMap<Integer,String> idTermMap; // ID - TERM map
     //private HashMap<String,Integer> termIdMap;
-    private HashMap<String,Pair<Integer,Integer>> termIdMap; //corupusTF at first value , id at second value
-    private ArrayList<String> postingPaths;
+    private HashMap<String,Integer[]> termIdMap; //corupusTF at first value , id at second value
+    private ArrayList<String> postingPaths , cityPaths , docPaths;
     private PostingWriter writer ;
     private byte[] mainBuffer = new byte[4096];
 
@@ -40,12 +42,14 @@ public class SpimiInverter {
 
         titleSet = new HashSet<>();
         porterStemmer = new Stemmer();
+        this.cityPaths = new ArrayList<>();
+        this.docPaths = new ArrayList<>();
+        this.cityBuffer = new HashMap<>();
         this.termIdMap = termIdMap;
         this.idTermMap = idTermMap;
         this.termInfoMap = new HashMap<>();
         this.vb = new VariableByteCode();
         this.postingPaths = new ArrayList<>();
-        this.termToPostingMap = new HashMap<>();
         this.writer = new PostingWriter();
         this.key = 1;
         this.onTitle = 2;//2 means on the title , 1 means not on the title
@@ -68,11 +72,13 @@ public class SpimiInverter {
         int docID = 1 , maxTF = 0 ;
         int docsin = 0;
         try {
-            int currentSize = 0, pathIndicator = 0;
+            int currentSize = 0, pathIndicator = 0 , cityIncicator = 0;
             String path = getCanonicalPath()+"p" + pathIndicator , docpath = getCanonicalPath()+"d" + pathIndicator++;
+            String cityPath = getCanonicalPath()+"c"+cityIncicator;
             postingPaths.add(path);
+            //cityPaths.add(cityPath);
             ArrayList<String> tempBuffer;
-            HashMap<Integer, BufferData> buffer = new HashMap<>();
+            HashMap<Integer, ABufferData> buffer = new HashMap<>();
             HashMap<Integer, BufferDataDoc> docBuffer = new HashMap<>();
             int times = 0;
             while (!this.parser.isDone()) {//while parser still parsing , keep taking buffers and index them
@@ -82,10 +88,15 @@ public class SpimiInverter {
                 if (currentSize++ > 20000) {
                     writePostingList(buffer,path);
                     writeDocumentsPostingList(docBuffer,docpath);
+                    writeCityBufferToPostingList(cityPath);
+
                     buffer = new HashMap<>();
                     docBuffer = new HashMap<>();
                     path = getCanonicalPath()+"p" + pathIndicator++;
+                    cityPath = getCanonicalPath()+"c"+cityIncicator++;
                     this.postingPaths.add(path);
+                    this.cityPaths.add(cityPath);
+                    this.cityBuffer = new HashMap<>();
                     currentSize = 0;
 
                 } else {//its not too big yet no need to write it . add the temp buffer to the current held buffer
@@ -110,16 +121,17 @@ public class SpimiInverter {
             if(buffer.size() != 0)
                 writePostingList(buffer,path);
 
-          //  System.out.println(termIdMap);
             System.out.println("number of terms : " + this.idTermMap.size());
             System.out.println("merging the temp postings");
             writeMergedSortedPostings();
+
 
         } catch (Exception e) {
             System.out.println("at index");
             e.printStackTrace();
         }
     }
+
 
     private String getCanonicalPath(){
         return this.targetPath+"\\";
@@ -152,8 +164,10 @@ public class SpimiInverter {
      * merge the temporary postings
      */
     private void writeMergedSortedPostings(){
-        PostingBufferMerger merger = new PostingBufferMerger(this.vb,this,this.postingPaths,this.targetPath);
-        merger.mergeOnTermID(4096);
+        PostingBufferMerger merger = new PostingBufferMerger(this.termIdMap ,this.vb,this,this.postingPaths,this.docPaths,this.cityPaths,this.targetPath);
+        merger.mergeOnTermID(this.postingPaths,4096,"TERMS");
+        merger.mergeOnTermID(this.cityPaths,4096,"CITY");
+
     }
 
     private void initTitleList(ArrayList<String> titleList){
@@ -185,14 +199,12 @@ public class SpimiInverter {
 
     private void buildIndexOnTerms(ArrayList<String> termList , int docID) {
 
-
         int position = 1;
 
         for (String term :
                 termList) {
             try {
                 //this term is no special , check wether it starts with upper or lower
-
                 if (isOneWord(term)) {
                     if (term.charAt(0) >= 65 && term.charAt(0) < 90) {
                         //so its capital , check if we saw it with small letters
@@ -205,7 +217,7 @@ public class SpimiInverter {
                         }
                     } else {
                         //its lower check if it stored with capitals
-                        if (checkExistInDicWithCapitalLetters(term)) {
+                        if (onlyLetters(term) && checkExistInDicWithCapitalLetters(term)) {
                             //then fix and replace with small letters
                             replaceUpperWithLower(term);
                             //and then add to the dict
@@ -221,6 +233,7 @@ public class SpimiInverter {
 
                 } else
                     addTermToDicts(term, position++, docID);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -249,7 +262,7 @@ public class SpimiInverter {
      * @param buffer
      * @param tempBuffer
      */
-    public void addToBuffer(HashMap<Integer, BufferData> buffer, HashMap<Integer, HashMap<Integer, Data>> tempBuffer) {
+    public void addToBuffer(HashMap<Integer, ABufferData> buffer, HashMap<Integer, HashMap<Integer, Data>> tempBuffer) {
 
         byte[] encoded;
         Iterator iterator = tempBuffer.entrySet().iterator(), dataIterator;
@@ -263,19 +276,31 @@ public class SpimiInverter {
                 Integer docID = (Integer) entry.getKey();
                 LinkedList<Integer> info = ((Data) entry.getValue()).getPositionList();
                 updateMaxTfForDocument(info.size());
-                LinkedList<Integer> ontitle = ((Data)entry.getValue()).getOnTitle();
+                LinkedList<Integer> ontitle = ((Data) entry.getValue()).getOnTitle();
                 LinkedList<Integer> docid = new LinkedList<>();
                 docid.add(docID);
                 byte[] encodedInfo = vb.encode(info);//encode only the info for now so we can add more info on other docs to this term in the buffer
                 byte[] encodedDocID = vb.encode(docid);
                 byte[] encodedOnTitle = vb.encode(ontitle);
 
-                try {
-                    buffer.get(currentTermID).addInfo(encodedDocID,encodedOnTitle, encodedInfo);
-                } catch (Exception e) {
-                    buffer.put(currentTermID, new BufferData(currentTermID, encodedDocID,encodedOnTitle , encodedInfo));
+                String term = this.idTermMap.get(currentTermID);
+
+                if (allCities.get(term) != null && allCities.get(term).getName().equals(term) ) {//term info need to be added to the city buffer
+                    try {
+                        ((BufferDataString) this.cityBuffer.get(currentTermID)).addInfo(encodedDocID, encodedOnTitle, encodedInfo);
+                    } catch (Exception e) {
+                        City city = allCities.get(term);//get the city object
+                        this.cityBuffer.put(currentTermID, new BufferDataString(currentTermID, encodedDocID
+                                , encodedOnTitle, encodedInfo, city.getName(), city.getCountry(), city.getCurrency(), city.getPopulation()));
+                    }
                 }
-            }
+
+                try {//regular term add
+                    ((BufferDataByte) buffer.get(currentTermID)).addInfo(encodedDocID, encodedOnTitle, encodedInfo);
+                } catch (Exception e) {
+                    buffer.put(currentTermID, new BufferDataByte(currentTermID, encodedDocID, encodedOnTitle, encodedInfo));
+                    }
+                }
         }
     }
 
@@ -291,6 +316,11 @@ public class SpimiInverter {
             this.maxTF = size;
     }
 
+    /**
+     * stem a given string
+     * @param word
+     * @return the stemmed form of the given string
+     */
     private String stem(String word){
         if(this.stemOn)
             return this.porterStemmer.stripAffixes(word);
@@ -298,16 +328,22 @@ public class SpimiInverter {
             return word;
     }
 
+    /**
+     * add a term to the dictionaries
+     * @param term term to add
+     * @param position the position in the document
+     * @param docID the id of the document
+     */
     private void addTermToDicts(String term , int position , int docID) {
 
         try {
-            int id = (Integer)this.termIdMap.get(term).getSecondValue();
+            int id = (Integer)this.termIdMap.get(term)[1];
             try {//add another position to the term and increment the total tf by 1
                 Data temp = this.termInfoMap.get(id).get(docID);
                 Integer last = temp.getLastPosition();
                 temp.addPosition(position-last);
-                Integer tf = (Integer)this.termIdMap.get(id).getFirstValue();
-                this.termIdMap.get(id).setFirstValue(tf+1);
+                Integer tf = (Integer)this.termIdMap.get(id)[0];
+                this.termIdMap.get(id)[0] = tf+1;
 
             } catch (Exception e) {//
                   this.termInfoMap.put(new Integer(id), new HashMap<Integer, Data>() {{
@@ -317,14 +353,14 @@ public class SpimiInverter {
                         put(new Integer(docID) , new Data(position,(byte)2));
                 }});
             }
-            Pair pair = this.termToPostingMap.get(id);
-            pair.setFirstValue((Integer)pair.getFirstValue()+1);//increment tf by 1
-            Pair<Integer,Integer> p = this.termIdMap.get(term);
-            p.setFirstValue(p.getFirstValue()+1);
+            //Pair pair = this.termToPostingMap.get(id);
+            //pair.setFirstValue((Integer)pair.getFirstValue()+1);
+            // increment tf by 1
+            this.termIdMap.get(term)[0] = this.termIdMap.get(term)[0]+1 ;//
 
         } catch (Exception e) {
           //  this.termIdMap.put(term,this.key);
-            this.termIdMap.put(term,new Pair<Integer,Integer>(1,this.key));
+            this.termIdMap.put(term,new Integer[]{1,this.key,0,0,0});
             this.idTermMap.put(this.key, term);
             if(!titleSet.contains(term))//so not on title
             this.termInfoMap.put(new Integer(this.key), new HashMap<Integer, Data>() {{
@@ -335,9 +371,103 @@ public class SpimiInverter {
                     put(new Integer(docID),new Data(position,(byte)2));
                 }});
 
-            this.termToPostingMap.put(key,new Pair<Integer, Byte>(1,(byte)-1));//add to the postings map
+            //this.termToPostingMap.put(key,new Pair<Integer, Byte>(1,(byte)-1));//add to the postings map
             this.key += 1;//advance the next term id
         }
+    }
+
+    /**
+     * encode strings representing info on cities
+     * @param word the info to encode
+     * @return array of bytes representing the encoded sting
+     */
+    private byte[] encodeCityInfo(String word){
+
+        byte[] ans = new byte[word.length()];
+
+        for(int i = 0 ; i < word.length();i++){
+            ans[i] = encodeNumber(word.charAt(i))[0];
+        }
+
+        return ans;
+    }
+
+    /**
+     *
+     * @param path
+     */
+    private void writeCityBufferToPostingList(String path){
+
+
+        int index = 0, blocknum = 0, idxtemp;
+        // byte[] mainBuffer = new byte[4096]; //4KB - ALU size in windows
+        byte[] zero = new byte[]{0} , doublezero = new byte[]{0,0};
+        mainBuffer = new byte[4096];
+        Set<Integer> keyset = cityBuffer.keySet();
+        Integer[] sorted =  keyset.stream().toArray(Integer[]::new);
+        Arrays.sort(sorted);
+        //   System.out.println(Arrays.toString(sorted));
+        int i = 0;
+        /// Iterator entriesIterator = buffer.entrySet().iterator();
+        try {
+            this.writer.setPath(path);
+
+            while(i < sorted.length){
+                if (index == mainBuffer.length) {//write and reset index
+                    //this.writer.write(mainBuffer);
+                    writer.write(mainBuffer);
+                    this.mainBuffer = new byte[4096];
+                    index = 0;
+                }
+                wroteBuffer = false;
+                //still need to encode the keys . encode them and move them to the main buffer
+
+                Integer currentTermID = sorted[i];
+                index = moveDataToMainBuffer(encodeNumber(currentTermID),index);//moved the termID
+                BufferDataString info = (BufferDataString)cityBuffer.get(currentTermID);
+                //so we can always know where the next termID starts
+                //       index = moveDataToMainBuffer(mainBuffer,encodeNumber(info.getDataSize()),index);
+
+                while(info.hasMore()) {
+
+                    byte[] docid = info.getInfo();
+                    byte[] onTitle = info.getInfo();
+                    byte[] infoOnDocID = info.getInfo();//position list . the length of this list is
+                    //the tf of this term on the current document.
+                    List<Integer> tf = vb.decode(infoOnDocID);
+                    byte[] docTF = encodeNumber(tf.size());
+
+                    index = moveDataToMainBuffer( docid, index);
+                    index = moveDataToMainBuffer(docTF,index);
+                    index = moveDataToMainBuffer( infoOnDocID, index);
+                    index = moveDataToMainBuffer( zero,index);//a new docID will start after this 0
+                }
+
+                byte[] encodedName = encodeCityInfo(info.getFullName());
+                byte[] encodedCountry = encodeCityInfo(info.getCountryName());
+                byte[] encodedPop = encodeCityInfo(info.getPopulation());
+                byte[] encodedCurr = encodeCityInfo(info.getCurrency());
+                index = moveDataToMainBuffer(encodedName,index);
+                index = moveDataToMainBuffer(encodedCountry,index);
+                index = moveDataToMainBuffer(encodedCurr,index);
+                index = moveDataToMainBuffer(encodedPop,index);
+                index = moveDataToMainBuffer(doublezero,index);
+
+                i++;
+            }//end while
+
+            if(!wroteBuffer) {
+                //this.writer.write(mainBuffer);
+                writer.write(mainBuffer);
+                this.mainBuffer = new byte[4096];
+            }
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            System.out.println("at writing posting");
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -363,6 +493,11 @@ public class SpimiInverter {
 
     }
 
+    /**
+     * encode an integer using VB encoding
+     * @param number
+     * @return array of encoded bytes
+     */
     private byte[] encodeNumber(int number) {
 
         return vb.encode(new LinkedList<Integer>() {{
@@ -370,6 +505,13 @@ public class SpimiInverter {
         }});
     }
 
+    /**
+     * move an array of bytes into the main buffer
+     * @param data array of bytes to be writted to disk
+     * @param currentInMain current index in the main buffer
+     * @return the new udated index in the main buffer
+     * @throws Exception
+     */
     private int moveDataToMainBuffer( byte[] data , int currentInMain) throws Exception{
         int idx = 0 ;
         int temp = currentInMain ;
@@ -387,7 +529,11 @@ public class SpimiInverter {
         return temp;
     }
 
-
+    /**
+     *
+     * @param buffer
+     * @param path
+     */
     private void writeDocumentsPostingList(HashMap<Integer, BufferDataDoc> buffer , String path){
 
         try{
@@ -443,7 +589,7 @@ public class SpimiInverter {
      *
      *               Value - BufferData object , which holds for each docID the term was found at , its information list on the term
      */
-    public void writePostingList(HashMap<Integer, BufferData> buffer, String path) {
+    public void writePostingList(HashMap<Integer, ABufferData> buffer, String path) {
 
 
         int index = 0, blocknum = 0, idxtemp;
@@ -471,7 +617,7 @@ public class SpimiInverter {
 
                 Integer currentTermID = sorted[i];
                 index = moveDataToMainBuffer(encodeNumber(currentTermID),index);//moved the termID
-                BufferData info = buffer.get(currentTermID);
+                BufferDataByte info = (BufferDataByte)buffer.get(currentTermID);
                 //so we can always know where the next termID starts
          //       index = moveDataToMainBuffer(mainBuffer,encodeNumber(info.getDataSize()),index);
 
@@ -509,13 +655,17 @@ public class SpimiInverter {
 
     }
 
-
+    /**
+     * check if a term exists in the main dictionary with small letters
+     * @param term term to check
+     * @return true if exists
+     */
     private boolean checkExistInDicWithSmallLetters(String term){
 
         try{
             String dictTerm = term.toLowerCase();
-            Pair pair = this.termIdMap.get(dictTerm);
-            if(pair != null) {
+            Integer[] data = this.termIdMap.get(dictTerm);
+            if(data != null) {
 //                System.out.println("should replace : " + this.termIdMap.get(dictTerm));
                 return true;
             }
@@ -528,13 +678,17 @@ public class SpimiInverter {
 
     }
 
-
+    /**
+     * check if a term exists in the main dicionary with capital letters
+     * @param term
+     * @return true if exists
+     */
     private boolean checkExistInDicWithCapitalLetters(String term){
 
         try{
             String dictTerm = term.toUpperCase();
-            Pair pair = this.termIdMap.get(dictTerm);
-            if(pair == null) {
+            Integer[] data = this.termIdMap.get(dictTerm);
+            if(data == null) {
                 return false;
             }
             return true;
@@ -546,25 +700,34 @@ public class SpimiInverter {
 
     }
 
+    /**
+     * replace an entry of upper case term with lower case term in the main dictionary
+     * @param term
+     */
     private void replaceUpperWithLower(String term){
         try {
             String upperTerm = term.toUpperCase();
-            Pair pair = this.termIdMap.get(upperTerm);
-            if (pair != null) {
-                Integer termid = (Integer)pair.getSecondValue();
+            Integer[] data = this.termIdMap.get(upperTerm);
+            if (data != null) {
+                Integer termid = (Integer)data[1];
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
-                Integer tf = (Integer) pair.getFirstValue();
+                Integer tf = (Integer) data[0];
                     //this.termIdMap.put(upperTerm,termid);
                 this.idTermMap.remove(termid);
                 this.idTermMap.put(termid,term);
                 this.termIdMap.remove(upperTerm);
-                this.termIdMap.put(term, new Pair<Integer, Integer>(tf, termid));
+                this.termIdMap.put(term, new Integer[]{data[0],data[1],data[2],data[3],data[4]});
             }
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
+    /**
+     * get the corpus TF of a term by id
+     * @param id the id of the term
+     * @return the TF
+     */
     public int getTermTF(int id) {
 
         try {
@@ -572,7 +735,7 @@ public class SpimiInverter {
             if(term == null){
                 System.out.println("id = [" + id + "]");
             }
-            return this.termIdMap.get(term).getFirstValue();
+            return this.termIdMap.get(term)[0];
         }catch (Exception e) {
             e.printStackTrace();
             return 0;
@@ -580,11 +743,27 @@ public class SpimiInverter {
 
     }
 
+    /**
+     * return the term name by its id in the dict
+     * @param id id of the term
+     * @return
+     */
+    public String getTermByID(int id){
+        return this.idTermMap.get(id);
+    }
 
+    /**
+     * set the target path . the target path determines where the engine will write all of its otput files
+     * @param path
+     */
     public void setTargetPath(String path){
         this.targetPath = path;
     }
 
+    /**
+     * set whether to use stem
+     * @param stemStatus
+     */
     public void setStemOn(boolean stemStatus){
         this.stemOn = stemStatus;
     }
