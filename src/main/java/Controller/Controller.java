@@ -109,6 +109,7 @@ public class Controller {
         idCol.setCellValueFactory(cellData -> new SimpleStringProperty(map.get(cellData.getValue())[1].toString()));
         tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(map.get(cellData.getValue())[0].toString()));
         this.tableView.setItems(dictResult);
+
     }
 
     public void handleBrowseButtonCorpusPath(){

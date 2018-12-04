@@ -74,8 +74,9 @@ public class SpimiInverter {
         try {
             int currentSize = 0, pathIndicator = 0 , cityIncicator = 0;
             String path = getCanonicalPath()+"p" + pathIndicator , docpath = getCanonicalPath()+"d" + pathIndicator++;
-            String cityPath = getCanonicalPath()+"c"+cityIncicator;
+            String cityPath = getCanonicalPath()+"c"+cityIncicator++;
             postingPaths.add(path);
+            cityPaths.add(cityPath);
             //cityPaths.add(cityPath);
             ArrayList<String> tempBuffer;
             HashMap<Integer, ABufferData> buffer = new HashMap<>();
@@ -85,7 +86,7 @@ public class SpimiInverter {
                 tempBuffer = parser.getBuffer();
                 if(tempBuffer == null)
                     break;
-                if (currentSize++ > 20000) {
+                if (currentSize++ > 40000) {
                     writePostingList(buffer,path);
                     writeDocumentsPostingList(docBuffer,docpath);
                     writeCityBufferToPostingList(cityPath);
@@ -398,6 +399,9 @@ public class SpimiInverter {
      */
     private void writeCityBufferToPostingList(String path){
 
+        if(path.charAt(path.length()-3) == 'c' && path.charAt(path.length()-2) == '2' &&
+        path.charAt(path.length()-1) == '3')
+            System.out.println("path = [" + path + "]");
 
         int index = 0, blocknum = 0, idxtemp;
         // byte[] mainBuffer = new byte[4096]; //4KB - ALU size in windows

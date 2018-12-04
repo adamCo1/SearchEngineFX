@@ -5,7 +5,6 @@ package Engine;
  * to check.
  */
 
-import javax.swing.text.StyledEditorKit;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -15,6 +14,7 @@ public class ParsingStrategies {
     private HashMap<String,String> indicatorsDict ;
     private HashMap<Integer,String> normalizedMonths;
     private HashSet<Character> cleanSigns , partialCleanDict;
+    private HashSet<String> qualifiersSet;
 
     public ParsingStrategies(){
         initializeDictionaries();
@@ -89,6 +89,27 @@ public class ParsingStrategies {
                 put("bn","billion");
             }
         };
+
+        this.qualifiersSet = new HashSet<String>(){{
+            add("meter");
+            add("meters");
+            add("kilometer");
+            add("kilometers");
+            add("mile");
+            add("miles");
+            add("ton");
+            add("tons");
+            add("kilogram");
+            add("kilograms");
+            add("gram");
+            add("grams");
+            add("kiloton");
+            add("kilotons");
+            add("centimeter");
+            add("centimeters");
+            add("feet");
+
+        }};
 
         this.normalizedMonths = new HashMap<Integer, String>(){
             {
@@ -236,6 +257,19 @@ public class ParsingStrategies {
 
         String indic = this.indicatorsDict.get(indicator.toLowerCase());
         return number+indic;
+    }
+
+    public boolean checkForQuantifiers(String word){
+
+        if(this.qualifiersSet.contains(word.toLowerCase()))
+            return true;
+
+        return false;
+    }
+
+    public String handleQuantifiers(String number , String qualifier){
+
+        return number +" " + qualifier;
     }
 
     /**
