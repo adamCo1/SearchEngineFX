@@ -163,6 +163,10 @@ public class Parser {
                         startIndex += words[1].length() + 1;
                         currentTokenList.add(words[0] + " " + words[1]);
                         continue;
+                    }else if(strategies.checkForQuantifiers(words[1])){
+                        startIndex += words[1].length() + 1;
+                        currentTokenList.add(strategies.handleQuantifiers(words[0],words[1]));
+                        continue;
                     }
                     if (words[1].toLowerCase().equals(DOLLARS)) {//its <number> <dollars> rule
                         startIndex += words[1].length() + 1;
@@ -179,7 +183,10 @@ public class Parser {
                             words[2] = getNextWord(startIndex);
                             if(strategies.cheeckForYear(words[2])){
                                 startIndex += words[2].length() + 1;
-                                currentTokenList.add(strategies.handleMonthNumber(words[1],words[0])+"-"+words[2]);
+                                String term = strategies.handleMonthNumber(words[1],words[0]);
+                                currentTokenList.add(term);
+                                currentTokenList.add(words[2]);
+                                currentTokenList.add(term+"-"+words[2]);
                                 continue;
                             }
                             currentTokenList.add(strategies.handleMonthNumber(words[1], words[0]));
@@ -201,6 +208,16 @@ public class Parser {
                                 currentTokenList.add(strategies.handleYearMonth(words[0], words[1]));
                                 continue;
                             } else if (strategies.checkForMonthsRange(words[1])) {
+                                words[2] = getNextWord(startIndex);
+                                if(strategies.cheeckForYear(words[2])){
+                                    startIndex += words[2].length()+1;
+                                    String term = strategies.handleMonthNumber(words[0],words[1]);
+                                    currentTokenList.add(term);
+                                    currentTokenList.add(words[2]);
+                                    currentTokenList.add(term+"-"+words[2]);
+                                    continue;
+                                }
+
                                 currentTokenList.add(strategies.handleMonthNumber(words[0], words[1]));
                                 continue;
                             }
