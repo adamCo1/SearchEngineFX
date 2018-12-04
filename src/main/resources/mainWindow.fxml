@@ -15,17 +15,20 @@
       <Button layoutX="396.0" layoutY="102.0" mnemonicParsing="false" onAction="#handleBrowseButtonTargetPath" prefHeight="31.0" prefWidth="149.0" text="Browse Target Path" />
       <TextField fx:id="targetPathField" layoutX="178.0" layoutY="102.0" />
       <CheckBox fx:id="stemmerCheckBox" layoutX="315.0" layoutY="179.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="96.0" text="Stemmer" />
-      <Button layoutX="214.0" layoutY="330.0" mnemonicParsing="false" onAction="#handleResetButton" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" />
-      <Button layoutX="214.0" layoutY="230.0" mnemonicParsing="false" onAction="#handleShowDictionary" prefHeight="31.0" prefWidth="149.0" text="Show Dictionary" />
-      <Button layoutX="214.0" layoutY="276.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Load Dictionary" />
-      <Button layoutX="142.0" layoutY="174.0" mnemonicParsing="false" onAction="#handleRunEngine" prefHeight="31.0" prefWidth="114.0" text="Run Engine" />
+      <Button layoutX="28.0" layoutY="330.0" mnemonicParsing="false" onAction="#handleResetButton" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" />
+      <Button layoutX="28.0" layoutY="221.0" mnemonicParsing="false" onAction="#handleShowDictionary" prefHeight="31.0" prefWidth="149.0" text="Show Dictionary" />
+      <Button layoutX="28.0" layoutY="279.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Load Dictionary" />
+      <Button layoutX="28.0" layoutY="160.0" mnemonicParsing="false" onAction="#handleRunEngine" prefHeight="39.0" prefWidth="149.0" text="Run Engine" />
       <Label layoutX="45.0" layoutY="55.0" prefHeight="31.0" prefWidth="114.0" text="Enter Corp. path" />
       <Label layoutX="45.0" layoutY="97.0" prefHeight="31.0" prefWidth="114.0" text="Enter target path" />
-      <TableView fx:id="tableView" layoutX="14.0" layoutY="177.0" prefHeight="171.0" prefWidth="200.0">
+      <TableView fx:id="tableView" layoutX="190.0" layoutY="213.0" prefHeight="171.0" prefWidth="359.0">
         <columns>
-          <TableColumn fx:id="idCol" prefWidth="76.0" text="id" />
-          <TableColumn fx:id="termCol" prefWidth="123.0" text="term" />
+          <TableColumn fx:id="termCol" prefWidth="113.0" text="term" />
+          <TableColumn fx:id="idCol" prefWidth="117.0" text="id" />
+            <TableColumn fx:id="tfCol" prefWidth="128.0" text="tf" />
         </columns>
       </TableView>
+      <Button onAction="#handleSampleRun" layoutX="28.0" layoutY="369.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="149.0" text="Sample Run" />
+      <TextField fx:id="sampleField" layoutX="190.0" layoutY="371.0" prefHeight="31.0" prefWidth="379.0" />
    </children>
 </AnchorPane>

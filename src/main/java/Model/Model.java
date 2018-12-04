@@ -18,6 +18,11 @@ public class Model implements IModel {
 
 
     @Override
+    public TreeMap runSample(String text,boolean stemmerOn) {
+        return this.engine.sampleRun(text,stemmerOn);
+    }
+
+    @Override
     public void deleteOutputFiles(File file) {
         this.engine.deleteAllFiles(file);
     }

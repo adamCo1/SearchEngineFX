@@ -6,29 +6,36 @@ import Structures.Pair;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 public class PostingBufferMerger {
 
+    private int currentTermID , blockNum ;
     private String targetPath ;
+    private final String TERM_INDEX_PATH = "terms_out" , CITY_INDEX_PATH = "citites_out" , DOC_INDEX_PATH = "docs_out";
     private final int BLOCK_SIZE = 4096, ID_BAR = 20000;
     private VariableByteCode vb;
     private ArrayList<PostingBuffer> buffers;
     private byte[] mainBuffer;
     private int bufferIndex, pathIndex;
+    private HashMap<String,Integer[]> termIdMap;
     private ArrayList<String> outPaths;
     private PostingWriter writer;
     private SpimiInverter spimi;
 
-    public PostingBufferMerger(VariableByteCode vb,SpimiInverter spimi, ArrayList<String> paths,String targetPath) {
+    public PostingBufferMerger(HashMap<String,Integer[]> termIdMap , VariableByteCode vb, SpimiInverter spimi, ArrayList<String> paths, ArrayList<String> docPaths, ArrayList<String> cityPaths, String targetPath) {
         this.spimi = spimi;
         this.targetPath = targetPath;
+        this.termIdMap = termIdMap;
         this.vb = vb;
         this.buffers = new ArrayList<>();
         this.bufferIndex = 0;
         this.pathIndex = 0;
+        this.currentTermID = 1 ;
+        this.blockNum = 0;
         this.outPaths = new ArrayList<String>() {{
             add("out0");
         }};
@@ -42,6 +49,8 @@ public class PostingBufferMerger {
      * @param paths
      */
     private void initializeBuffers(ArrayList<String> paths) {
+
+        this.buffers = new ArrayList<>();
 
         for (String path :
                 paths) {
@@ -79,12 +88,13 @@ public class PostingBufferMerger {
             this.writer.write(mainBuffer);
             this.bufferIndex = 0;
             this.writer.flush();
-
-        } catch (IOException e) {
+           // this.termToPostingMap.get(currentTermID).setSecondValue(blockNum);
+        } catch (Exception e) {
             System.out.println("error in writing main buffer");
             e.printStackTrace();
         }
     }
+
 
     /**
      * add byte to the main buffer
@@ -122,33 +132,38 @@ public class PostingBufferMerger {
     }
 
     /**
-     * delete a file when its buffer is done
-     * @param path the path from the buffer
+     * opens the writer on a given path
+     * @param type the type to be used to decide what the path is
+     * @throws IOException
      */
-    private void delete(String path){
-
-        try{
-            File file = new File(path);
-            file.delete();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+    private void openWriterOnPath(String type) throws IOException {
+        if(type.equals("TERMS"))
+            this.writer.setPath(this.targetPath+"\\"+TERM_INDEX_PATH);
+        else if(type.equals("CITY"))
+            this.writer.setPath(this.targetPath+"\\"+CITY_INDEX_PATH);
+        else if(type.equals("DOC"))
+            this.writer.setPath(this.targetPath+"\\"+DOC_INDEX_PATH);
     }
 
-    private void openWriterOnPath(String path) throws IOException {
-        this.writer.setPath(path);
-    }
-
+    /**
+     * close the writer
+     */
     private void closeWriterOnPath() {
         this.writer.close();
     }
 
-
+    /**
+     * move all the needed data on a current term to the main buffer
+     * @param termID
+     * @param termTF
+     * @param allData
+     */
     private void moveDataToMainBuffer(byte[] termID, LinkedList<Integer> termTF, LinkedList<Byte> allData){
         moveToMainBuffer(termID);
         moveToMainBuffer(vb.encode(termTF));
         moveToMainBuffer(allData);
     }
+
 
     private void moveDataToMainBuffer(LinkedList<Byte> termID, LinkedList<Integer> termTF, LinkedList<Byte> docid,
                                       LinkedList<Byte> docTF, LinkedList<Byte> onTitle, LinkedList<Byte> positions) {
@@ -166,36 +181,80 @@ public class PostingBufferMerger {
     }
 
     /**
+     * determine the out indicator using the type . the out indicator will be used by the engine
+     * to determine the right index to be used
+     * @param type
+     * @return 0 for terms , 1 for cities and 2 for documents
+     */
+    private int determineOutIndicator(String type){
+        if(type.equals("TERMS"))
+            return 0;
+        else if(type.equals("CITY"))
+            return 1;
+
+        return 2;//for docs
+    }
+
+
+    /**
+     * update the starting position of the term using the blockNum and bufferIndex .
+     * blockNum determines the number of the block and bufferIndex is the offset inside the block.
+     * @param termID
+     * @param outIndicator output path indicator
+     */
+    private void updatePositionOntermMap(int termID , int outIndicator) {
+        try {
+            String term = this.spimi.getTermByID(termID);
+            this.termIdMap.get(term)[2] = this.blockNum;
+            this.termIdMap.get(term)[3] = this.bufferIndex;
+            this.termIdMap.get(term)[4] = outIndicator;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
      * the merging method on term id . can implement more methods
      *
      * @param maxBlockSize max size of the buffers
      */
-    public void mergeOnTermID(int maxBlockSize) {
+    public void mergeOnTermID(ArrayList<String> paths , int maxBlockSize,String type) {
+
+        initializeBuffers(paths);
+        int outIndicator = determineOutIndicator(type);
+
         try {
             ArrayList<PostingBuffer> toRemove = new ArrayList<>();
             mainBuffer = new byte[maxBlockSize];
-            int currentID = 1, bufferStatus = 0;
+            int bufferStatus = 0, currentIDOnMerge = 1 ;
             byte[] termDelimiter = {0,0};
-            openWriterOnPath(this.targetPath+"\\"+this.outPaths.get(pathIndex));
+            openWriterOnPath(type);
+            boolean firstBufferWithID = true;
 
             while (this.buffers.size() != 0) {
 
-                if (currentID % ID_BAR == 0) {//each multiple of ID_BAR
+                if (currentIDOnMerge % ID_BAR == 0) {//CHANGE TO SIZE
                     writeMainBuffer();
-                    closeWriterOnPath();
-                    pathIndex++;
-                    this.outPaths.add(pathIndex, "out" + pathIndex);
-                    openWriterOnPath(this.targetPath+"\\"+this.outPaths.get(this.pathIndex));
+                    blockNum++ ;
                 }
+
+                firstBufferWithID = true;//so it will update the position in the first match
 
                 for(int i = 0 ; i < buffers.size() ; i++){
                     PostingBuffer buffer = buffers.get(i);
                     try {
 
-                        int id = buffer.readTermID(vb,currentID);
+                        int id = buffer.readTermID(vb,currentIDOnMerge);
 
                         if (id != -1) {//move all data to the main buffer
                           //  while (!buffer.checkEndOfTermID()) {//so more info on this term
+
+                            if(firstBufferWithID)
+                                updatePositionOntermMap(id,outIndicator);
+
+                            firstBufferWithID = false;
+
                             LinkedList<Integer> termID = new LinkedList<Integer>() {{
                                 add(id);
                             }};
@@ -221,11 +280,12 @@ public class PostingBufferMerger {
                  }
                   buffers.removeAll(toRemove);
                   toRemove=new ArrayList<>();
-                  currentID++;//
+                  currentIDOnMerge++;//
                 }//the merge loop
             }catch(IOException e){
                 e.printStackTrace();
             }
+        this.writer.flush();
         this.writer.close();
         System.out.println("Done merging . out list : " + this.outPaths);
         }

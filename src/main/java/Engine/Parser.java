@@ -58,6 +58,12 @@ public class Parser {
         this.docLangs = new ArrayList<>();
     }
 
+    public void parse(String text){
+
+        parseText(text,(byte)1);
+        parseText(text,(byte)0);
+    }
+
     public void parse(Doc doc){
 
         if(doc.getDocLang().length()>0) {
@@ -440,7 +446,7 @@ public class Parser {
 
                 if(words[0].length() > 1) {//OUR RULE - 1 char rule
                     if(noUpper(words[0]))
-                        currentTokenList.add(this.porterStemmer.stripAffixes(words[0]));
+                        currentTokenList.add(words[0]);
                     else
                         currentTokenList.add(words[0]);
 
@@ -571,8 +577,17 @@ public class Parser {
     }
 
 
-    public void setLookUpTermDict(HashMap<String, Pair> termIdMap){
-        this.termIdMap = termIdMap;
+    public boolean isCity(String term){
+        try{
+            City city = this.cityDict.get(term);
+            if(city != null)
+                return false;
+
+            return true;
+
+        }catch (Exception e){
+            return false;
+        }
     }
 
     public void initializeStopWordsTree(String path) {

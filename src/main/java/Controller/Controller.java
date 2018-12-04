@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.IModel;
+import Structures.Pair;
 import View.IView;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -32,7 +33,7 @@ public class Controller {
     @FXML
     private CheckBox stemmerCheckBox;
     @FXML
-    private TextField corpusPathField , targetPathField;
+    private TextField corpusPathField , targetPathField , sampleField;
 
     @FXML
     private StringProperty termP;
@@ -81,22 +82,33 @@ public class Controller {
     }
 
     public void handleDisplayDicitionary(){
-        TreeMap<String,Integer>d = model.getDictionary();
-
-        if(d == null)
+        TreeMap<String,Integer[]>d = model.getDictionary();
+        if (d==null){
             return;
+        }
         else {
             this.dictResult = FXCollections.observableArrayList();
             this.dictResult.addAll(d.keySet());
-        System.out.println(d);
-        termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-        idCol.setCellValueFactory(cellData -> new SimpleStringProperty((d.get(cellData.getValue())).toString()));
-        this.tableView.setItems(dictResult);
+            //System.out.println(d);
+            termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+            idCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[1].toString()));
+            tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[0].toString()));
+            this.tableView.setItems(dictResult);
+        }
+
     }
 
+    public void handleSampleRun(){
+        String text = this.sampleField.getText();
+        TreeMap<String,Integer[]> map = model.runSample(text,this.stemmerCheckBox.isSelected());
 
-
-
+        this.dictResult = FXCollections.observableArrayList();
+        this.dictResult.addAll(map.keySet());
+        //System.out.println(d);
+        termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+        idCol.setCellValueFactory(cellData -> new SimpleStringProperty(map.get(cellData.getValue())[1].toString()));
+        tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(map.get(cellData.getValue())[0].toString()));
+        this.tableView.setItems(dictResult);
     }
 
     public void handleBrowseButtonCorpusPath(){
