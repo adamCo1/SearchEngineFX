@@ -48,12 +48,13 @@ import java.util.TreeMap;
         }
 
         public Engine(){
-            this.parser = new Parser(corpusPath);
+            this.parser = new Parser();
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
             this.docController = new DocController();
             this.reader = new ReadFile(docController);
             this.spimi = new SpimiInverter(termIdMap, idTermMap);
+
         }
 
 
@@ -115,6 +116,7 @@ import java.util.TreeMap;
             this.spimi.setParser(this.parser);
             this.spimi.setStemOn(stemmerStatus);
             this.spimi.setTargetPath(this.targetPath);
+            this.parser.initializeStopWordsTree(corpusPath);
             //initialize target path for spimi
 
             String status = "OFF";
