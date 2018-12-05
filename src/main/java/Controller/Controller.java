@@ -90,6 +90,7 @@ public class Controller {
             this.view.errorMessage("Could not load a dictionary");
         }
     }
+    
     public void handleDisplayDicitionary(){
         TreeMap<String,Integer[]>d = model.getDictionary();
 
