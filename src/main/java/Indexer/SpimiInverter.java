@@ -208,36 +208,25 @@ public class SpimiInverter {
                 termList) {
             try {
 
-                if(termIdMap.size() != idTermMap.size())
-                    System.out.println("");
-
-                String lowerTerm = term.toLowerCase();
-                String upperTerm = term.toUpperCase();
-
                 //this term is no special , check wether it starts with upper or lower
                 if (isOneWord(term)) {
 
-
-                    if (term.charAt(0) >= 65 && term.charAt(0) < 90) {
+                    if (term.charAt(0) >= 65 && term.charAt(0) <= 90) {
                         //so its capital , check if we saw it with small letters
                         if (checkExistInDicWithSmallLetters(stem(term))) {
                             //so store it with letter case
-                            addTermToDicts(stem(term.toLowerCase()), position++, docID);
+                            addTermToDicts(stem(term).toLowerCase(), position++, docID);
                         } else {
                             //not seen yet so store with capitals
-                            addTermToDicts(stem(term).toUpperCase(), position++, docID);
+                            addTermToDicts(term.toUpperCase(), position++, docID);
                         }
-                    } else {
-                        //its lower check if it stored with capitals
-                        if (onlyLetters(term) && checkExistInDicWithCapitalLetters(stem(term))) {
-                            //then fix and replace with small letters
+                    }else{
+                        if(onlyLetters(term) && checkExistInDicWithCapitalLetters(term.toUpperCase())){
 
-                            if(stemOn)
-                                replaceUpperWithLower(stem(term).toLowerCase());
-                            else
-                                replaceUpperWithLower(lowerTerm);
+                            //then fix and replace with small letters
+                            replaceUpperWithLower(term.toLowerCase());
                             //and then add to the dict
-                            addTermToDicts(stem(term), position++, docID);
+                            addTermToDicts(stem(term).toLowerCase(), position++, docID);
                             continue;
                         } else {
                             //not seen yet store with lower case
@@ -245,10 +234,11 @@ public class SpimiInverter {
                             addTermToDicts(stem(term), position++, docID);
                             continue;
                         }
-                    }
 
+                    }
                 } else
                     addTermToDicts(term.toLowerCase(), position++, docID);
+
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -747,14 +737,21 @@ public class SpimiInverter {
             String upperTerm = term.toUpperCase();
             Integer[] data = this.termIdMap.get(upperTerm);
             if (data != null) {
+                String stemmed = stem(term);
                 Integer termid = (Integer) data[1];
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
                 Integer tf = (Integer) data[0];
                 //this.termIdMap.put(upperTerm,termid);
+
                 this.idTermMap.remove(termid);
-                this.idTermMap.put(termid, term);
+                this.idTermMap.put(termid, stemmed);
                 this.termIdMap.remove(upperTerm);
-                this.termIdMap.put(term, new Integer[]{data[0], data[1], data[2], data[3], data[4]});
+                Integer[] temp = termIdMap.get(stemmed);
+                if(temp != null)
+                //this.termIdMap.get(stemmed)[0]++;
+                    this.termIdMap.put(stemmed, new Integer[]{data[0]+temp[0],temp[1], data[2], data[3], data[4]});
+                else
+                    this.termIdMap.put(stemmed,new Integer[]{data[0],data[1],data[2],data[3],data[4]});
             }
         } catch (Exception e) {
             e.printStackTrace();

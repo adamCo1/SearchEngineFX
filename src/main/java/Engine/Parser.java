@@ -39,7 +39,7 @@ public class Parser implements IParser{
     private String currentText ;
     private boolean done ;
 
-    public Parser(String filesPath)  {
+    public Parser()  {
         this.strategies = new ParsingStrategies();
         this.tokenListBuffers = new LinkedList<>();
         this.termList = new ArrayList<>();
@@ -48,7 +48,6 @@ public class Parser implements IParser{
         this.cityDict = new HashMap<>();
         this.docLangs = new ArrayList<>();
 
-        initializeStopWordsTree(filesPath);
     }
 
     public void parse(String text){
@@ -536,7 +535,7 @@ public class Parser implements IParser{
     }
 
     public boolean isDone(){
-        return this.done;
+        return this.done && tokenListBuffers.size() == 0;
     }
 
     private ArrayList<String> deepCopy(ArrayList<String> toCopy){
