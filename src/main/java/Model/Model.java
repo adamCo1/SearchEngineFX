@@ -23,6 +23,11 @@ public class Model implements IModel {
     }
 
     @Override
+    public void LoadDictionaryToMemory()throws Exception {
+        this.engine.loadDictionaryToMemory();
+    }
+
+    @Override
     public void deleteOutputFiles(File file) {
         this.engine.deleteAllFiles(file);
     }

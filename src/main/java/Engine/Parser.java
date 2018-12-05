@@ -21,41 +21,34 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 import static ReadFromWeb.ReadFromWeb.allCities;
 
-public class Parser {
+public class Parser implements IParser{
 
     private ArrayList<String> termList ;
     private LinkedList<List> tokenListBuffers;
 
-    private final String USDOLALRS = "U.S." , DOLLARS = "Dollars" ,_AND = "and" , _BETWEEN = "between";
+    private final String USDOLALRS = "U.S." , DOLLARS = "dollars" ,_AND = "and" , _BETWEEN = "between";
     private final char DOLLAR_SIGN = '$' , PERCENT_SIGN = '%';
     private int startIndex = 0;
     byte currentOnTitle;
     Semaphore putBufferSem = new Semaphore(500) , getTakeBufferSem = new Semaphore(0);
     private Mutex mutex = new Mutex();
-    private LinkedList<TreeMap<Integer,HashMap<Integer,Data>>> buffers ;
     private ParsingStrategies strategies;
-    private HashMap<Integer,HashMap<Integer,Data>> termInfoMap;
-    private HashMap<Integer,String> idTermMap; // ID - TERM map
-    private HashMap<String, Pair> termIdMap ; //TERM - ID map
     private HashMap<String, City> cityDict;
     private ArrayList<String> docLangs;
-    private int key ;
     private TrieTree stopWordsTrietree;
     private String currentText ;
     private boolean done ;
-    private Stemmer porterStemmer;
 
-    public Parser() {
+    public Parser(String filesPath)  {
         this.strategies = new ParsingStrategies();
         this.tokenListBuffers = new LinkedList<>();
         this.termList = new ArrayList<>();
-        //this.buffers = new LinkedList<TreeMap<Integer, HashMap<Integer,Data>>>();
         this.stopWordsTrietree = new TrieTree();
-       // this.stopWordsTrietree.insertFromTextFile(path+"\\stoplist.txt");
         this.done = false;
-        this.porterStemmer = new Stemmer();
         this.cityDict = new HashMap<>();
         this.docLangs = new ArrayList<>();
+
+        initializeStopWordsTree(filesPath);
     }
 
     public void parse(String text){
@@ -175,7 +168,7 @@ public class Parser {
 
                     } else if (strategies.isPercent(words[1])) {//so its <number> < percent>
                         startIndex += words[1].length() + 1;
-                        currentTokenList.add(words[0] + " " + words[1]);
+                        currentTokenList.add(words[0] + " percent");
                         continue;
                     } else if (strategies.checkForMonth(words[1])) {//so its a month , check for a number after
                         if (strategies.checkForMonthsRange(words[0])) {
@@ -240,7 +233,7 @@ public class Parser {
                         else {//check for '%'
                             current = words[0].charAt(words[0].length() - 1);
                             if (current == '%') {// <number%> rule
-                                currentTokenList.add(words[0]);
+                                currentTokenList.add(strategies.handlePercents(words[0]));
                                 continue;
                             }
                         }
@@ -266,7 +259,7 @@ public class Parser {
                 }//end of '$' check
                 else {//check for '%'
                     if (words[0].length() > 1 && words[0].charAt(words[0].length() - 1) == PERCENT_SIGN) {// <number%> rule
-                        currentTokenList.add(words[0]);
+                        currentTokenList.add(strategies.handlePercents(words[0]));
                         continue;
                     }
                 }
@@ -518,8 +511,6 @@ public class Parser {
 
             }
 
-            //String ans = currentText.substring(startIndex,i);
-            //return ans ;
             return this.currentText.substring(startIndex,i);
 
         }catch (Exception e){

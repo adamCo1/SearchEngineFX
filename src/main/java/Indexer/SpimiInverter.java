@@ -1,5 +1,6 @@
 package Indexer;
 
+import Engine.IParser;
 import Engine.Data;
 import Engine.Engine;
 import Engine.Parser;
@@ -12,6 +13,8 @@ import jdk.nashorn.internal.runtime.ECMAException;
 import static ReadFromWeb.ReadFromWeb.allCities;
 import java.io.FileInputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -26,13 +29,11 @@ public class SpimiInverter {
     private int onTitle;
     private Stemmer porterStemmer;
     private int key , maxTF;
-    private Engine engine ;
-    private Parser parser;
+    private IParser parser;
     private VariableByteCode vb;
     private HashMap<Integer,ABufferData> cityBuffer;
     private HashMap<Integer,HashMap<Integer, Data>> termInfoMap ;
     private HashMap<Integer,String> idTermMap; // ID - TERM map
-    //private HashMap<String,Integer> termIdMap;
     private HashMap<String,Integer[]> termIdMap; //corupusTF at first value , id at second value
     private ArrayList<String> postingPaths , cityPaths , docPaths;
     private PostingWriter writer ;
@@ -55,15 +56,14 @@ public class SpimiInverter {
         this.onTitle = 2;//2 means on the title , 1 means not on the title
     }
 
-    public SpimiInverter(Parser parser, VariableByteCode vb,Engine engine) {
+    public SpimiInverter(IParser parser, VariableByteCode vb, Engine engine) {
         this.parser = parser;
         this.vb = vb;
-        this.engine = engine;
         this.key = 1;
 
     }
 
-    public void setParser(Parser parser) {
+    public void setParser(IParser parser) {
         this.parser = parser;
     }
 
@@ -122,8 +122,10 @@ public class SpimiInverter {
             if(buffer.size() != 0)
                 writePostingList(buffer,path);
 
+            //Files.deleteIfExists(Paths.get(postingPaths.get(0)));
+
+            cityPaths.remove(cityPaths.size()-1);
             System.out.println("number of terms : " + this.idTermMap.size());
-            System.out.println("merging the temp postings");
             writeMergedSortedPostings();
 
 
@@ -205,22 +207,35 @@ public class SpimiInverter {
         for (String term :
                 termList) {
             try {
+
+                if(termIdMap.size() != idTermMap.size())
+                    System.out.println("");
+
+                String lowerTerm = term.toLowerCase();
+                String upperTerm = term.toUpperCase();
+
                 //this term is no special , check wether it starts with upper or lower
                 if (isOneWord(term)) {
+
+
                     if (term.charAt(0) >= 65 && term.charAt(0) < 90) {
                         //so its capital , check if we saw it with small letters
                         if (checkExistInDicWithSmallLetters(stem(term))) {
                             //so store it with letter case
-                            addTermToDicts(stem(term), position++, docID);
+                            addTermToDicts(stem(term.toLowerCase()), position++, docID);
                         } else {
                             //not seen yet so store with capitals
-                            addTermToDicts(term.toUpperCase(), position++, docID);
+                            addTermToDicts(stem(term).toUpperCase(), position++, docID);
                         }
                     } else {
                         //its lower check if it stored with capitals
-                        if (onlyLetters(term) && checkExistInDicWithCapitalLetters(term)) {
+                        if (onlyLetters(term) && checkExistInDicWithCapitalLetters(stem(term))) {
                             //then fix and replace with small letters
-                            replaceUpperWithLower(term);
+
+                            if(stemOn)
+                                replaceUpperWithLower(stem(term).toLowerCase());
+                            else
+                                replaceUpperWithLower(lowerTerm);
                             //and then add to the dict
                             addTermToDicts(stem(term), position++, docID);
                             continue;
@@ -233,7 +248,7 @@ public class SpimiInverter {
                     }
 
                 } else
-                    addTermToDicts(term, position++, docID);
+                    addTermToDicts(term.toLowerCase(), position++, docID);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -343,16 +358,18 @@ public class SpimiInverter {
                 Data temp = this.termInfoMap.get(id).get(docID);
                 Integer last = temp.getLastPosition();
                 temp.addPosition(position-last);
-                Integer tf = (Integer)this.termIdMap.get(id)[0];
-                this.termIdMap.get(id)[0] = tf+1;
+                Integer tf = (Integer)this.termIdMap.get(term)[0];
+               // this.termIdMap.get(term)[0] = tf+1;
 
-            } catch (Exception e) {//
-                  this.termInfoMap.put(new Integer(id), new HashMap<Integer, Data>() {{
-                    if(!titleSet.contains(term))//so not on title
-                        put(new Integer(docID), new Data(position));
-                    else
-                        put(new Integer(docID) , new Data(position,(byte)2));
-                }});
+            } catch (Exception e) {//so no data. maybe this happended cuz of same hash value . fix
+                //this by looking for contains which overrides equals . this will take more time but
+                //there wont be any mistakes and it wont happen much
+                    this.termInfoMap.put(new Integer(id), new HashMap<Integer, Data>() {{
+                        if (!titleSet.contains(term))//so not on title
+                            put(new Integer(docID), new Data(position));
+                        else
+                            put(new Integer(docID), new Data(position, (byte) 2));
+                    }});
             }
             //Pair pair = this.termToPostingMap.get(id);
             //pair.setFirstValue((Integer)pair.getFirstValue()+1);
@@ -394,6 +411,15 @@ public class SpimiInverter {
     }
 
     /**
+     * *********************WRITING FORMAT*******************
+     * -termID- -tf- -docID- -ontitle- -infoondoc- 0 ...... 00 ... -termID- ... AT THE END : 4 strings
+     * representing the data required of us on the requirements .
+     *
+     * -termID- id of the term
+     * -docID- id of the doc
+     * -ontitle- whether on title or not
+     * -info- all the info saved on the term
+     * -tf- term freq on doc
      *
      * @param path
      */
@@ -534,6 +560,13 @@ public class SpimiInverter {
     }
 
     /**
+     * *****************WRITING FORMAT ****************************
+     * -docID- -maxTF- -uniqueTermsNum- -city- 00
+     *
+     * -docID- : ID of the doc
+     * -maxTF- : the max term frequency in the doc
+     * -uniqueTermsNum- the number of unique terms in the doc
+     * -city- the city in the tag
      *
      * @param buffer
      * @param path
@@ -689,12 +722,13 @@ public class SpimiInverter {
      */
     private boolean checkExistInDicWithCapitalLetters(String term){
 
-        try{
+        try {
             String dictTerm = term.toUpperCase();
+            //return this.termIdMap.containsKey(dictTerm);
             Integer[] data = this.termIdMap.get(dictTerm);
             if(data == null) {
-                return false;
-            }
+              return false;
+        }
             return true;
 
 
@@ -708,21 +742,21 @@ public class SpimiInverter {
      * replace an entry of upper case term with lower case term in the main dictionary
      * @param term
      */
-    private void replaceUpperWithLower(String term){
+    private void replaceUpperWithLower(String term) {
         try {
             String upperTerm = term.toUpperCase();
             Integer[] data = this.termIdMap.get(upperTerm);
             if (data != null) {
-                Integer termid = (Integer)data[1];
+                Integer termid = (Integer) data[1];
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
                 Integer tf = (Integer) data[0];
-                    //this.termIdMap.put(upperTerm,termid);
+                //this.termIdMap.put(upperTerm,termid);
                 this.idTermMap.remove(termid);
-                this.idTermMap.put(termid,term);
+                this.idTermMap.put(termid, term);
                 this.termIdMap.remove(upperTerm);
-                this.termIdMap.put(term, new Integer[]{data[0],data[1],data[2],data[3],data[4]});
+                this.termIdMap.put(term, new Integer[]{data[0], data[1], data[2], data[3], data[4]});
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

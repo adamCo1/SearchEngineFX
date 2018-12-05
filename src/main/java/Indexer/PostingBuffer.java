@@ -3,10 +3,15 @@ package Indexer;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.security.SecureRandom;
 import java.util.LinkedList;
 
 public class PostingBuffer {
 
+    private SecureRandom secureRandom;
+    private FileChannel fileChannel;
     private String tempPostingPath;
     private int nextID ,index , blocksRead , blockSize;
     private byte[] buffer ;
@@ -18,8 +23,11 @@ public class PostingBuffer {
         this.nextID =-1;
         this.blockSize = blockSize;
         this.blocksRead = 0;
+        this.secureRandom = new SecureRandom();
         this.buffer = new byte[blockSize];
+
         try {
+        //    this.file = new RandomAccessFile(path,"R");
             fillBuffer();
         }catch (Exception e){
             e.printStackTrace();
@@ -124,12 +132,17 @@ public class PostingBuffer {
         RandomAccessFile in = new RandomAccessFile(this.tempPostingPath,"r");
         try {
             blockChanged = true;
-            in = new RandomAccessFile(this.tempPostingPath, "r");
+            //in = new RandomAccessFile(this.tempPostingPath, "r");
+            //FileChannel channel = in.getChannel();
+          //  MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY,0,this.buffer.length);
             in.seek(blockSize * blocksRead++);
             in.readFully(this.buffer);
             this.index = 0;
+            //buffer.force();
+            //channel.close();
             in.close();
-        } catch (Exception e) {
+        } catch (Exception e) {//close the file and throw
+
             in.close();
             throw e;
         }

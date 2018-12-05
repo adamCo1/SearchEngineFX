@@ -79,19 +79,27 @@ public class Controller {
 
     public void handleBrowseButtonTargetPath(){
         this.targetPathField.setText(this.view.showDirectoryBrowser((Stage)this.anchorPane.getScene().getWindow()));
+        this.model.setTargetPath(targetPathField.getText());
     }
 
+    public void handleLoadDictionary() {
+        try {
+            this.model.LoadDictionaryToMemory();
+            System.out.println("Dictionary loaded");
+        }catch (Exception e){
+            this.view.errorMessage("Could not load a dictionary");
+        }
+    }
     public void handleDisplayDicitionary(){
         TreeMap<String,Integer[]>d = model.getDictionary();
         if (d==null){
             return;
         }
         else {
+
             this.dictResult = FXCollections.observableArrayList();
             this.dictResult.addAll(d.keySet());
-            //System.out.println(d);
             termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-            idCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[1].toString()));
             tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[0].toString()));
             this.tableView.setItems(dictResult);
         }
@@ -104,9 +112,8 @@ public class Controller {
 
         this.dictResult = FXCollections.observableArrayList();
         this.dictResult.addAll(map.keySet());
-        //System.out.println(d);
+
         termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-        idCol.setCellValueFactory(cellData -> new SimpleStringProperty(map.get(cellData.getValue())[1].toString()));
         tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(map.get(cellData.getValue())[0].toString()));
         this.tableView.setItems(dictResult);
 
@@ -114,6 +121,7 @@ public class Controller {
 
     public void handleBrowseButtonCorpusPath(){
         this.corpusPathField.setText(this.view.showDirectoryBrowser((Stage)this.anchorPane.getScene().getWindow()));
+        model.setCorpusPath(this.corpusPathField.getText());
     }
 
     public void setView(IView view){
