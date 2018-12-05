@@ -7,6 +7,8 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -40,7 +42,7 @@ public class PostingBufferMerger {
             add("out0");
         }};
         this.writer = new PostingWriter();
-        initializeBuffers(paths);
+       // initializeBuffers(paths);
     }
 
     /**
@@ -222,6 +224,7 @@ public class PostingBufferMerger {
     public void mergeOnTermID(ArrayList<String> paths , int maxBlockSize,String type) {
 
         initializeBuffers(paths);
+
         int outIndicator = determineOutIndicator(type);
 
         try {
@@ -270,8 +273,7 @@ public class PostingBufferMerger {
                     } catch (Exception e) {
                         if(e instanceof EOFException){
                             toRemove.add(buffer);
-                           // delete(this.targetPath);
-                       //     e.printStackTrace();
+                            Files.deleteIfExists(Paths.get(buffer.getTempPostingPath()));
                         }
                     }
                     //add 00
@@ -287,6 +289,6 @@ public class PostingBufferMerger {
             }
         this.writer.flush();
         this.writer.close();
-        System.out.println("Done merging . out list : " + this.outPaths);
+
         }
     }

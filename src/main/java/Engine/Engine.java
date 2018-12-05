@@ -24,7 +24,7 @@ import java.util.TreeMap;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
         private TreeMap<String,Integer[]> termIdTreeMap;
         private HashMap<String, Integer[]> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
-        private Parser parser ;
+        private IParser parser ;
         private SpimiInverter spimi;
         private ReadFile reader;
         private DocController docController;
@@ -38,16 +38,17 @@ import java.util.TreeMap;
             this.reader = new ReadFile(docController);
         }
 
-        public Engine(SpimiInverter spimi , Parser parser){
+        public Engine(SpimiInverter spimi , IParser parser){
             this.parser = parser;
             this.spimi = spimi;
             this.docController = new DocController();
             this.reader = new ReadFile(docController);
 
+
         }
 
         public Engine(){
-            this.parser = new Parser();
+            this.parser = new Parser(corpusPath);
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
             this.docController = new DocController();
@@ -55,8 +56,16 @@ import java.util.TreeMap;
             this.spimi = new SpimiInverter(termIdMap, idTermMap);
         }
 
-        public Engine(Parser parser){
-            this.parser = parser;
+
+        public void loadDictionaryToMemory() throws Exception{
+
+
+            FileInputStream in = new FileInputStream(targetPath+"\\"+TERM_ID_MAP_PATH);
+            ObjectInputStream stream = new ObjectInputStream(in);
+            TreeMap dict = (TreeMap)stream.readObject();
+            this.termIdTreeMap = dict;
+            stream.close();
+            in.close();
         }
 
 
@@ -104,7 +113,6 @@ import java.util.TreeMap;
 
             int maxsize = 40 * 1000;
             this.spimi.setParser(this.parser);
-            this.parser.initializeStopWordsTree(corpusPath);
             this.spimi.setStemOn(stemmerStatus);
             this.spimi.setTargetPath(this.targetPath);
             //initialize target path for spimi
@@ -140,19 +148,8 @@ import java.util.TreeMap;
         }
 
         public TreeMap getTermIDDictionary(){
-            try{
-                FileInputStream in = new FileInputStream(targetPath+"\\"+TERM_ID_MAP_PATH);
-                ObjectInputStream stream = new ObjectInputStream(in);
-                TreeMap dict = (TreeMap) stream.readObject();
 
-                in.close();
-                stream.close();
-                return dict;
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-            return null;
+            return this.termIdTreeMap;
         }
 
         private void storeDictionariesOnDisk(){

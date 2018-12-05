@@ -5,6 +5,7 @@ package Engine;
  * to check.
  */
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -15,8 +16,10 @@ public class ParsingStrategies {
     private HashMap<Integer,String> normalizedMonths;
     private HashSet<Character> cleanSigns , partialCleanDict;
     private HashSet<String> qualifiersSet;
+    private DecimalFormat decimalFormat;
 
     public ParsingStrategies(){
+        this.decimalFormat = new DecimalFormat("#.##");
         initializeDictionaries();
     }
 
@@ -141,7 +144,7 @@ public class ParsingStrategies {
             while(i++ < 122)
                 add((char)i);
 
-            //add('.');
+            add('.');
             add('-');
             add('%');
             add('$');
@@ -250,7 +253,7 @@ public class ParsingStrategies {
      * @return
      */
     public String handlePricesWithoutIndicators(String number){
-        return ""+stringToDouble(number)+" Dollars";
+        return ""+number+" Dollars";
     }
 
     public String handleNumbersWithIndicatorsNoChange(String number , String indicator){
@@ -270,6 +273,16 @@ public class ParsingStrategies {
     public String handleQuantifiers(String number , String qualifier){
 
         return number +" " + qualifier;
+    }
+
+    public String handlePercents(String word){
+
+        String ans = "";
+
+        for(int i = 0 ; i < word.length()-1 ; i++)
+            ans += word.charAt(i);
+
+        return ans + " percent";
     }
 
     /**
@@ -300,7 +313,7 @@ public class ParsingStrategies {
      */
     public String handleUsDollars(String number , String indicator){
         int factor = getIndicatorFactor(indicator);
-        return "" + stringToDouble(number)*factor + " M Dollars";
+        return "" + decimalFormat.format(stringToDouble(number)*factor).toCharArray() + " M Dollars";
     }
 
     /**
@@ -314,7 +327,7 @@ public class ParsingStrategies {
         String ans ;
         int factor = getIndicatorFactor(indicator);
         double value = stringToDouble(number)*factor;
-        ans = ""+value+" M Dollars";
+        ans = ""+decimalFormat.format(value).toString()+" M Dollars";
         return ans ;
     }
 
@@ -358,14 +371,14 @@ public class ParsingStrategies {
      */
     private String handleDoubleNumbers(Double num){
         if(num < 1000)
-            return "" + num;
+            return "" + decimalFormat.format(num);
         else if(num >= 1000 && num <= 1000*1000)
-            return "" + num/1000 + "K";
+            return "" + decimalFormat.format(num/1000) + "K";
         else if(num >= 1000*1000 && num < 1000*1000*1000)
-            return "" + num/(1000*1000) + "M";
+            return "" + decimalFormat.format(num/(1000*1000)) + "M";
         else if(num >= 1000*1000*1000)
-            return "" + num/(1000*1000*1000) + "B";
-        System.out.println("num = [" + num + "] something bad happened");
+            return "" + decimalFormat.format(num/(1000*1000*1000)) + "B";
+
         return "";
     }
 
@@ -385,7 +398,7 @@ public class ParsingStrategies {
         else if(num >= 1000*1000*1000)
             return "" + num/(1000*1000*1000) + "B";
 
-        System.out.println("num = [" + num + "] something bad happened");
+      //  System.out.println("num = [" + num + "] something bad happened");
         return "";
     }
 
