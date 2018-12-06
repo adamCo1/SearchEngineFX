@@ -229,6 +229,7 @@ public class Parser implements IParser {
 
                     }
                 }
+                
                 if (current == DOLLAR_SIGN) {
                     //for if next words is a size indicator
                     words[1] = getNextWord(startIndex);
