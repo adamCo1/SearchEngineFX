@@ -229,8 +229,8 @@ public class Parser implements IParser {
 
                     }
                 }
-                
-                if (current == DOLLAR_SIGN) {
+
+                if (current == DOLLAR_SIGN && strategies.checkForNumber(words[0].substring(1))) {
                     //for if next words is a size indicator
                     words[1] = getNextWord(startIndex);
                     words[1] = strategies.partialStripSigns(words[1]);
@@ -259,7 +259,7 @@ public class Parser implements IParser {
                 }
 
 
-                if(words[0].indexOf('-') != -1 && words[0].indexOf('-') != 0 && words[0].indexOf('-') != words[0].length()-1){
+                if(words[0].indexOf('-') != -1 && words[0].indexOf('-') != 0 && words[0].indexOf('-') != words[0].length()-1 && isWordsAndNumbers(words[0]) ) {
                     currentTokenList.add(words[0]);
                     continue;
                 }
@@ -386,21 +386,7 @@ public class Parser implements IParser {
                 goback = 0;
 
                 words[0] = this.strategies.stripSigns(words[0]);
-/**
- //check for <word> and <word>
- words[1] = getNextWord(startIndex);
- if(words[1].equals("and")){
- startIndex += words[1].length() + 1 ;
- words[2] = getNextWord(startIndex);
- if(!words[2].equals("")) {
- startIndex += words[2].length() + 1;
- currentTokenList.add(words[0]);
- currentTokenList.add(words[2]);
- currentTokenList.add(words[0] + " " + words[2]);
- continue;
- }
- }
- **/
+
 
                 if(words[0].equals("") || isStopWord(words[0].toLowerCase()))
                     continue;
@@ -445,9 +431,6 @@ public class Parser implements IParser {
                 }
 //                        System.out.println(words[0]);
 
-
-
-
                 if(words[0].length() > 1) {//OUR RULE - 1 char rule
                     if(noUpper(words[0]))
                         currentTokenList.add(words[0]);
@@ -464,7 +447,20 @@ public class Parser implements IParser {
         }//end while
        // System.out.println(currentTokenList);
         storeBuffer(currentTokenList);
-        currentTokenList = new ArrayList<>();
+
+    }
+
+    private boolean isWordsAndNumbers(String word){
+
+        int i = 0;
+        while(i < word.length()){
+            char c = word.charAt(i++);
+            if(!(c >= 48 && c<58) && !(c>=65 && c<=90) && !(c>=96 && c<122))
+                if(c != '-')
+                    return false;
+        }
+
+        return true;
     }
 
     private boolean noUpper(String word){

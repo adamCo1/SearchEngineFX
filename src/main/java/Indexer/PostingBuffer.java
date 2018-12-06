@@ -135,14 +135,9 @@ public class PostingBuffer {
         RandomAccessFile in = new RandomAccessFile(this.tempPostingPath,"r");
         try {
             blockChanged = true;
-            //in = new RandomAccessFile(this.tempPostingPath, "r");
-            //FileChannel channel = in.getChannel();
-          //  MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY,0,this.buffer.length);
             in.seek(blockSize * blocksRead++);
             in.readFully(this.buffer);
             this.index = 0;
-            //buffer.force();
-            //channel.close();
             in.close();
         } catch (Exception e) {//close the file and throw
 

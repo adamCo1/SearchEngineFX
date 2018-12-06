@@ -101,7 +101,7 @@ public class Controller {
         }
         int i = 0 ;
         for(Integer key:dSortByTf.keySet()){
-            if(i >= dSortByTf.size()-11){
+            if(i <= 10){
                 System.out.println("Term: "+dSortByTf.get(key)+" TF: "+key);
             }
             i++;

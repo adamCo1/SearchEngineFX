@@ -20,6 +20,7 @@ import java.util.TreeMap;
     public class Engine {
 
         private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data";
+        private final int MAX_SIZE_FOR_BUFFERS = 10000000;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
@@ -54,7 +55,7 @@ import java.util.TreeMap;
             this.idTermMap = new HashMap<>();
             this.docController = new DocController();
             this.reader = new ReadFile(docController);
-            this.spimi = new SpimiInverter(termIdMap, idTermMap);
+            this.spimi = new SpimiInverter(termIdMap, idTermMap , parser);
 
         }
 
@@ -78,7 +79,7 @@ import java.util.TreeMap;
             this.parser.initializeStopWordsTree("C:\\Users\\adam\\Corpus2");
             this.spimi.setStemOn(stemmerOn);
             this.spimi.setTargetPath(this.targetPath);
-            this.spimi.setParser(this.parser);
+            //this.spimi.setParser(this.parser);
 
             String status = "OFF";
             if (stemmerOn)
@@ -113,7 +114,6 @@ import java.util.TreeMap;
 
         public void run(boolean stemmerStatus) {
 
-            int maxsize = 40 * 1000;
             this.spimi.setParser(this.parser);
             this.spimi.setStemOn(stemmerStatus);
             this.spimi.setTargetPath(this.targetPath);
@@ -127,7 +127,7 @@ import java.util.TreeMap;
             try {
 
                 readThread = new Thread(() -> this.reader.read(corpusPath));
-                indexThread = new Thread(() -> this.spimi.index(maxsize));
+                indexThread = new Thread(() -> this.spimi.index(MAX_SIZE_FOR_BUFFERS));
                 parseThread = new Thread(() -> parse());
                 System.out.println("Starting");
                 long t1 = System.nanoTime();
@@ -195,25 +195,46 @@ import java.util.TreeMap;
             this.parser = parser;
         }
 
-        public void setCorpusPath(String path){
+    /**
+     * set path for reading from
+     * @param path
+     */
+    public void setCorpusPath(String path){
             this.corpusPath = path;
         }
 
-        public void setTargetPath(String path){
+    /**
+     * set path for writing files to
+     * @param path
+     */
+    public void setTargetPath(String path){
             this.targetPath = path;
         }
 
-        private void convertTermIdToTreeMap(){
+    /**
+     * convert the hashmap to treemap and delete the hashmap from memory
+     */
+    private void convertTermIdToTreeMap(){
             this.termIdTreeMap = new TreeMap<>();
             Iterator iterator = this.termIdMap.entrySet().iterator();
             while(iterator.hasNext()){
                 Map.Entry entry = (Map.Entry)iterator.next();
                 Integer[] data =(Integer[]) entry.getValue();
                 this.termIdTreeMap.put((String)entry.getKey(),new Integer[]{data[0],data[1],data[2],data[3],data[4]});
+              //  this.termIdMap.remove(entry.getKey());//so no overflow in memory
             }
         }
 
-        public void deleteAllFiles(File file){
+    /**
+     * initialize new maps and delete all the recent files in the
+     * @param file
+     */
+    public void deleteAllFiles(File file){
+
+            this.idTermMap = new HashMap<>();
+            this.termIdTreeMap = new TreeMap<>();
+            this.termIdMap = new HashMap<>();
+
             try{
                 FileUtils.cleanDirectory(file);
 

@@ -20,9 +20,8 @@ public class SpimiInverter implements IIndexer {
     private String targetPath;
     private boolean wroteBuffer, stemOn;
     private HashSet<String> titleSet;
-    private int onTitle;
     private Stemmer porterStemmer;
-    private int key, maxTF;
+    private int key, maxTF , onTitle , currentBufferSize;
     private IParser parser;
     private VariableByteCode vb;
     private HashMap<Integer, ABufferData> cityBuffer;
@@ -33,10 +32,11 @@ public class SpimiInverter implements IIndexer {
     private PostingWriter writer;
     private byte[] mainBuffer = new byte[4096];
 
-    public SpimiInverter(HashMap termIdMap, HashMap idTermMap) {
+    public SpimiInverter(HashMap termIdMap, HashMap idTermMap , IParser parser) {
 
         titleSet = new HashSet<>();
         porterStemmer = new Stemmer();
+        this.parser = parser;
         this.cityPaths = new ArrayList<>();
         this.docPaths = new ArrayList<>();
         this.cityBuffer = new HashMap<>();
@@ -61,6 +61,12 @@ public class SpimiInverter implements IIndexer {
         this.parser = parser;
     }
 
+    /**
+     * the main indexing loop.
+     * the function stores temporary buffers in memory and writes
+     * them to disk when they reach the maxSize parameter , so no memory overflow will occure.
+     * @param maxSize the max size of the buffer in bytes
+     */
     public void index(int maxSize) {
         //get relevant maps from engine
         int docID = 1, maxTF = 0;
@@ -80,7 +86,8 @@ public class SpimiInverter implements IIndexer {
                 tempBuffer = parser.getBuffer();
                 if (tempBuffer == null)
                     break;
-                if (currentSize++ > 40000) {
+               // if (currentSize++ > 40000) {
+                 if(currentBufferSize >= maxSize){
                     writePostingList(buffer, path);
                     writeDocumentsPostingList(docBuffer, docpath);
                     writeCityBufferToPostingList(cityPath);
@@ -92,8 +99,8 @@ public class SpimiInverter implements IIndexer {
                     this.postingPaths.add(path);
                     this.cityPaths.add(cityPath);
                     this.cityBuffer = new HashMap<>();
+                    this.currentBufferSize = 0;
                     currentSize = 0;
-
                 } else {//its not too big yet no need to write it . add the temp buffer to the current held buffer
                     if (this.onTitle == 1) {
                         buildIndexOnTerms(tempBuffer, docID);
@@ -145,7 +152,7 @@ public class SpimiInverter implements IIndexer {
     private void addToBuffer(HashMap<Integer, BufferDataDoc> buffer, int docID, int maxTF, int uniqueNum) {
 
         buffer.put(docID, new BufferDataDoc(encodeNumber(maxTF), encodeNumber(uniqueNum)));
-
+        this.currentBufferSize += buffer.get(docID).getSize();
     }
 
     /**
@@ -168,6 +175,10 @@ public class SpimiInverter implements IIndexer {
 
     }
 
+    /**
+     * initalize a hashSet to determine the words in the title
+     * @param titleList
+     */
     private void initTitleList(ArrayList<String> titleList) {
 
         this.titleSet = new HashSet<>();
@@ -184,6 +195,11 @@ public class SpimiInverter implements IIndexer {
         }
     }
 
+    /**
+     * check if a String contains no spaces
+     * @param word
+     * @return
+     */
     private boolean isOneWord(String word) {
 
         if (word.equals(""))
@@ -195,6 +211,11 @@ public class SpimiInverter implements IIndexer {
         return true;
     }
 
+    /**
+     * determine whether to stem or not , and if the term is to be stored as uppercase or not
+     * @param termList
+     * @param docID
+     */
     private void buildIndexOnTerms(ArrayList<String> termList, int docID) {
 
         int position = 1;
@@ -202,8 +223,7 @@ public class SpimiInverter implements IIndexer {
         for (String term :
                 termList) {
             try {
-                if (idTermMap.size() == 219)
-                    System.out.println("");
+
                 //this term is no special , check wether it starts with upper or lower
                 if (isOneWord(term)) {
 
@@ -243,6 +263,11 @@ public class SpimiInverter implements IIndexer {
     }
 
 
+    /**
+     * check if the string is not a number
+     * @param word
+     * @return
+     */
     private boolean onlyLetters(String word) {
 
         char c;
@@ -299,8 +324,10 @@ public class SpimiInverter implements IIndexer {
 
                 try {//regular term add
                     ((BufferDataByte) buffer.get(currentTermID)).addInfo(encodedDocID, encodedOnTitle, encodedInfo);
+                    this.currentBufferSize += ((BufferDataByte) buffer.get(currentTermID)).getSize();
                 } catch (Exception e) {
                     buffer.put(currentTermID, new BufferDataByte(currentTermID, encodedDocID, encodedOnTitle, encodedInfo));
+                    this.currentBufferSize += buffer.get(currentTermID).getSize();
                 }
             }
         }
@@ -414,10 +441,6 @@ public class SpimiInverter implements IIndexer {
      */
     private void writeCityBufferToPostingList(String path) {
 
-        if (path.charAt(path.length() - 3) == 'c' && path.charAt(path.length() - 2) == '2' &&
-                path.charAt(path.length() - 1) == '3')
-            System.out.println("path = [" + path + "]");
-
         int index = 0, blocknum = 0, idxtemp;
         // byte[] mainBuffer = new byte[4096]; //4KB - ALU size in windows
         byte[] zero = new byte[]{0}, doublezero = new byte[]{0, 0};
@@ -425,9 +448,8 @@ public class SpimiInverter implements IIndexer {
         Set<Integer> keyset = cityBuffer.keySet();
         Integer[] sorted = keyset.stream().toArray(Integer[]::new);
         Arrays.sort(sorted);
-        //   System.out.println(Arrays.toString(sorted));
         int i = 0;
-        /// Iterator entriesIterator = buffer.entrySet().iterator();
+
         try {
             this.writer.setPath(path);
 
@@ -628,9 +650,8 @@ public class SpimiInverter implements IIndexer {
         Set<Integer> keyset = buffer.keySet();
         Integer[] sorted = keyset.stream().toArray(Integer[]::new);
         Arrays.sort(sorted);
-        //   System.out.println(Arrays.toString(sorted));
         int i = 0;
-        /// Iterator entriesIterator = buffer.entrySet().iterator();
+
         try {
             this.writer.setPath(path);
 
@@ -696,7 +717,6 @@ public class SpimiInverter implements IIndexer {
             String dictTerm = term.toLowerCase();
             Integer[] data = this.termIdMap.get(dictTerm);
             if (data != null) {
-//                System.out.println("should replace : " + this.termIdMap.get(dictTerm));
                 return true;
             }
             return false;
