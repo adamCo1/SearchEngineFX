@@ -1,11 +1,12 @@
 package Engine;
 
 import IO.ReadFile;
+import Indexer.IIndexer;
 import Indexer.SpimiInverter;
+import Parser.IParser;
+import Parser.Parser;
 import Structures.Doc;
-import Structures.Pair;
 import org.apache.commons.io.FileUtils;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,7 +26,7 @@ import java.util.TreeMap;
         private TreeMap<String,Integer[]> termIdTreeMap;
         private HashMap<String, Integer[]> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
         private IParser parser ;
-        private SpimiInverter spimi;
+        private IIndexer spimi;
         private ReadFile reader;
         private DocController docController;
         private Thread readThread , indexThread , parseThread;
@@ -38,7 +39,7 @@ import java.util.TreeMap;
             this.reader = new ReadFile(docController);
         }
 
-        public Engine(SpimiInverter spimi , IParser parser){
+        public Engine(IIndexer spimi , IParser parser){
             this.parser = parser;
             this.spimi = spimi;
             this.docController = new DocController();

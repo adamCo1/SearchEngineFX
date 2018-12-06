@@ -1,8 +1,6 @@
 package IO;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 
 public class PostingWriter {
@@ -20,12 +18,6 @@ public class PostingWriter {
 
     public void setPath(String path) throws IOException {
         this.out = new PrintStream(path);
-    }
-
-    public void write(String word){
-        for(int i = 0 ; i < word.length() ; i++){
-            this.out.write((byte)word.charAt(i));
-        }
     }
 
     public void flush(){

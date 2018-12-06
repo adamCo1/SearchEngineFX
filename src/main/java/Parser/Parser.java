@@ -1,4 +1,4 @@
-package Engine;
+package Parser;
 
 /**
  * Class for parsing text .
@@ -12,16 +12,14 @@ package Engine;
 
 import ReadFromWeb.City;
 import Structures.Doc;
-import Structures.Pair;
 import Structures.TrieTree;
 import sun.awt.Mutex;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import static ReadFromWeb.ReadFromWeb.allCities;
 
-public class Parser implements IParser{
+public class Parser implements IParser {
 
     private ArrayList<String> termList ;
     private LinkedList<List> tokenListBuffers;
@@ -99,27 +97,11 @@ public class Parser implements IParser{
                 current = words[0].charAt(0);
                 words[0] = strategies.partialStripSigns(words[0]);
 
-
-                //OUR RULE - Word Word as one term
-//                if(title == 0 && firstWordAfterPeriod == false && words[0].charAt(words[0].length()-1)!= '.' &&  current >= 64 && current < 90){
-//                    words[1] = getNextWord(startIndex);
-//                    if(startIndex < this.currentText.length() &&  words[1].charAt(0) >= 64 && words[1].charAt(0) < 90){
-//                        startIndex += words[1].length();
-//                        String term = (words[0] + " " + words[1]);
-//                        currentTokenList.add(term);
-//                        continue;
-//                    }
-//                }
-
-                if(words[0].charAt(words[0].length()-1) == '.')
-                    firstWordAfterPeriod = true;
-                else
-                    firstWordAfterPeriod = false;
-
                 if(strategies.isFraction(words[0])){
                     currentTokenList.add(words[0]);
                     continue;
                 }
+
 
                 if (strategies.checkForNumber(words[0])) {// check for all possibilities for a number as the first word
                     words[1] = getNextWord(startIndex);
@@ -153,6 +135,13 @@ public class Parser implements IParser{
                         }
                     }else if(strategies.isFraction(words[1])){
                         startIndex += words[1].length() + 1;
+                        words[2] = getNextWord(startIndex);
+                        if (words[2].toLowerCase().equals(DOLLARS)) {//its <number> <dollars> rule
+                            startIndex += words[2].length() + 1;
+                            currentTokenList.add(strategies.handlePricesWithFraction(words[0],words[1]));
+                            continue;
+
+                        }
                         currentTokenList.add(words[0] + " " + words[1]);
                         continue;
                     }else if(strategies.checkForQuantifiers(words[1])){
@@ -167,7 +156,7 @@ public class Parser implements IParser{
 
                     } else if (strategies.isPercent(words[1])) {//so its <number> < percent>
                         startIndex += words[1].length() + 1;
-                        currentTokenList.add(words[0] + " percent");
+                        currentTokenList.add(words[0] + "%");
                         continue;
                     } else if (strategies.checkForMonth(words[1])) {//so its a month , check for a number after
                         if (strategies.checkForMonthsRange(words[0])) {
@@ -251,8 +240,13 @@ public class Parser implements IParser{
                     } else {//so its '$' at the start with no indicator . <$number> rule
                         String str = words[0].substring(1);
                         if (strategies.checkForNumber(str)) {
-                            currentTokenList.add(words[0].substring(1) + " Dollars");
-                            continue;
+                            if (strategies.stringToInt(str) >= 1000000) {
+                                currentTokenList.add(strategies.handlePricesAlone(str));
+                                continue;
+                            }else{
+                                currentTokenList.add(str + " Dollars");
+                                continue;
+                            }
                         }
                     }
                 }//end of '$' check

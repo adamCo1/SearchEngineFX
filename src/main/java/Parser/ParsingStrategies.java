@@ -1,4 +1,4 @@
-package Engine;
+package Parser;
 
 /**
  * A class to be used by the Parser class . implements alot of functions to check certain rules that the Parser has
@@ -19,7 +19,7 @@ public class ParsingStrategies {
     private DecimalFormat decimalFormat;
 
     public ParsingStrategies(){
-        this.decimalFormat = new DecimalFormat("#.##");
+        this.decimalFormat = new DecimalFormat("#.#####");
         initializeDictionaries();
     }
 
@@ -83,7 +83,7 @@ public class ParsingStrategies {
                 put("Thousand","K");
                 put("Million","M");
                 put("Trillion","T");
-                put("Billdion","B");
+                put("Billion","B");
                 put("thousand","K");
                 put("million","M");
                 put("billion","B");
@@ -144,6 +144,7 @@ public class ParsingStrategies {
             while(i++ < 122)
                 add((char)i);
 
+          //  add(',');
             add('.');
             add('-');
             add('%');
@@ -247,16 +248,61 @@ public class ParsingStrategies {
         return temp.equals("percent") || temp.equals("percentage") ;
     }
 
+    private String fromBNtoM(String number){
+        int num ;
+        double dnum;
+        String ans = "";
+        if(number.indexOf('.') == -1) {
+            num = stringToInt(number);
+            return ans+num*1000;
+        }else{
+            dnum = stringToDouble(number);
+            return ans+dnum*1000;
+        }
+    }
+
     /**
      * handle prices withour indicator . e.g <Number> <Dollars>
      * @param number
      * @return
      */
-    public String handlePricesWithoutIndicators(String number){
-        return ""+number+" Dollars";
+    public String handlePricesWithoutIndicators(String number) {
+        String num = "";
+        if (number.charAt(number.length() - 1) == 'm') {
+            num = handleNumbersWithIndicators(number, "million");
+            return num.substring(0,num.length()-1)+ " M Dollars";
+        }
+        if (number.charAt(number.length() - 1) == 'n'){
+            num = handleNumbersWithIndicators(number, "billion");
+            return fromBNtoM(num.substring(0,num.length()-1)) + " M Dollars" ;
+        }
+
+        return ""+num.substring(0,num.length()-1)+" " +num.charAt(num.length()-1) +" Dollars";
     }
 
+    public String handlePricesWithFraction(String number , String fraction){
+        return number+" "+fraction+" Dollars";
+    }
+
+
     public String handleNumbersWithIndicatorsNoChange(String number , String indicator){
+
+
+        if(indicator.equals("trillion") || indicator.equals("Trillion")){
+            double dnum;
+            int inum;
+            if(number.indexOf('.') != -1){
+                dnum = stringToDouble(number);
+                dnum *= 1000 ;
+                number = ""+dnum;
+            }else{
+                inum = stringToInt(number);
+                inum *= 1000;
+                number = ""+inum;
+            }
+            indicator = "billion";
+        }
+
 
         String indic = this.indicatorsDict.get(indicator.toLowerCase());
         return number+indic;
@@ -282,7 +328,7 @@ public class ParsingStrategies {
         for(int i = 0 ; i < word.length()-1 ; i++)
             ans += word.charAt(i);
 
-        return ans + " percent";
+        return ans + "%";
     }
 
     /**
@@ -294,13 +340,23 @@ public class ParsingStrategies {
     public String handleNumbersWithIndicators(String number , String indicator){
 
         String ans = "";
+        int index = number.indexOf('.');
         indicator = this.indicatorsDict.get(indicator.toLowerCase());
         if(indicator.equals("K"))
-            return ans + stringToDouble(number) + indicator;
+            if(index == -1)
+                return stringToInt(number)+indicator;
+            else
+                return ans + stringToDouble(number) + indicator;
         else if (indicator.equals("M"))
-            return ans + stringToDouble(number) + indicator;
+            if(index == -1)
+                return stringToInt(number) + indicator;
+            else
+                return ans + stringToDouble(number) + indicator;
         else if(indicator.equals("B"))
-            return ans + stringToDouble(number) + indicator;
+            if(index == -1)
+                return stringToInt(number)+indicator;
+            else
+                return ans + stringToDouble(number) + indicator;
 
         return "INDICATOR NOT FOUND";
     }
@@ -313,7 +369,27 @@ public class ParsingStrategies {
      */
     public String handleUsDollars(String number , String indicator){
         int factor = getIndicatorFactor(indicator);
-        return "" + decimalFormat.format(stringToDouble(number)*factor).toCharArray() + " M Dollars";
+        return "" + decimalFormat.format(stringToDouble(number)*factor).toString() + " M Dollars";
+    }
+
+
+    public String handlePricesAlone(String number){
+        int index = number.indexOf('.');
+        String ans = "";
+
+        if(index == -1){
+            int num = stringToInt(number);
+            if(num >= 1000000)
+                num /= 1000000;
+            ans += num ;
+        }else{
+            double num = stringToDouble(number);
+            if(num >= 1000000)
+                num /= 1000000;
+            ans += num;
+        }
+
+        return ans+" M Dollars";
     }
 
     /**
@@ -348,19 +424,17 @@ public class ParsingStrategies {
     public String handleNumbersAlone(String number){
 
         String ans = "";
-
-        try {
+        stripSigns(number);
+        int dotindex = number.indexOf('.');
+        if(dotindex == -1) {
             //Integer num = Integer.parseInt(number);
             int num = stringToInt(number);
             ans = handleIntNumbers(num);
-        }catch (Exception e){
-            try{
+        }else{
                 Double num = stringToDouble(number);
                 ans = handleDoubleNumbers(num);
-            }catch (Exception e2){
-                System.out.println("well its not a number (numbers alone): " + number);
             }
-        }
+
         return ans;
     }
 
@@ -391,7 +465,7 @@ public class ParsingStrategies {
 
         if(num < 1000)
             return "" + num;
-        else if(num >= 1000 && num <= 1000*1000)
+        else if(num >= 1000 && num < 1000*1000)
             return "" + num/1000 + "K";
         else if(num >= 1000*1000 && num < 1000*1000*1000)
             return "" + num/(1000*1000) + "M";
@@ -416,6 +490,7 @@ public class ParsingStrategies {
 
         return 1;
     }
+
 
     /**
      * check if a number is in the months range 01 - 31
@@ -572,17 +647,27 @@ public class ParsingStrategies {
      * @return the number it represents
      */
     public int stringToInt(String number){
-        int i = 0 , ans = 0 , len = number.length();
+        int i = 0 , ans = 0 ;
         boolean isNeg = false;
 
+        String fixednum = "";
+        if(number.charAt(number.length()-1) == 'm')
+            fixednum = number.substring(0,number.length()-1);
+        else if(number.charAt(number.length()-1) == 'n')
+            fixednum = number.substring(0,number.length()-2);
+        else
+            fixednum = number;
+
+        int len = fixednum.length();
+
         //check if negative
-        if (number.charAt(0) == '-') {
+        if (fixednum.charAt(0) == '-') {
             isNeg = true;
             i = 1;
         }
         while( i < len) {
             ans *= 10;
-            ans += number.charAt(i++) - '0'; //Minus the ASCII code of '0' to get the value of the charAt(i++).
+            ans += fixednum.charAt(i++) - '0'; //Minus the ASCII code of '0' to get the value of the charAt(i++).
         }
 
         if (isNeg)
@@ -597,21 +682,32 @@ public class ParsingStrategies {
      * @return the number it represents
      */
     public double stringToDouble(String str) {
+
+        String fixednum = "";
+
+        if(str.charAt(str.length()-1) == 'm')
+            fixednum = str.substring(0,str.length()-1);
+        else if(str.charAt(str.length()-1) == 'n')
+            fixednum = str.substring(0,str.length()-2);
+
+        else
+            fixednum = str;
+
         double num = 0;
         double num2 = 0;
-        int idForDot = str.indexOf('.');
+        int idForDot = fixednum.indexOf('.');
         boolean isNeg = false;
         String st;
         int start = 0;
-        int end = str.length();
+        int end = fixednum.length();
 
         if (idForDot != -1) {
-            st = str.substring(0, idForDot);
-            for (int i = str.length() - 1; i >= idForDot + 1; i--) {
-                num2 = (num2 + str.charAt(i) - '0') / 10;
+            st = fixednum.substring(0, idForDot);
+            for (int i = fixednum.length() - 1; i >= idForDot + 1; i--) {
+                num2 = (num2 + fixednum.charAt(i) - '0') / 10;
             }
         } else {
-            st = str;
+            st = fixednum;
         }
 
         if (st.charAt(0) == '-') {
@@ -650,8 +746,17 @@ public class ParsingStrategies {
 
         while (i < len) {
             char c = number.charAt(i);
-            if (!(c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9' || c == '0' || c == '.'))
-                return false;
+            if (!(c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9' || c == '0' || c == '.' || c==',')){
+                if(c == 'b' && i == number.length()-2) {
+                    i++;
+                    continue;
+                }else if((c == 'n' || c == 'm') && i == number.length()-1) {
+                    i++;
+                    continue;
+                }else
+                    return false;
+
+            }
             i += 1;
         }
         return true;
