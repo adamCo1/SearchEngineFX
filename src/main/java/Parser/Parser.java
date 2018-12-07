@@ -103,6 +103,34 @@ public class Parser implements IParser {
                 }
 
 
+                if (current == DOLLAR_SIGN && words[0].length()>1 && words[0].charAt(1) != '$' && strategies.checkForNumber(words[0].substring(1))) {
+                    //for if next words is a size indicator
+                    words[1] = getNextWord(startIndex);
+                    words[1] = strategies.partialStripSigns(words[1]);
+                    if (strategies.isIndicator(words[1])) {
+                        startIndex += words[1].length() + 1;
+                        currentTokenList.add(strategies.handleDollarsignWithIndicator(words[0].substring(1), words[1]));
+                        continue;
+                    } else {//so its '$' at the start with no indicator . <$number> rule
+                        String str = words[0].substring(1);
+                        if (strategies.checkForNumber(str)) {
+                            if (strategies.stringToInt(str) >= 1000000) {
+                                currentTokenList.add(strategies.handlePricesAlone(str));
+                                continue;
+                            }else{
+                                currentTokenList.add(str + " Dollars");
+                                continue;
+                            }
+                        }
+                    }
+                }//end of '$' check
+                else {//check for '%'
+                    if (words[0].length() > 1 && words[0].charAt(words[0].length() - 1) == PERCENT_SIGN) {// <number%> rule
+                        currentTokenList.add(strategies.handlePercents(words[0]));
+                        continue;
+                    }
+                }
+
                 if (strategies.checkForNumber(words[0])) {// check for all possibilities for a number as the first word
                     words[1] = getNextWord(startIndex);
                     words[1] = strategies.partialStripSigns(words[1]);
@@ -229,7 +257,7 @@ public class Parser implements IParser {
 
                     }
                 }
-
+/**
                 if (current == DOLLAR_SIGN && strategies.checkForNumber(words[0].substring(1))) {
                     //for if next words is a size indicator
                     words[1] = getNextWord(startIndex);
@@ -263,7 +291,7 @@ public class Parser implements IParser {
                     currentTokenList.add(words[0]);
                     continue;
                 }
-
+**/
 
                 if(words[0].equals(_BETWEEN)){//check for the range rules
                     words[1] = getNextWord(startIndex);

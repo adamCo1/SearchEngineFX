@@ -140,7 +140,6 @@ public class PostingBuffer {
             this.index = 0;
             in.close();
         } catch (Exception e) {//close the file and throw
-
             in.close();
             throw e;
         }

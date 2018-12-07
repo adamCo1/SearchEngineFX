@@ -1,5 +1,6 @@
 package Engine;
 
+import Indexer.VariableByteCode;
 import org.junit.jupiter.api.Test;
 
 class EngineTest {
@@ -7,9 +8,9 @@ class EngineTest {
     @Test
     public void testEngine() throws Exception{
 
-        String corpusPath = "C:\\Users\\adam\\Corpus2";
-        Engine engine = new Engine(true,corpusPath);
-       // engine.run();
+        VariableByteCode vb = new VariableByteCode();
+        byte[] num = new byte[]{-128};
+        System.out.println(vb.decodeNumber(num));
     }
 
 

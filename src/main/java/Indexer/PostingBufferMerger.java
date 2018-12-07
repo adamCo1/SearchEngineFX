@@ -2,6 +2,7 @@ package Indexer;
 
 import IO.PostingWriter;
 import Structures.Pair;
+import Structures.PostingDataStructure;
 
 import java.io.EOFException;
 import java.io.File;
@@ -23,12 +24,12 @@ public class PostingBufferMerger {
     private ArrayList<PostingBuffer> buffers;
     private byte[] mainBuffer;
     private int bufferIndex, pathIndex;
-    private HashMap<String,Integer[]> termIdMap;
+    private HashMap<String,PostingDataStructure> termIdMap;
     private ArrayList<String> outPaths;
     private PostingWriter writer;
     private SpimiInverter spimi;
 
-    public PostingBufferMerger(HashMap<String,Integer[]> termIdMap , VariableByteCode vb, SpimiInverter spimi, ArrayList<String> paths, ArrayList<String> docPaths, ArrayList<String> cityPaths, String targetPath) {
+    public PostingBufferMerger(HashMap<String, PostingDataStructure> termIdMap , VariableByteCode vb, SpimiInverter spimi, ArrayList<String> paths, ArrayList<String> docPaths, ArrayList<String> cityPaths, String targetPath) {
         this.spimi = spimi;
         this.targetPath = targetPath;
         this.termIdMap = termIdMap;
@@ -154,6 +155,13 @@ public class PostingBufferMerger {
         this.writer.close();
     }
 
+    private byte[] encode(int number){
+        LinkedList<Integer> num = new LinkedList<Integer>(){{
+            add(number);
+        }};
+
+        return this.vb.encode(num);
+    }
     /**
      * move all the needed data on a current term to the main buffer
      * @param termID
@@ -207,9 +215,9 @@ public class PostingBufferMerger {
     private void updatePositionOntermMap(int termID , int outIndicator) {
         try {
             String term = this.spimi.getTermByID(termID);
-            this.termIdMap.get(term)[2] = this.blockNum;
-            this.termIdMap.get(term)[3] = this.bufferIndex;
-            this.termIdMap.get(term)[4] = outIndicator;
+            this.termIdMap.get(term).setBlockNum(encode(this.blockNum));
+            this.termIdMap.get(term).setIndex(encode(this.bufferIndex));
+            this.termIdMap.get(term).setOut(encode(outIndicator));
         }catch (Exception e){
                // e.printStackTrace();
         }

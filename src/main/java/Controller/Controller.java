@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 
 import javax.swing.plaf.PanelUI;
 import java.io.File;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -117,6 +118,7 @@ public class Controller {
             this.dictResult.addAll(d.keySet());
             termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
             tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[0].toString()));
+            tfCol.setComparator(new IntComparator());
             this.tableView.setItems(dictResult);
         }
 

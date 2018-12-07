@@ -6,6 +6,7 @@ import Indexer.SpimiInverter;
 import Parser.IParser;
 import Parser.Parser;
 import Structures.Doc;
+import Structures.PostingDataStructure;
 import org.apache.commons.io.FileUtils;
 import java.io.*;
 import java.util.HashMap;
@@ -24,8 +25,8 @@ import java.util.TreeMap;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
-        private TreeMap<String,Integer[]> termIdTreeMap;
-        private HashMap<String, Integer[]> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
+        private TreeMap<String, PostingDataStructure> termIdTreeMap;
+        private HashMap<String, PostingDataStructure> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
         private IParser parser ;
         private IIndexer spimi;
         private ReadFile reader;
@@ -211,7 +212,7 @@ import java.util.TreeMap;
             this.targetPath = path;
         }
 
-        
+
     /**
      * convert the hashmap to treemap and delete the hashmap from memory
      */
@@ -220,8 +221,8 @@ import java.util.TreeMap;
             Iterator iterator = this.termIdMap.entrySet().iterator();
             while(iterator.hasNext()){
                 Map.Entry entry = (Map.Entry)iterator.next();
-                Integer[] data =(Integer[]) entry.getValue();
-                this.termIdTreeMap.put((String)entry.getKey(),new Integer[]{data[0],data[1],data[2],data[3],data[4]});
+                PostingDataStructure data =(PostingDataStructure) entry.getValue();
+                this.termIdTreeMap.put((String)entry.getKey(),new PostingDataStructure((PostingDataStructure)entry.getValue()));
               //  this.termIdMap.remove(entry.getKey());//so no overflow in memory
             }
         }

@@ -6,6 +6,7 @@ import Engine.Stemmer;
 import IO.PostingWriter;
 import Parser.IParser;
 import ReadFromWeb.City;
+import Structures.PostingDataStructure;
 
 import static ReadFromWeb.ReadFromWeb.allCities;
 
@@ -27,7 +28,7 @@ public class SpimiInverter implements IIndexer {
     private HashMap<Integer, ABufferData> cityBuffer;
     private HashMap<Integer, HashMap<Integer, Data>> termInfoMap;
     private HashMap<Integer, String> idTermMap; // ID - TERM map
-    private HashMap<String, Integer[]> termIdMap; //corupusTF at first value , id at second value
+    private HashMap<String, PostingDataStructure> termIdMap; //corupusTF at first value , id at second value
     private ArrayList<String> postingPaths, cityPaths, docPaths;
     private PostingWriter writer;
     private byte[] mainBuffer = new byte[4096];
@@ -324,10 +325,10 @@ public class SpimiInverter implements IIndexer {
 
                 try {//regular term add
                     ((BufferDataByte) buffer.get(currentTermID)).addInfo(encodedDocID, encodedOnTitle, encodedInfo);
-                    this.currentBufferSize += ((BufferDataByte) buffer.get(currentTermID)).getSize();
+                    this.currentBufferSize += ((BufferDataByte) buffer.get(currentTermID)).getDeltaSize();
                 } catch (Exception e) {
                     buffer.put(currentTermID, new BufferDataByte(currentTermID, encodedDocID, encodedOnTitle, encodedInfo));
-                    this.currentBufferSize += buffer.get(currentTermID).getSize();
+                    this.currentBufferSize += buffer.get(currentTermID).getDeltaSize();
                 }
             }
         }
@@ -368,12 +369,12 @@ public class SpimiInverter implements IIndexer {
     private void addTermToDicts(String term, int position, int docID) {
 
         try {
-            int id = (Integer) this.termIdMap.get(term)[1];
+            int id = (Integer) this.termIdMap.get(term).getTermID();
             try {//add another position to the term and increment the total tf by 1
                 Data temp = this.termInfoMap.get(id).get(docID);
                 Integer last = temp.getLastPosition();
                 temp.addPosition(position - last);
-                Integer tf = (Integer) this.termIdMap.get(term)[0];
+                Integer tf = (Integer)this.vb.decodeNumber(this.termIdMap.get(term).getTf());
                 // this.termIdMap.get(term)[0] = tf+1;
 
             } catch (Exception e) {//so no data. maybe this happended cuz of same hash value . fix
@@ -389,11 +390,13 @@ public class SpimiInverter implements IIndexer {
             //Pair pair = this.termToPostingMap.get(id);
             //pair.setFirstValue((Integer)pair.getFirstValue()+1);
             // increment tf by 1
-            this.termIdMap.get(term)[0] = this.termIdMap.get(term)[0] + 1;//
+            int encodedTf = vb.decodeNumber(this.termIdMap.get(term).getTf()) + 1 ;
+            this.termIdMap.get(term).setTf(vb.encodeNumber(encodedTf));//
 
         } catch (Exception e) {
             //  this.termIdMap.put(term,this.key);
-            this.termIdMap.put(term, new Integer[]{1, this.key, 0, 0, 0});
+            this.termIdMap.put(term,new PostingDataStructure(this.key,vb.encodeNumber(1),new byte[]{0},new byte[]{0},new byte[]{0}));
+            //this.termIdMap.put(term, new Integer[]{1, this.key, 0, 0, 0});
             this.idTermMap.put(this.key, term);
             if (!titleSet.contains(term))//so not on title
                 this.termInfoMap.put(new Integer(this.key), new HashMap<Integer, Data>() {{
@@ -715,7 +718,7 @@ public class SpimiInverter implements IIndexer {
 
         try {
             String dictTerm = term.toLowerCase();
-            Integer[] data = this.termIdMap.get(dictTerm);
+            PostingDataStructure data = this.termIdMap.get(dictTerm);
             if (data != null) {
                 return true;
             }
@@ -739,7 +742,7 @@ public class SpimiInverter implements IIndexer {
         try {
             String dictTerm = term.toUpperCase();
             //return this.termIdMap.containsKey(dictTerm);
-            Integer[] data = this.termIdMap.get(dictTerm);
+            PostingDataStructure data = this.termIdMap.get(dictTerm);
             if (data == null) {
                 return false;
             }
@@ -761,30 +764,31 @@ public class SpimiInverter implements IIndexer {
 
         try {
             String upperTerm = term.toUpperCase();
-            Integer[] data = this.termIdMap.get(upperTerm);
+            PostingDataStructure data = this.termIdMap.get(upperTerm);
             if (data != null) {
                 String proccessedTerm = stem(term);
-                Integer termid = (Integer) data[1];
+                Integer termid = data.getTermID();
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
-                Integer tf = (Integer) data[0];
+                Integer tf = vb.decodeNumber(data.getTf());
                 //this.termIdMap.put(upperTerm,termid);
 
                 this.idTermMap.remove(termid);
-                Integer[] otherSmallLetterInstance = this.termIdMap.get(proccessedTerm);
+                PostingDataStructure otherSmallLetterInstance = this.termIdMap.get(proccessedTerm);
                 if (otherSmallLetterInstance != null) {
                     //so need to remove the old id and put the capital id on this instance since for sure capital came first
-                    idTermMap.remove(otherSmallLetterInstance[1]);
-                    idTermMap.put(otherSmallLetterInstance[1], proccessedTerm);
+                    idTermMap.remove(otherSmallLetterInstance.getTermID());
+                    idTermMap.put(otherSmallLetterInstance.getTermID(), proccessedTerm);
                 }
                 else
                     this.idTermMap.put(termid, proccessedTerm);
                 this.termIdMap.remove(upperTerm);
-                Integer[] temp = termIdMap.get(proccessedTerm);
-                if (temp != null)
+                PostingDataStructure temp = termIdMap.get(proccessedTerm);
+                if (temp != null) {
                     //this.termIdMap.get(stemmed)[0]++;
-                    this.termIdMap.put(proccessedTerm, new Integer[]{data[0] + temp[0], temp[1], data[2], data[3], data[4]});
-                else
-                    this.termIdMap.put(proccessedTerm, new Integer[]{data[0], data[1], data[2], data[3], data[4]});
+                    int updatedTF = vb.decodeNumber(data.getTf()) + vb.decodeNumber(temp.getTf());
+                    this.termIdMap.put(proccessedTerm, new PostingDataStructure(data.getTermID(),vb.encodeNumber(updatedTF),data.getBlockNum(),data.getIndex(),data.getOut()));
+                }else
+                    this.termIdMap.put(proccessedTerm, new PostingDataStructure(data));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -841,7 +845,7 @@ public class SpimiInverter implements IIndexer {
 
         try {
             String term = this.idTermMap.get(id);
-            return this.termIdMap.get(term)[0];
+            return vb.decodeNumber(this.termIdMap.get(term).getTf());
         }catch (Exception e) {
             //e.printStackTrace();
             return 0;

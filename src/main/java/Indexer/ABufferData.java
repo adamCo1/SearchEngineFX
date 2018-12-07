@@ -6,7 +6,7 @@ import java.util.LinkedList;
 public abstract class ABufferData {
 
     protected LinkedList<byte[]> data ;
-    protected int termID , size;
+    protected int termID , size , deltaSize;
 
     public ABufferData(){}
 
@@ -18,17 +18,24 @@ public abstract class ABufferData {
         data.addLast(info);
         this.size = (4 + docID.length + onTitle.length + info.length);
         this.termID = termID;
+        this.deltaSize = this.size;
     }
 
     public int getSize(){
         return this.size;
     }
 
+    public int getDeltaSize(){
+        return this.deltaSize;
+    }
+
     public void addInfo(byte[] docid ,byte[] onTitle, byte[] info){
         this.data.addLast(docid);
         this.data.addLast(onTitle);
         this.data.add(info);
+        this.deltaSize = size;
         this.size += (docid.length + onTitle.length + info.length);
+        this.deltaSize = size-deltaSize;
     }
 
     public byte[] getInfo(){

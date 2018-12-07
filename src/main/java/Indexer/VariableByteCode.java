@@ -8,7 +8,7 @@ import java.util.List;
 public class VariableByteCode {
 
 
-    private byte[] encodeNumber(int n) {
+    public byte[] encodeNumber(int n) {
         if (n == 0) {
             return new byte[]{0};
         }
@@ -55,4 +55,21 @@ public class VariableByteCode {
         }
         return numbers;
     }
+
+    public int decodeNumber(byte[] byteStream){
+
+        int n = 0;
+        int ans = 0;
+        for (byte b : byteStream) {
+            if ((b & 0xff) < 128) {
+                n = 128 * n + b;
+            } else {
+                int num = (128 * n + ((b - 128) & 0xff));
+                ans = num;
+                n = 0;
+            }
+        }
+        return ans;
+    }
+
 }
