@@ -210,21 +210,26 @@ public class SpimiInverter {
 
                 //this term is no special , check wether it starts with upper or lower
                 if (isOneWord(term)) {
-
+                    String proccessedTerm=term;
                     if (term.charAt(0) >= 65 && term.charAt(0) <= 90) {
                         //so its capital , check if we saw it with small letters
-                        if (checkExistInDicWithSmallLetters(stem(term))) {
+
+                        if(stemOn)
+                            proccessedTerm=stem(term);
+
+                        if (checkExistInDicWithSmallLetters(proccessedTerm)) {
                             //so store it with letter case
-                            addTermToDicts(stem(term).toLowerCase(), position++, docID);
+                            addTermToDicts(proccessedTerm, position++, docID);
                         } else {
                             //not seen yet so store with capitals
                             addTermToDicts(term.toUpperCase(), position++, docID);
                         }
                     }else{
                         if(onlyLetters(term) && checkExistInDicWithCapitalLetters(term.toUpperCase())){
-
+                            if(stemOn)
+                                proccessedTerm=stem(term);
                             //then fix and replace with small letters
-                            replaceUpperWithLower(term.toLowerCase());
+                            replaceUpperWithLower(term);
                             //and then add to the dict
                             addTermToDicts(stem(term).toLowerCase(), position++, docID);
                             continue;
@@ -737,21 +742,31 @@ public class SpimiInverter {
             String upperTerm = term.toUpperCase();
             Integer[] data = this.termIdMap.get(upperTerm);
             if (data != null) {
-                String stemmed = stem(term);
+                String proccessedTerm = stem(term);
                 Integer termid = (Integer) data[1];
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
                 Integer tf = (Integer) data[0];
                 //this.termIdMap.put(upperTerm,termid);
 
                 this.idTermMap.remove(termid);
-                this.idTermMap.put(termid, stemmed);
+
+                Integer[] otherSmallLetterInstance = this.termIdMap.get(proccessedTerm);
+                if(otherSmallLetterInstance!=null) {
+                    //so need to remove the old id and put the capital id on this instance since for sure capital came first
+                    idTermMap.remove(otherSmallLetterInstance[1]);
+                    idTermMap.put(otherSmallLetterInstance[1],proccessedTerm);
+                }
+
+                     this.idTermMap.put(termid, proccessedTerm);
+
+
                 this.termIdMap.remove(upperTerm);
-                Integer[] temp = termIdMap.get(stemmed);
+                Integer[] temp = termIdMap.get(proccessedTerm);
                 if(temp != null)
                 //this.termIdMap.get(stemmed)[0]++;
-                    this.termIdMap.put(stemmed, new Integer[]{data[0]+temp[0],temp[1], data[2], data[3], data[4]});
+                    this.termIdMap.put(proccessedTerm, new Integer[]{data[0]+temp[0],temp[1], data[2], data[3], data[4]});
                 else
-                    this.termIdMap.put(stemmed,new Integer[]{data[0],data[1],data[2],data[3],data[4]});
+                    this.termIdMap.put(proccessedTerm,new Integer[]{data[0],data[1],data[2],data[3],data[4]});
             }
         } catch (Exception e) {
             e.printStackTrace();

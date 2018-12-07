@@ -1,7 +1,12 @@
 package ReadFromWeb;
 
 
-import com.google.gson.*;
+import Structures.Pair;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import javafx.fxml.FXML;
 
 import java.io.BufferedReader;
@@ -13,6 +18,7 @@ import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import Engine.ParsingStrategies;
 
@@ -28,6 +34,9 @@ public class ReadFromWeb {
      * entries are cities first word in name.
      */
     public static HashMap<String,City> allCities = new HashMap<String, City>();
+
+    public static HashMap<String,Pair<String,Integer>> countrySet = new HashMap<>();
+    public static HashSet<String>countries = new HashSet<>();
 
     /**
      * get all city info from a given API url.
@@ -64,10 +73,33 @@ public class ReadFromWeb {
         //get the city full information
         for (JsonElement c : allCountries) {
             String[] capital = ((JsonObject) c).get("capital").toString().toUpperCase().replaceAll("[,'\".]","").split(" ");
-            String fullCountryName = ((JsonObject) c).get("name").toString().toUpperCase().replace("\"","");
+            String fullCountryName = ((JsonObject) c).get("name").toString().toUpperCase().replace("[,'\".]","");
             String fullCityName = ((JsonObject) c).get("capital").toString().toUpperCase().replaceAll("[,'\".]","");
             long lPopultion = ((JsonObject) c).get("population").getAsLong();
             String popultion = longFormat(lPopultion);
+            int parPos=-1;
+            int endParPos=-1;
+            int numOfWordsInCountryName=1;
+            String tempFullCountryName="";
+            String [] brokenCountry=null;
+            if(fullCountryName.contains("(")) {
+//                System.out.println("country: "+c.getCountry()+" has paranthsis");
+                parPos = fullCountryName.indexOf("(");
+                endParPos = fullCountryName.indexOf(")");
+//                System.out.println("position of paranthsis: "+parPos);
+                System.out.println();
+                tempFullCountryName= fullCountryName.substring(0,parPos-1)+fullCountryName.substring(endParPos+1);
+//                System.out.println(ans);
+            }
+            else{
+                tempFullCountryName = fullCountryName;
+            }
+            brokenCountry = tempFullCountryName.split(" ");
+            if(brokenCountry.length>1) {
+                numOfWordsInCountryName = brokenCountry.length;
+                tempFullCountryName = brokenCountry[0];
+            }
+
 
 
             //now transform the number
@@ -81,11 +113,25 @@ public class ReadFromWeb {
 
                     dictEntry+=" "+capital[i];
                     allCities.put(dictEntry, new City(fullCityName, fullCountryName, currency, popultion, capital.length));
+
+                }
+
+
+
+                countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
+                System.out.println("added: "+tempFullCountryName);
+                for(int i =1; i<numOfWordsInCountryName;i++){
+                    tempFullCountryName+=" " + brokenCountry[i];
+                    countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
+                    System.out.println("added: "+tempFullCountryName);
                 }
 
 
             }
         }
+
+
+
     }
 
     /**

@@ -6,10 +6,7 @@ import java.util.LinkedList;
 
 public class BufferDataByte extends ABufferData {
 
-    /**
-     * key - docID
-     * value - Arraylist , where each odd element is docID and each even element is the info on it
-     */
+
     private LinkedList<byte[]> data ;
     private int termID;
 

@@ -4,6 +4,7 @@ import Engine.Engine;
 
 import java.io.File;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public interface IModel {
 
@@ -15,4 +16,5 @@ public interface IModel {
     void setEngine(Engine engine);
     void runEngine(boolean stemmerStatus);
     TreeMap getDictionary();
+    TreeSet getDocsLang();
 }

@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.IModel;
+import Model.Model;
 import Structures.Pair;
 import View.IView;
 import javafx.beans.property.IntegerProperty;
@@ -10,15 +11,15 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import javax.swing.plaf.PanelUI;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -41,6 +42,9 @@ public class Controller {
     private IntegerProperty idP;
     @FXML
     private TableColumn<String,String> termCol,idCol,tfCol;
+
+    @FXML
+    private ListView<String>listView;
 
     @FXML
     private TableView<String> tableView;
@@ -91,34 +95,69 @@ public class Controller {
         }
     }
     
-    public void handleDisplayDicitionary(){
-        TreeMap<String,Integer[]>d = model.getDictionary();
+    public void handleDisplayDicitionary() {
+        TreeMap<String, Integer[]> d = model.getDictionary();
 
-        TreeMap<Integer,String> dSortByTf = new TreeMap<>();
-        for (String key:d.keySet()
-        ) {
-            dSortByTf.put(d.get(key)[0],key);
+        TreeMap<Integer, String> dSortByTf = new TreeMap<>();
+        for (String key : d.keySet()
+                ) {
+            dSortByTf.put(d.get(key)[0], key);
         }
-        int i = 0 ;
-        for(Integer key:dSortByTf.keySet()){
-            if(i >= dSortByTf.size()-11){
-                System.out.println("Term: "+dSortByTf.get(key)+" TF: "+key);
+        int i = 0;
+        for (Integer key : dSortByTf.keySet()) {
+            if (i >= dSortByTf.size() - 11) {
+                System.out.println("Term: " + dSortByTf.get(key) + " TF: " + key);
             }
             i++;
 
         }
+//        int termCount = 0;
+//        int tfPath = 0;
+//        while(termCount < )
+//        try {
+//            RandomAccessFile fos = new RandomAccessFile("TFsNoStem.txt", "rw");
+//            d = model.getDictionary();
+//            dSortByTf = new TreeMap<>();
+//            for (String key : d.keySet()
+//                    ) {
+//                dSortByTf.put(d.get(key)[0], key);
+//            }
+//
+//            for (Integer key : dSortByTf.keySet()) {
+////            if(i >= dSortByTf.size()-11){
+////                System.out.println("Term: "+dSortByTf.get(key)+"TF: "+key);
+////            }
+////            i++;
+//                fos.writeChars(key + ",");
+//
+//            }
+//            fos.close();
 
-        if (d==null){
-            return;
-        }
-        else {
+            if (d == null) {
+                return;
+            } else {
 
-            this.dictResult = FXCollections.observableArrayList();
-            this.dictResult.addAll(d.keySet());
-            termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-            tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[0].toString()));
-            this.tableView.setItems(dictResult);
-        }
+                this.dictResult = FXCollections.observableArrayList();
+                this.dictResult.addAll(d.keySet());
+                termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+                TreeMap<String, Integer[]> finalD = d;
+                tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(finalD.get(cellData.getValue())[0].toString()));
+                this.tableView.setItems(dictResult);
+            }
+
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+
+    @FXML
+    public void handleDisplayLangs(){
+        ObservableList<String> langList = FXCollections.observableArrayList();
+        langList.addAll(this.model.getDocsLang());
+        this.listView.setItems(langList);
 
     }
 
