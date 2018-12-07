@@ -1,4 +1,4 @@
-package Engine;
+package Parser;
 
 import Structures.Doc;
 
@@ -11,5 +11,5 @@ public interface IParser {
     void parse(String text);
     void setDone(boolean done);
     boolean isDone();
-    void initializeStopWordsTree(String patah);
+    void initializeStopWordsTree(String path);
 }

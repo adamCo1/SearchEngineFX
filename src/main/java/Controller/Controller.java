@@ -11,7 +11,10 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -94,19 +97,19 @@ public class Controller {
             this.view.errorMessage("Could not load a dictionary");
         }
     }
-    
-    public void handleDisplayDicitionary() {
-        TreeMap<String, Integer[]> d = model.getDictionary();
 
-        TreeMap<Integer, String> dSortByTf = new TreeMap<>();
-        for (String key : d.keySet()
-                ) {
-            dSortByTf.put(d.get(key)[0], key);
+    public void handleDisplayDicitionary(){
+        TreeMap<String,Integer[]>d = model.getDictionary();
+
+        TreeMap<Integer,String> dSortByTf = new TreeMap<>();
+        for (String key:d.keySet()
+        ) {
+            dSortByTf.put(d.get(key)[0],key);
         }
-        int i = 0;
-        for (Integer key : dSortByTf.keySet()) {
-            if (i >= dSortByTf.size() - 11) {
-                System.out.println("Term: " + dSortByTf.get(key) + " TF: " + key);
+        int i = 0 ;
+        for(Integer key:dSortByTf.keySet()){
+            if(i <= 10){
+                System.out.println("Term: "+dSortByTf.get(key)+" TF: "+key);
             }
             i++;
 
@@ -133,17 +136,17 @@ public class Controller {
 //            }
 //            fos.close();
 
-            if (d == null) {
-                return;
-            } else {
+        if (d==null){
+            return;
+        }
+        else {
 
-                this.dictResult = FXCollections.observableArrayList();
-                this.dictResult.addAll(d.keySet());
-                termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-                TreeMap<String, Integer[]> finalD = d;
-                tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(finalD.get(cellData.getValue())[0].toString()));
-                this.tableView.setItems(dictResult);
-            }
+            this.dictResult = FXCollections.observableArrayList();
+            this.dictResult.addAll(d.keySet());
+            termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
+            tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[0].toString()));
+            this.tableView.setItems(dictResult);
+        }
 
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();

@@ -211,7 +211,7 @@ public class PostingBufferMerger {
             this.termIdMap.get(term)[3] = this.bufferIndex;
             this.termIdMap.get(term)[4] = outIndicator;
         }catch (Exception e){
-            e.printStackTrace();
+               // e.printStackTrace();
         }
     }
 
@@ -266,7 +266,8 @@ public class PostingBufferMerger {
                                     add(spimi.getTermTF(id));
                                 }};
                                 LinkedList<Byte> allData = buffer.readToEndOfTerm();
-
+                                if(termTF.getFirst().equals(0))
+                                    continue;
                                // moveDataToMainBuffer(termID, termTF, docid, docTF, onTitle, positions);
                                 moveDataToMainBuffer(vb.encode(termID),termTF,allData);
                             }
