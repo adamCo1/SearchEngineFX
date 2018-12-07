@@ -1,26 +1,17 @@
 package Controller;
 
 import Model.IModel;
-import Structures.Pair;
 import View.IView;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
-import javax.swing.plaf.PanelUI;
 import java.io.File;
-import java.util.Comparator;
-import java.util.Map;
 import java.util.TreeMap;
 
 public class Controller {
@@ -42,6 +33,9 @@ public class Controller {
     private IntegerProperty idP;
     @FXML
     private TableColumn<String,String> termCol,idCol,tfCol;
+
+    @FXML
+    private ListView<String> listView;
 
     @FXML
     private TableView<String> tableView;
@@ -121,6 +115,20 @@ public class Controller {
             tfCol.setComparator(new IntComparator());
             this.tableView.setItems(dictResult);
         }
+
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+
+    @FXML
+    public void handleDisplayLangs(){
+        ObservableList<String> langList = FXCollections.observableArrayList();
+        langList.addAll(this.model.getDocsLang());
+        this.listView.setItems(langList);
 
     }
 

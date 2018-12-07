@@ -11,12 +11,16 @@ package Parser;
  */
 
 import ReadFromWeb.City;
+import ReadFromWeb.ReadFromWeb;
 import Structures.Doc;
 import Structures.TrieTree;
 import sun.awt.Mutex;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static ReadFromWeb.ReadFromWeb.allCities;
 
 public class Parser implements IParser {
@@ -32,10 +36,14 @@ public class Parser implements IParser {
     private Mutex mutex = new Mutex();
     private ParsingStrategies strategies;
     private HashMap<String, City> cityDict;
-    private ArrayList<String> docLangs;
+    private TreeSet<String> docLangs;
     private TrieTree stopWordsTrietree;
     private String currentText ;
     private boolean done ;
+    private HashSet<String> hashSetCountries;
+    private TreeSet<String> countries;
+    private static int numberOfDiffrentCounties=0;
+    private Pattern countryPatterns;
 
     public Parser()  {
         this.strategies = new ParsingStrategies();
@@ -44,7 +52,14 @@ public class Parser implements IParser {
         this.stopWordsTrietree = new TrieTree();
         this.done = false;
         this.cityDict = new HashMap<>();
-        this.docLangs = new ArrayList<>();
+        this.docLangs = new TreeSet<>();
+        this.hashSetCountries = new HashSet<>();
+        this.countries = new TreeSet<>();
+        if(allCities.size() == 0)
+            ReadFromWeb.getCities();
+        loadAllCountries();
+//
+        countryPatterns = getCountryPatterns();
 
     }
 
@@ -60,11 +75,98 @@ public class Parser implements IParser {
             //System.out.println("Doc Lang is: "+doc.getDocLang());
             docLangs.add(doc.getDocLang());
         }
+
+
+//        Matcher m = countryPatterns.matcher(doc.getDocText());
+//
+//        m.find();
+//        int numOfGroups = m.groupCount();
+//        while(m.find())
+//            System.out.println(m.group(1)+m.group(2));
+//        for(int i = 0 ; i < numOfGroups ; i++){
+//            if(hashSetCountries.contains(m.group(i).toUpperCase())){
+//                countries.add(m.group(i));
+//            }
+//
+//        }
+//        String [] docText = doc.getDocText().split(" ");
+//        for(int i = 0  ; i < docText.length ; i++){
+//            String currWord=docText[i];
+//            if(docText[i].charAt(0) >= 65 && docText[i].charAt(0) <=90){
+//                if(hashSetCountries.contains(currWord.toUpperCase())) {
+//                    countries.add(currWord);
+//                    continue;
+//                }
+//            int j =1;
+//            boolean stop = false;
+//
+//                while(docText[i+j].charAt(0) >= 65 && docText[i+j].charAt(0) <=90){
+//                    currWord+=" "+docText[i+j];
+//                    j++;
+//                    if(hashSetCountries.contains(currWord.toUpperCase())){
+//                        countries.add(currWord);
+//                        continue;
+//                    }
+//                }
+//            }
+//        }
+
+
         if(doc.getDocOriginCity()!=null &&doc.getDocOriginCity().getName().length()>0)
             cityDict.put(doc.getDocOriginCity().getName().toUpperCase(),doc.getDocOriginCity());
         parseText(doc.getDocTitle(),(byte)1);
 
         parseText(doc.getDocText(),(byte)0);
+    }
+
+    private void loadAllCountries(){
+        int parPos=0;
+        int endParPos=0;
+        for (String cityName:allCities.keySet()
+             ) {
+            String originalCountryName = allCities.get(cityName).getCountry();
+            if(originalCountryName.length() == 0)
+                continue;
+
+
+            if(originalCountryName.contains("(")) {
+//                System.out.println("country: "+c.getCountry()+" has paranthsis");
+                parPos = originalCountryName.indexOf("(");
+                endParPos = originalCountryName.indexOf(")");
+//                System.out.println("position of paranthsis: "+parPos);
+                originalCountryName= originalCountryName.substring(0,parPos-1)+originalCountryName.substring(endParPos+1);
+//                System.out.println(ans);
+            }
+
+                this.countries.add(originalCountryName);
+        }
+
+        for(String countryName:countries){
+            this.hashSetCountries.add(countryName);
+        }
+
+
+    }
+
+
+    private Pattern getCountryPatterns(){
+//        String regex = "(";
+        String regex = "";
+        boolean first = true;
+
+//        for (String countryName: this.countries) {
+//            regex += (first ? "" : "|") + Pattern.quote(countryName);
+//            first = false;
+//        }
+
+        regex+="(Hong Kong)";
+        regex+="(United States)";
+        regex+="(China)";
+
+//        regex += ")";
+        Pattern countryPattern = Pattern.compile(regex);
+        countries = new TreeSet<>();
+        return countryPattern;
     }
 
     public void parseText(String text , byte title) {
@@ -421,8 +523,11 @@ public class Parser implements IParser {
 
 
                 String cityTerm ="";
+                boolean isCity = true;
                 int numOfWordsInCityName = 0;
-                //check if the term is has Capitals
+                int backUpStartIndex = startIndex;
+
+//check if the term is has Capitals
                 if(words[0].charAt(0) >= 65 && words[0].charAt(0) <=90) {
                     //check if the term is a city
                     if (allCities.containsKey(words[0].toUpperCase())) {
@@ -430,33 +535,52 @@ public class Parser implements IParser {
                         //get the number of words inside the city name
                         numOfWordsInCityName = allCities.get(cityTerm).getNumberOfWordsInName();
                         //check if the city name is more than one word
-                        if(numOfWordsInCityName > 1) {
+                        if (numOfWordsInCityName > 1) {
                             //check if the next words are the excepted words of the city name
                             for (int i = 1; i < numOfWordsInCityName; i++) {
                                 words[i] = getNextWord(startIndex);
                                 if (words[i].charAt(0) >= 65 && words[i].charAt(0) <= 90) {
                                     cityTerm += " " + words[i].toUpperCase();
-                                    if(!allCities.containsKey(cityTerm)) {
+                                    if (!allCities.containsKey(cityTerm)) {
+                                        cityTerm = "noCity";
+                                        isCity = false;
                                         break;
-                                    }
-
-                                    else {
-                                        startIndex+=1+words[i].length();
+                                    } else {
+                                        startIndex += 1 + words[i].length();
                                         numOfWordsInCityName = allCities.get(cityTerm).getNumberOfWordsInName();
                                     }
                                 }
 
+
                             }
+
+                            int currCityNameLen = 0;
+                            if (numOfWordsInCityName > 1) {
+                                currCityNameLen = cityTerm.split(" ").length;
+                                if (currCityNameLen != numOfWordsInCityName) {
+                                    isCity = false;
+                                }
+                            }
+
+
+
                         }
-                        if(allCities.containsKey(cityTerm)){
+                        int currOcc = 0;
+
+                        if(allCities.containsKey(cityTerm) && isCity ){
+
                             currentTokenList.add(cityTerm);
                             continue;
+                        }
+                        else{
+                            startIndex = backUpStartIndex+words[0].length()+1;
                         }
 
 
 
                     }
                 }
+
 //                        System.out.println(words[0]);
 
                 if(words[0].length() > 1) {//OUR RULE - 1 char rule
@@ -549,6 +673,7 @@ public class Parser implements IParser {
     }
 
     public void setDone(boolean done){
+        System.out.println(countries.size());
         this.done = done;
         this.getTakeBufferSem.release();
     }
@@ -622,5 +747,9 @@ public class Parser implements IParser {
         }catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    public TreeSet<String> getDocLangs() {
+        return docLangs;
     }
 }

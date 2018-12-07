@@ -45,7 +45,8 @@ public class ReadFile {
      * @param sourcePath the corpus dir
      */
     public void read(String sourcePath) {
-        ReadFromWeb.getCities();
+        if(allCities.size() == 0)
+            ReadFromWeb.getCities();
         int count = 0;
         File corpusDir = new File(sourcePath);
 

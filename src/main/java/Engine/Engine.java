@@ -9,10 +9,7 @@ import Structures.Doc;
 import Structures.PostingDataStructure;
 import org.apache.commons.io.FileUtils;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
      * Class for the engine itself . holds all the parts needed for a search engine to work
@@ -243,6 +240,10 @@ import java.util.TreeMap;
             }catch (IOException e){
                 e.printStackTrace();
             }
+        }
+
+        public TreeSet<String> getDocsLang(){
+            return ((Parser)this.parser).getDocLangs();
         }
     }
 

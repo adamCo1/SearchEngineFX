@@ -5,6 +5,7 @@ import Engine.Engine;
 
 import java.io.File;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class Model implements IModel {
 
@@ -56,4 +57,7 @@ public class Model implements IModel {
     public TreeMap<String,Integer> getDictionary() {
         return this.engine.getTermIDDictionary();
     }
+
+    @Override
+    public TreeSet<String> getDocsLang(){return this.engine.getDocsLang();}
 }
