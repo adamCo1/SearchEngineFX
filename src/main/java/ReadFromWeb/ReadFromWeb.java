@@ -7,20 +7,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import javafx.fxml.FXML;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import Engine.ParsingStrategies;
 
 /**
  * This class is used to retrive and hold needed information about the documents origin cities.
@@ -83,13 +77,10 @@ public class ReadFromWeb {
             String tempFullCountryName="";
             String [] brokenCountry=null;
             if(fullCountryName.contains("(")) {
-//                System.out.println("country: "+c.getCountry()+" has paranthsis");
                 parPos = fullCountryName.indexOf("(");
                 endParPos = fullCountryName.indexOf(")");
-//                System.out.println("position of paranthsis: "+parPos);
-                System.out.println();
                 tempFullCountryName= fullCountryName.substring(0,parPos-1)+fullCountryName.substring(endParPos+1);
-//                System.out.println(ans);
+
             }
             else{
                 tempFullCountryName = fullCountryName;
@@ -119,11 +110,11 @@ public class ReadFromWeb {
 
 
                 countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
-                System.out.println("added: "+tempFullCountryName);
+               // System.out.println("added: "+tempFullCountryName);
                 for(int i =1; i<numOfWordsInCountryName;i++){
                     tempFullCountryName+=" " + brokenCountry[i];
                     countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
-                    System.out.println("added: "+tempFullCountryName);
+                   // System.out.println("added: "+tempFullCountryName);
                 }
 
 

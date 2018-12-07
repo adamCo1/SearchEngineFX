@@ -1,6 +1,8 @@
 package Controller;
 
+import Indexer.VariableByteCode;
 import Model.IModel;
+import Structures.PostingDataStructure;
 import View.IView;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -12,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import java.io.File;
+import java.util.LinkedList;
 import java.util.TreeMap;
 
 public class Controller {
@@ -87,8 +90,9 @@ public class Controller {
     }
 
     public void handleDisplayDicitionary(){
-        TreeMap<String,Integer[]>d = model.getDictionary();
-
+        TreeMap<String, PostingDataStructure> d = model.getDictionary();
+        try{
+/**
         TreeMap<Integer,String> dSortByTf = new TreeMap<>();
         for (String key:d.keySet()
         ) {
@@ -102,27 +106,30 @@ public class Controller {
             i++;
 
         }
-
+**/
         if (d==null){
             return;
         }
         else {
-
+            VariableByteCode vb = new VariableByteCode();
             this.dictResult = FXCollections.observableArrayList();
             this.dictResult.addAll(d.keySet());
             termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-            tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(d.get(cellData.getValue())[0].toString()));
+            tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(getDecodedTf(d.get(cellData.getValue()).getEncodedData(),vb)));
             tfCol.setComparator(new IntComparator());
             this.tableView.setItems(dictResult);
         }
-
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        }catch (Exception e){
+            System.out.println("Error while trying to show dictionary");
+        }
     }
 
+    private String getDecodedTf(byte[] stream , VariableByteCode vb){
+        Integer ans;
+        LinkedList<Integer> tlist = vb.decode(stream);
+        ans = tlist.getFirst();
+        return ans.toString();
+    }
 
     @FXML
     public void handleDisplayLangs(){
@@ -134,13 +141,13 @@ public class Controller {
 
     public void handleSampleRun(){
         String text = this.sampleField.getText();
-        TreeMap<String,Integer[]> map = model.runSample(text,this.stemmerCheckBox.isSelected());
+        TreeMap<String,PostingDataStructure> map = model.runSample(text,this.stemmerCheckBox.isSelected());
 
         this.dictResult = FXCollections.observableArrayList();
         this.dictResult.addAll(map.keySet());
-
+        VariableByteCode vb = new VariableByteCode();
         termCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()));
-        tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(map.get(cellData.getValue())[0].toString()));
+        tfCol.setCellValueFactory(cellData -> new SimpleStringProperty(getDecodedTf(map.get(cellData.getValue()).getEncodedData(),vb)));;
         this.tableView.setItems(dictResult);
 
     }

@@ -10,7 +10,7 @@ import java.util.concurrent.Semaphore;
  * class that uses 2 semaphores to control the flow of documents to the parser
  */
 
-public class DocController {
+public class DocController implements IBufferController {
 
     private final int DOC_NUM = 5;
     private Semaphore putDocSem = new Semaphore(DOC_NUM);
@@ -26,14 +26,14 @@ public class DocController {
      * put a doc only if there is a permit in the putDocSem
      * @param doc
      */
-    public void addDoc(Doc doc) {
+    public void addBuffer(Object doc) {
 
         try {
             //   System.out.println("Number of docs : " + docBuffer.size());
             // mutex.lock();
             this.putDocSem.acquire();
             mutex.lock();
-            this.docBuffer.add(doc);
+            this.docBuffer.add((Doc)doc);
             takeDocSem.release();
             mutex.unlock();
         }catch (InterruptedException e){
@@ -45,7 +45,7 @@ public class DocController {
      * take doc only if theres a permit at the takeDocSem semaphore
      * @return
      */
-    public Doc takeDoc(){
+    public Object getBuffer(){
         try {
             //mutex.lock();
             this.takeDocSem.acquire();

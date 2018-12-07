@@ -3,6 +3,7 @@ package Indexer;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class VariableByteCode {
@@ -41,15 +42,15 @@ public class VariableByteCode {
         return rv;
     }
 
-    public List<Integer> decode(byte[] byteStream) {
-        List<Integer> numbers = new ArrayList<Integer>();
+    public LinkedList<Integer> decode(byte[] byteStream) {
+        LinkedList<Integer> numbers = new LinkedList<Integer>();
         int n = 0;
         for (byte b : byteStream) {
             if ((b & 0xff) < 128) {
                 n = 128 * n + b;
             } else {
                 int num = (128 * n + ((b - 128) & 0xff));
-                numbers.add(num);
+                numbers.addLast(num);
                 n = 0;
             }
         }

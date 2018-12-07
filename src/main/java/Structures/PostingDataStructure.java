@@ -2,72 +2,48 @@ package Structures;
 
 import java.io.Serializable;
 
+/**
+ *Class for holding data for the main dictionary
+ */
+
 public class PostingDataStructure implements Serializable {
 
     private int termID ;
-    private byte[] tf , blockNum , index , out;
+    //private byte[] tf , blockNum , index ,out;
+    private byte[] encodedData;
 
-    public PostingDataStructure(int termID , byte[] tf , byte[] blockNum , byte[] index , byte[] out){
+    public PostingDataStructure(int termID , byte[] encodedData){
         this.termID = termID;
-        this.tf = tf ;
-        this.blockNum = blockNum;
-        this.index = index;
-        this.out = out;
+        this.encodedData = encodedData;
     }
 
     public PostingDataStructure(PostingDataStructure other){
         this.termID = other.termID;
-        copyArr(tf,other.tf);
-        copyArr(blockNum,other.blockNum);
-        copyArr(index,other.index);
-        copyArr(out,other.out);
+        this.encodedData = new byte[other.encodedData.length];
+        copyArr(this.encodedData,other.encodedData);
     }
 
     private void copyArr(byte[] toSave , byte[] toCopy){
         int i = 0;
-        toSave = new byte[toCopy.length];
 
         while(i < toCopy.length)
             toSave[i] = toCopy[i++];
     }
 
+    public byte[] getEncodedData(){
+        return this.encodedData;
+    }
+
     public int getTermID() {
-        return termID;
-    }
-
-    public byte[] getTf() {
-        return tf;
-    }
-
-    public byte[] getBlockNum() {
-        return blockNum;
-    }
-
-    public byte[] getOut() {
-        return out;
-    }
-
-    public byte[] getIndex() {
-        return index;
+        return this.termID;
     }
 
     public void setTermID(int termID) {
         this.termID = termID;
     }
 
-    public void setTf(byte[] tf) {
-        this.tf = tf;
-    }
-
-    public void setIndex(byte[] index) {
-        this.index = index;
-    }
-
-    public void setBlockNum(byte[] blockNum) {
-        this.blockNum = blockNum;
-    }
-
-    public void setOut(byte[] out) {
-        this.out = out;
+    public void setEncodedData(byte[] encodedData) {
+        this.encodedData = new byte[encodedData.length];
+        copyArr(this.encodedData,encodedData);
     }
 }

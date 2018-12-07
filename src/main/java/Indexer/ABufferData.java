@@ -16,7 +16,7 @@ public abstract class ABufferData {
         data.addFirst(docID);
         data.addLast(onTitle);
         data.addLast(info);
-        this.size = (4 + docID.length + onTitle.length + info.length);
+        this.size = (12 + docID.length + onTitle.length + info.length +8*3);
         this.termID = termID;
         this.deltaSize = this.size;
     }
@@ -34,7 +34,7 @@ public abstract class ABufferData {
         this.data.addLast(onTitle);
         this.data.add(info);
         this.deltaSize = size;
-        this.size += (docid.length + onTitle.length + info.length);
+        this.size += (docid.length + onTitle.length + info.length + 8*3);
         this.deltaSize = size-deltaSize;
     }
 

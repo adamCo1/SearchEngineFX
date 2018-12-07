@@ -1,6 +1,7 @@
 package IO;
 
 import Engine.DocController;
+import Engine.IBufferController;
 import ReadFromWeb.City;
 import ReadFromWeb.ReadFromWeb;
 import Structures.Doc;
@@ -23,12 +24,12 @@ import static ReadFromWeb.ReadFromWeb.allCities;
  */
 
 
-public class ReadFile {
+public class ReadFile implements IReader {
     public boolean done = false;
 
-    private DocController docConroller;
+    private IBufferController docConroller;
 
-    public ReadFile(DocController docController) {
+    public ReadFile(IBufferController docController) {
         this.docConroller = docController;
     }
 
@@ -86,7 +87,7 @@ public class ReadFile {
                                 String sDocLang = getDocLang(unProccessedDocOrigin);
                                 Doc newDoc = new Doc(sDocNo, sDocDate, sDocTitle, sDocText, sDocOrigin, sDocAuthor,sDocLang);
 //                                System.out.println(newDoc.getDocOriginCity());
-                                this.docConroller.addDoc(newDoc);
+                                this.docConroller.addBuffer(newDoc);
 
 
                             }

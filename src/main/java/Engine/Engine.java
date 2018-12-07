@@ -1,5 +1,6 @@
 package Engine;
 
+import IO.IReader;
 import IO.ReadFile;
 import Indexer.IIndexer;
 import Indexer.SpimiInverter;
@@ -18,7 +19,7 @@ import java.util.*;
     public class Engine {
 
         private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data";
-        private final int MAX_SIZE_FOR_BUFFERS = 10000000;
+        private final int MAX_SIZE_FOR_BUFFERS = 30720000;//30mb;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
@@ -26,24 +27,27 @@ import java.util.*;
         private HashMap<String, PostingDataStructure> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
         private IParser parser ;
         private IIndexer spimi;
-        private ReadFile reader;
-        private DocController docController;
+        private IReader reader;
+        private IBufferController controller;
         private Thread readThread , indexThread , parseThread;
 
         public Engine(boolean stemmerOn , String corpusPath) {
 
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
-            this.docController = new DocController();
-            this.reader = new ReadFile(docController);
+            this.controller = new DocController();
+            this.reader = new ReadFile(controller);
         }
 
-        public Engine(IIndexer spimi , IParser parser){
+        public Engine(IIndexer spimi , IParser parser , IReader reader , IBufferController controller){
+            this.termIdMap = new HashMap<>();
+            this.idTermMap = new HashMap<>();
+            this.reader = reader;
             this.parser = parser;
             this.spimi = spimi;
-            this.docController = new DocController();
-            this.reader = new ReadFile(docController);
-
+            this.controller = controller;
+            this.reader = new ReadFile(this.controller);
+            spimi.setParser(parser);
 
         }
 
@@ -51,8 +55,8 @@ import java.util.*;
             this.parser = new Parser();
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
-            this.docController = new DocController();
-            this.reader = new ReadFile(docController);
+            this.controller = new DocController();
+            this.reader = new ReadFile(controller);
             this.spimi = new SpimiInverter(termIdMap, idTermMap , parser);
 
         }
@@ -178,7 +182,7 @@ import java.util.*;
 
             try {
                 while (!this.reader.getDone()) {
-                    temp = docController.takeDoc();
+                    temp =(Doc) controller.getBuffer();
                     this.parser.parse(temp);
                     id++;
                 }

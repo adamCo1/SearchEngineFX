@@ -7,6 +7,8 @@ import IO.PostingWriter;
 import Parser.IParser;
 import ReadFromWeb.City;
 import Structures.PostingDataStructure;
+import com.sun.xml.internal.ws.policy.spi.PolicyAssertionValidator;
+import sun.awt.image.ImageWatched;
 
 import static ReadFromWeb.ReadFromWeb.allCities;
 
@@ -102,6 +104,7 @@ public class SpimiInverter implements IIndexer {
                     this.cityBuffer = new HashMap<>();
                     this.currentBufferSize = 0;
                     currentSize = 0;
+
                 } else {//its not too big yet no need to write it . add the temp buffer to the current held buffer
                     if (this.onTitle == 1) {
                         buildIndexOnTerms(tempBuffer, docID);
@@ -225,6 +228,8 @@ public class SpimiInverter implements IIndexer {
                 termList) {
             try {
 
+                if(termIdMap.size() != idTermMap.size())
+                    System.out.println("");
                 //this term is no special , check wether it starts with upper or lower
                 if (isOneWord(term)) {
 
@@ -374,7 +379,6 @@ public class SpimiInverter implements IIndexer {
                 Data temp = this.termInfoMap.get(id).get(docID);
                 Integer last = temp.getLastPosition();
                 temp.addPosition(position - last);
-                Integer tf = (Integer)this.vb.decodeNumber(this.termIdMap.get(term).getTf());
                 // this.termIdMap.get(term)[0] = tf+1;
 
             } catch (Exception e) {//so no data. maybe this happended cuz of same hash value . fix
@@ -387,15 +391,20 @@ public class SpimiInverter implements IIndexer {
                         put(new Integer(docID), new Data(position, (byte) 2));
                 }});
             }
-            //Pair pair = this.termToPostingMap.get(id);
-            //pair.setFirstValue((Integer)pair.getFirstValue()+1);
             // increment tf by 1
-            int encodedTf = vb.decodeNumber(this.termIdMap.get(term).getTf()) + 1 ;
-            this.termIdMap.get(term).setTf(vb.encodeNumber(encodedTf));//
+            //int encodedTf = vb.decodeNumber(this.termIdMap.get(term).getTf()) + 1 ;
+            //this.termIdMap.get(term).setTf(vb.encodeNumber(encodedTf));//
+
+            PostingDataStructure data = this.termIdMap.get(term);
+            LinkedList<Integer> tempList =vb.decode(data.getEncodedData());
+            //tf is first
+            int tft =  tempList.pollFirst();
+            tempList.addFirst(tft+1);
+            data.setEncodedData(vb.encode(tempList));
 
         } catch (Exception e) {
             //  this.termIdMap.put(term,this.key);
-            this.termIdMap.put(term,new PostingDataStructure(this.key,vb.encodeNumber(1),new byte[]{0},new byte[]{0},new byte[]{0}));
+            this.termIdMap.put(term,new PostingDataStructure(this.key,new byte[]{-127,-128,-128,-128}));//3 zeroes
             //this.termIdMap.put(term, new Integer[]{1, this.key, 0, 0, 0});
             this.idTermMap.put(this.key, term);
             if (!titleSet.contains(term))//so not on title
@@ -767,9 +776,9 @@ public class SpimiInverter implements IIndexer {
             PostingDataStructure data = this.termIdMap.get(upperTerm);
             if (data != null) {
                 String proccessedTerm = stem(term);
-                Integer termid = data.getTermID();
+                Integer termid =  data.getTermID();
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
-                Integer tf = vb.decodeNumber(data.getTf());
+                //Integer tf = vb.decodeNumber(data.getTf());
                 //this.termIdMap.put(upperTerm,termid);
 
                 this.idTermMap.remove(termid);
@@ -784,9 +793,12 @@ public class SpimiInverter implements IIndexer {
                 this.termIdMap.remove(upperTerm);
                 PostingDataStructure temp = termIdMap.get(proccessedTerm);
                 if (temp != null) {
-                    //this.termIdMap.get(stemmed)[0]++;
-                    int updatedTF = vb.decodeNumber(data.getTf()) + vb.decodeNumber(temp.getTf());
-                    this.termIdMap.put(proccessedTerm, new PostingDataStructure(data.getTermID(),vb.encodeNumber(updatedTF),data.getBlockNum(),data.getIndex(),data.getOut()));
+                    PostingDataStructure pdata = this.termIdMap.get(term);
+                    LinkedList<Integer> templist = (LinkedList<Integer>)vb.decode(pdata.getEncodedData());
+                    LinkedList<Integer> dlist = (LinkedList<Integer>)vb.decode(data.getEncodedData());
+                    int updatedTF = templist.pollFirst() + dlist.pollFirst();
+                    templist.addFirst(updatedTF);
+                    this.termIdMap.put(proccessedTerm, new PostingDataStructure(data.getTermID(),vb.encode(templist)));
                 }else
                     this.termIdMap.put(proccessedTerm, new PostingDataStructure(data));
             }
@@ -845,7 +857,9 @@ public class SpimiInverter implements IIndexer {
 
         try {
             String term = this.idTermMap.get(id);
-            return vb.decodeNumber(this.termIdMap.get(term).getTf());
+            PostingDataStructure data = this.termIdMap.get(term);
+            LinkedList<Integer> tlist = (LinkedList<Integer>)vb.decode(data.getEncodedData());
+            return tlist.get(0);
         }catch (Exception e) {
             //e.printStackTrace();
             return 0;
@@ -878,4 +892,7 @@ public class SpimiInverter implements IIndexer {
         this.stemOn = stemStatus;
     }
 
+    private LinkedList<Integer> dataDecode(byte[] stream){
+        return (LinkedList<Integer>)this.vb.decode(stream);
+    }
 }

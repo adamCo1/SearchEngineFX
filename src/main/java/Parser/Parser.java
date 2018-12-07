@@ -32,7 +32,7 @@ public class Parser implements IParser {
     private final char DOLLAR_SIGN = '$' , PERCENT_SIGN = '%';
     private int startIndex = 0;
     byte currentOnTitle;
-    Semaphore putBufferSem = new Semaphore(500) , getTakeBufferSem = new Semaphore(0);
+    private Semaphore putBufferSem = new Semaphore(500) , getTakeBufferSem = new Semaphore(0);
     private Mutex mutex = new Mutex();
     private ParsingStrategies strategies;
     private HashMap<String, City> cityDict;

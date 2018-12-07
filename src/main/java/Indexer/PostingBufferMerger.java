@@ -76,7 +76,7 @@ public class PostingBufferMerger {
             temp[i] = list.get(i);
         }
 
-        ArrayList<Integer> ans = (ArrayList<Integer>) vb.decode(temp);
+        LinkedList<Integer> ans = vb.decode(temp);
 
         return ans.get(0);
     }
@@ -215,9 +215,16 @@ public class PostingBufferMerger {
     private void updatePositionOntermMap(int termID , int outIndicator) {
         try {
             String term = this.spimi.getTermByID(termID);
-            this.termIdMap.get(term).setBlockNum(encode(this.blockNum));
-            this.termIdMap.get(term).setIndex(encode(this.bufferIndex));
-            this.termIdMap.get(term).setOut(encode(outIndicator));
+            byte[] encodedData = this.termIdMap.get(term).getEncodedData();
+            LinkedList<Integer> tlist = (LinkedList<Integer>) vb.decode(encodedData);
+            LinkedList<Integer> flist = new LinkedList<Integer>(){{
+               add(tlist.get(0));
+               add(blockNum) ;
+               add(bufferIndex);
+               add(outIndicator);
+            }};
+
+            this.termIdMap.get(term).setEncodedData(vb.encode(flist));
         }catch (Exception e){
                // e.printStackTrace();
         }
