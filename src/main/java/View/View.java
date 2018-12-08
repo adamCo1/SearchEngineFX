@@ -42,7 +42,7 @@ public class View implements IView {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File file = directoryChooser.showDialog(stage);
 
-        if(file.getPath() != null)
+        if(file != null)
             return file.getPath();
 
         return null;

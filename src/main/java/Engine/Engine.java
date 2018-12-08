@@ -78,7 +78,7 @@ import java.util.*;
 
             int maxsize = 40*1000;
             this.targetPath = "D:\\sample";
-            this.parser.initializeStopWordsTree("C:\\Users\\adam\\Corpus2");
+            this.parser.initializeStopWordsTreeAndStrategies("C:\\Users\\adam\\Corpus2");
             this.spimi.setStemOn(stemmerOn);
             this.spimi.setTargetPath(this.targetPath);
             //this.spimi.setParser(this.parser);
@@ -119,7 +119,7 @@ import java.util.*;
             this.spimi.setParser(this.parser);
             this.spimi.setStemOn(stemmerStatus);
             this.spimi.setTargetPath(this.targetPath);
-            this.parser.initializeStopWordsTree(corpusPath);
+            this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
             //initialize target path for spimi
 
             String status = "OFF";
@@ -132,6 +132,7 @@ import java.util.*;
                 indexThread = new Thread(() -> this.spimi.index(MAX_SIZE_FOR_BUFFERS));
                 parseThread = new Thread(() -> parse());
                 System.out.println("Starting");
+                Thread.sleep(200);
                 long t1 = System.nanoTime();
                 readThread.start();
                 indexThread.start();
@@ -237,6 +238,9 @@ import java.util.*;
             this.idTermMap = new HashMap<>();
             this.termIdTreeMap = new TreeMap<>();
             this.termIdMap = new HashMap<>();
+            this.reader.reset();
+            this.parser.reset();
+            this.spimi.reset();
 
             try{
                 FileUtils.cleanDirectory(file);
@@ -244,6 +248,7 @@ import java.util.*;
             }catch (IOException e){
                 e.printStackTrace();
             }
+        System.out.println("All resources deleted and reseted ");
         }
 
         public TreeSet<String> getDocsLang(){

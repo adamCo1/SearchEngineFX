@@ -37,6 +37,9 @@ public class Doc {
     }
 
     public String getDocTitle() {
+        if(this.docTitle == null)
+            return "";
+
         return docTitle;
     }
 
@@ -50,6 +53,13 @@ public class Doc {
 
     public City getDocOriginCity() {
         return docOriginCity;
+    }
+
+    public String getOriginCity(){
+        if(this.docOriginCity == null)
+            return "";
+
+        return this.docOriginCity.getName();
     }
 
     public String getDocAuthor() {

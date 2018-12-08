@@ -75,9 +75,12 @@ public class Controller {
         this.model.runEngine(stemmerStatus);
     }
 
-    public void handleBrowseButtonTargetPath(){
-        this.targetPathField.setText(this.view.showDirectoryBrowser((Stage)this.anchorPane.getScene().getWindow()));
-        this.model.setTargetPath(targetPathField.getText());
+    public void handleBrowseButtonTargetPath() {
+        String text = this.view.showDirectoryBrowser((Stage) this.anchorPane.getScene().getWindow());
+        if (text != null) {
+            this.targetPathField.setText(text);
+            this.model.setTargetPath(targetPathField.getText());
+        }
     }
 
     public void handleLoadDictionary() {
@@ -152,9 +155,12 @@ public class Controller {
 
     }
 
-    public void handleBrowseButtonCorpusPath(){
-        this.corpusPathField.setText(this.view.showDirectoryBrowser((Stage)this.anchorPane.getScene().getWindow()));
-        model.setCorpusPath(this.corpusPathField.getText());
+    public void handleBrowseButtonCorpusPath() {
+        String text = this.view.showDirectoryBrowser((Stage) this.anchorPane.getScene().getWindow());
+        if (text != null) {
+            this.corpusPathField.setText(text);
+            model.setCorpusPath(this.corpusPathField.getText());
+        }
     }
 
     public void setView(IView view){

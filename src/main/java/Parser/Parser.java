@@ -13,12 +13,12 @@ package Parser;
 import ReadFromWeb.City;
 import ReadFromWeb.ReadFromWeb;
 import Structures.Doc;
+import Structures.TokensStructure;
 import Structures.TrieTree;
 import sun.awt.Mutex;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Semaphore;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static ReadFromWeb.ReadFromWeb.allCities;
@@ -26,8 +26,7 @@ import static ReadFromWeb.ReadFromWeb.allCities;
 public class Parser implements IParser {
 
     private ArrayList<String> termList ;
-    private LinkedList<List> tokenListBuffers;
-
+    private LinkedList<TokensStructure> tokenListBuffers;
     private final String USDOLALRS = "U.S." , DOLLARS = "dollars" ,_AND = "and" , _BETWEEN = "between";
     private final char DOLLAR_SIGN = '$' , PERCENT_SIGN = '%';
     private int startIndex = 0;
@@ -65,58 +64,22 @@ public class Parser implements IParser {
 
     public void parse(String text){
 
-        parseText(text,(byte)1);
-        parseText(text,(byte)0);
+        //parseText(text,(byte)1);
+       // parseText(text,(byte)0);
     }
 
     public void parse(Doc doc){
 
         if(doc.getDocLang().length()>0) {
-            //System.out.println("Doc Lang is: "+doc.getDocLang());
             docLangs.add(doc.getDocLang());
         }
 
 
-//        Matcher m = countryPatterns.matcher(doc.getDocText());
-//
-//        m.find();
-//        int numOfGroups = m.groupCount();
-//        while(m.find())
-//            System.out.println(m.group(1)+m.group(2));
-//        for(int i = 0 ; i < numOfGroups ; i++){
-//            if(hashSetCountries.contains(m.group(i).toUpperCase())){
-//                countries.add(m.group(i));
-//            }
-//
-//        }
-//        String [] docText = doc.getDocText().split(" ");
-//        for(int i = 0  ; i < docText.length ; i++){
-//            String currWord=docText[i];
-//            if(docText[i].charAt(0) >= 65 && docText[i].charAt(0) <=90){
-//                if(hashSetCountries.contains(currWord.toUpperCase())) {
-//                    countries.add(currWord);
-//                    continue;
-//                }
-//            int j =1;
-//            boolean stop = false;
-//
-//                while(docText[i+j].charAt(0) >= 65 && docText[i+j].charAt(0) <=90){
-//                    currWord+=" "+docText[i+j];
-//                    j++;
-//                    if(hashSetCountries.contains(currWord.toUpperCase())){
-//                        countries.add(currWord);
-//                        continue;
-//                    }
-//                }
-//            }
-//        }
-
-
         if(doc.getDocOriginCity()!=null &&doc.getDocOriginCity().getName().length()>0)
             cityDict.put(doc.getDocOriginCity().getName().toUpperCase(),doc.getDocOriginCity());
-        parseText(doc.getDocTitle(),(byte)1);
 
-        parseText(doc.getDocText(),(byte)0);
+        parseText(doc,(byte)1);
+        parseText(doc,(byte)0);
     }
 
     private void loadAllCountries(){
@@ -150,55 +113,49 @@ public class Parser implements IParser {
 
 
     private Pattern getCountryPatterns(){
-//        String regex = "(";
+
         String regex = "";
         boolean first = true;
-
-//        for (String countryName: this.countries) {
-//            regex += (first ? "" : "|") + Pattern.quote(countryName);
-//            first = false;
-//        }
 
         regex+="(Hong Kong)";
         regex+="(United States)";
         regex+="(China)";
 
-//        regex += ")";
         Pattern countryPattern = Pattern.compile(regex);
         countries = new TreeSet<>();
         return countryPattern;
     }
 
-    public void parseText(String text , byte title) {
+    public void parseText(Doc doc , byte title) {
 
+        if(title == 1)
+            this.currentText = doc.getDocTitle();
+        else
+            this.currentText = doc.getDocText();
 
-        this.currentText = text ;
         this.currentOnTitle = title;
         ArrayList<String> currentTokenList = new ArrayList<>();
         String[] words = new String[6];
         //int startindex = 0;
-        boolean firstWordAfterPeriod = false;
         this.startIndex = 0;
         char current;
         int len = this.currentText.length();
-        int position = 0 , goback = 0 ;
+        int  goback = 0 ;
 
         // System.out.println("1");
         // System.out.println(docID);
         while (startIndex < len) {
-            position += 1;
             try {
 
 
                 words[0] = getNextWord(startIndex);
-
                 if(words[0].equals(""))
                     continue;
 
                 startIndex += words[0].length() + 1;//forward the pointer
                 current = words[0].charAt(0);
                 words[0] = strategies.partialStripSigns(words[0]);
-
+                words[0] = strategies.stripFirstWnwantedSigns(words[0]);
                 if(strategies.isFraction(words[0])){
                     currentTokenList.add(words[0]);
                     continue;
@@ -228,7 +185,7 @@ public class Parser implements IParser {
                 }//end of '$' check
                 else {//check for '%'
                     if (words[0].length() > 1 && words[0].charAt(words[0].length() - 1) == PERCENT_SIGN) {// <number%> rule
-                        currentTokenList.add(strategies.handlePercents(words[0]));
+                        currentTokenList.add(strategies.handlePercents(strategies.stripSigns(words[0])));
                         continue;
                     }
                 }
@@ -515,9 +472,6 @@ public class Parser implements IParser {
                 startIndex -= goback;
                 goback = 0;
 
-                words[0] = this.strategies.stripSigns(words[0]);
-
-
                 if(words[0].equals("") || isStopWord(words[0].toLowerCase()))
                     continue;
 
@@ -550,10 +504,7 @@ public class Parser implements IParser {
                                         numOfWordsInCityName = allCities.get(cityTerm).getNumberOfWordsInName();
                                     }
                                 }
-
-
                             }
-
                             int currCityNameLen = 0;
                             if (numOfWordsInCityName > 1) {
                                 currCityNameLen = cityTerm.split(" ").length;
@@ -561,9 +512,6 @@ public class Parser implements IParser {
                                     isCity = false;
                                 }
                             }
-
-
-
                         }
                         int currOcc = 0;
 
@@ -575,13 +523,21 @@ public class Parser implements IParser {
                         else{
                             startIndex = backUpStartIndex+words[0].length()+1;
                         }
-
-
-
                     }
                 }
 
 //                        System.out.println(words[0]);
+
+                if(strategies.checkForNumber(words[0]))
+                    words[0] = strategies.handleNumbersAlone(words[0]);
+
+                if(words[0].indexOf('-')!=-1 && words[0].charAt(words[0].length()-1) != '-'){
+                    currentTokenList.add(words[0]);
+                    continue;
+                }
+
+
+                words[0] = this.strategies.stripSigns(words[0]);
 
                 if(words[0].length() > 1) {//OUR RULE - 1 char rule
                     if(noUpper(words[0]))
@@ -592,14 +548,16 @@ public class Parser implements IParser {
                 }
 
             }catch(Exception e){
-                //  System.out.println(text.length());
-                // System.out.println(startIndex);
             }
 
         }//end while
-       // System.out.println(currentTokenList);
-        storeBuffer(currentTokenList);
-
+        try {
+            storeBuffer(new TokensStructure(deepCopy(currentTokenList), doc.getOriginCity(), doc.getDocId(), doc.getDocLang(),
+                    doc.getDocType(), doc.getDocAuthor()));
+        }catch (Exception e){
+            System.out.println(doc);
+            throw e;
+        }
     }
 
     private boolean isWordsAndNumbers(String word){
@@ -673,9 +631,26 @@ public class Parser implements IParser {
     }
 
     public void setDone(boolean done){
-        System.out.println(countries.size());
+       // System.out.println(countries.size());
         this.done = done;
+        this.stopWordsTrietree = null;
+        this.strategies = null;
         this.getTakeBufferSem.release();
+    }
+
+    public void reset(){
+        this.strategies = new ParsingStrategies();
+        this.tokenListBuffers = new LinkedList<>();
+        this.termList = new ArrayList<>();
+        this.stopWordsTrietree = new TrieTree();
+        this.done = false;
+        this.cityDict = new HashMap<>();
+        this.docLangs = new TreeSet<>();
+        this.hashSetCountries = new HashSet<>();
+        this.countries = new TreeSet<>();
+        if(allCities.size() == 0)
+            ReadFromWeb.getCities();
+        loadAllCountries();
     }
 
     public boolean isDone(){
@@ -697,11 +672,11 @@ public class Parser implements IParser {
      * add a buffer to the buffer list . to be taken by the indexer
      * @param buffer buffer to be saved
      */
-    private void storeBuffer(ArrayList<String> buffer) {
+    private void storeBuffer(TokensStructure buffer) {
         try {
             this.putBufferSem.acquire();
             mutex.lock();
-            this.tokenListBuffers.addLast(deepCopy(buffer));
+            this.tokenListBuffers.addLast(buffer);
             this.getTakeBufferSem.release();
             mutex.unlock();
         }catch (Exception e){
@@ -712,11 +687,11 @@ public class Parser implements IParser {
      * get a buffer of termID - info map
      * @return hashmap<ID,DATA> containing all the data on a term in the text
      */
-    public ArrayList<String> getBuffer(){
+    public TokensStructure getBuffer(){
         try {
             this.getTakeBufferSem.acquire();
             mutex.lock();
-            ArrayList<String> buff = (ArrayList<String>)this.tokenListBuffers.poll();
+            TokensStructure buff = this.tokenListBuffers.poll();
             this.putBufferSem.release();
             mutex.unlock();
             return buff;
@@ -741,8 +716,11 @@ public class Parser implements IParser {
         }
     }
 
-    public void initializeStopWordsTree(String path) {
+    public void initializeStopWordsTreeAndStrategies(String path) {
         try {
+            this.strategies = new ParsingStrategies();
+            this.stopWordsTrietree = new TrieTree();
+            this.done = false;
             this.stopWordsTrietree.insertFromTextFile(path + "\\stoplist.txt");
         }catch (IOException e){
             e.printStackTrace();

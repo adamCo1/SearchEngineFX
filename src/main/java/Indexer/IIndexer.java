@@ -8,4 +8,5 @@ public interface IIndexer {
     void setParser(IParser parser);
     void setStemOn(boolean stemOn);
     void setTargetPath(String path);
+    void reset();
 }

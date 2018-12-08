@@ -1,6 +1,5 @@
 package IO;
 
-import Engine.DocController;
 import Engine.IBufferController;
 import ReadFromWeb.City;
 import ReadFromWeb.ReadFromWeb;
@@ -38,6 +37,11 @@ public class ReadFile implements IReader {
 
     public boolean getDone() {
         return this.done;
+    }
+
+    @Override
+    public void reset() {
+        this.done = false;
     }
 
     /**

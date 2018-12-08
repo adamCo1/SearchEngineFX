@@ -4,4 +4,5 @@ public interface IReader {
 
     void read(String path);
     boolean getDone();
+    void reset();
 }

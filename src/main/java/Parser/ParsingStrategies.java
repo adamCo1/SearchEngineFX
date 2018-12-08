@@ -181,6 +181,14 @@ public class ParsingStrategies {
         return ans;
     }
 
+    public String stripFirstWnwantedSigns(String word){
+
+        while(word.length() > 0 && word.charAt(0) == '-' || word.charAt(0) == '.' || word.charAt(0) == ',')
+            word = word.substring(1);
+
+        return word;
+    }
+
     /**
      * clean words fom unwanted signs
      * @param word
@@ -325,7 +333,7 @@ public class ParsingStrategies {
 
         String ans = "";
 
-        for(int i = 0 ; i < word.length()-1 ; i++)
+        for(int i = 0 ; i < word.length() ; i++)
             ans += word.charAt(i);
 
         return ans + "%";
@@ -428,8 +436,8 @@ public class ParsingStrategies {
         int dotindex = number.indexOf('.');
         if(dotindex == -1) {
             //Integer num = Integer.parseInt(number);
-            int num = stringToInt(number);
-            ans = handleIntNumbers(num);
+            double num = stringToInt(number);
+            ans = handleDoubleNumbers(num);
         }else{
                 Double num = stringToDouble(number);
                 ans = handleDoubleNumbers(num);

@@ -7,6 +7,7 @@ import IO.PostingWriter;
 import Parser.IParser;
 import ReadFromWeb.City;
 import Structures.PostingDataStructure;
+import Structures.TokensStructure;
 import com.sun.xml.internal.ws.policy.spi.PolicyAssertionValidator;
 import sun.awt.image.ImageWatched;
 
@@ -76,20 +77,22 @@ public class SpimiInverter implements IIndexer {
         int docsin = 0;
         try {
             int currentSize = 0, pathIndicator = 0, cityIncicator = 0;
-            String path = getCanonicalPath() + "p" + pathIndicator, docpath = getCanonicalPath() + "d" + pathIndicator++;
-            String cityPath = getCanonicalPath() + "c" + cityIncicator++;
+            String path = getCanonicalPath() + "p" + pathIndicator, docpath = getCanonicalPath() + "d" + pathIndicator;
+            String cityPath = getCanonicalPath() + "c" + pathIndicator++;
             postingPaths.add(path);
             cityPaths.add(cityPath);
+            docPaths.add(docpath);
             //cityPaths.add(cityPath);
-            ArrayList<String> tempBuffer;
+            TokensStructure tempBuffer;
             HashMap<Integer, ABufferData> buffer = new HashMap<>();
             HashMap<Integer, BufferDataDoc> docBuffer = new HashMap<>();
             int times = 0;
             while (!this.parser.isDone()) {//while parser still parsing , keep taking buffers and index them
                 tempBuffer = parser.getBuffer();
+                ArrayList<String> tempTokenList = tempBuffer.getTokenList();
                 if (tempBuffer == null)
                     break;
-               // if (currentSize++ > 40000) {
+
                  if(currentBufferSize >= maxSize){
                     writePostingList(buffer, path);
                     writeDocumentsPostingList(docBuffer, docpath);
@@ -97,23 +100,25 @@ public class SpimiInverter implements IIndexer {
 
                     buffer = new HashMap<>();
                     docBuffer = new HashMap<>();
-                    path = getCanonicalPath() + "p" + pathIndicator++;
-                    cityPath = getCanonicalPath() + "c" + cityIncicator++;
+                    path = getCanonicalPath() + "p" + pathIndicator;
+                    cityPath = getCanonicalPath() + "c" + pathIndicator;
+                    docpath = getCanonicalPath() + "d"+pathIndicator++;
                     this.postingPaths.add(path);
                     this.cityPaths.add(cityPath);
+                    this.docPaths.add(docpath);
                     this.cityBuffer = new HashMap<>();
                     this.currentBufferSize = 0;
                     currentSize = 0;
 
                 } else {//its not too big yet no need to write it . add the temp buffer to the current held buffer
                     if (this.onTitle == 1) {
-                        buildIndexOnTerms(tempBuffer, docID);
+                        buildIndexOnTerms(tempTokenList, docID);
                         addToBuffer(buffer, this.termInfoMap);
-                        //build the docs index
-                        addToBuffer(docBuffer, docID, this.maxTF, getUniquieNumberOfTerms(tempBuffer));
-                        maxTF = 0;
+                        //addToBuffer(docBuffer, docID, this.maxTF, getUniquieNumberOfTerms(tempTokenList));
+                        addToBuffer(docBuffer,docID,this.maxTF,getUniquieNumberOfTerms(tempTokenList),tempBuffer);
+                        this.maxTF = 0;
                     } else//initialize the title list to check with the terms
-                        initTitleList(tempBuffer);
+                        initTitleList(tempTokenList);
                     this.termInfoMap = new HashMap<>();
                 }
                 if (onTitle == 2)
@@ -124,15 +129,17 @@ public class SpimiInverter implements IIndexer {
                 }
 
             }
-            if (buffer.size() != 0)
+            if (buffer.size() != 0) {
                 writePostingList(buffer, path);
-
+                writeCityBufferToPostingList(cityPath);
+                writeDocumentsPostingList(docBuffer,docpath);
+            }
             //Files.deleteIfExists(Paths.get(postingPaths.get(0)));
 
-            cityPaths.remove(cityPaths.size() - 1);
+            //cityPaths.remove(cityPaths.size() - 1);
             //System.out.println("number of terms : " + this.idTermMap.size());
             writeMergedSortedPostings();
-
+            reset();
 
         } catch (Exception e) {
             System.out.println("at index");
@@ -140,6 +147,21 @@ public class SpimiInverter implements IIndexer {
         }
     }
 
+
+    public void reset(){
+        this.termInfoMap = new HashMap<>();
+        this.vb = new VariableByteCode();
+        this.postingPaths = new ArrayList<>();
+        this.writer = new PostingWriter();
+        this.cityPaths = new ArrayList<>();
+        this.docPaths = new ArrayList<>();
+        this.cityBuffer = new HashMap<>();
+        this.key = 1;
+        this.onTitle = 2;
+        mainBuffer = new byte[4096];
+        this.currentBufferSize = 0;
+
+    }
 
     private String getCanonicalPath() {
         return this.targetPath + "\\";
@@ -153,10 +175,12 @@ public class SpimiInverter implements IIndexer {
      * @param maxTF
      * @param uniqueNum
      */
-    private void addToBuffer(HashMap<Integer, BufferDataDoc> buffer, int docID, int maxTF, int uniqueNum) {
+    private void addToBuffer(HashMap<Integer, BufferDataDoc> buffer, int docID, int maxTF, int uniqueNum,TokensStructure temp) {
 
-        buffer.put(docID, new BufferDataDoc(encodeNumber(maxTF), encodeNumber(uniqueNum)));
-        this.currentBufferSize += buffer.get(docID).getSize();
+        BufferDataDoc docData = new BufferDataDoc(docID,encodeNumber(maxTF), encodeNumber(uniqueNum),temp.getFromCity(),temp.getDocAuthor()
+                ,temp.getDocLang(),temp.getDocType(),temp.getDocName()) ;
+        buffer.put(docID, docData);
+        this.currentBufferSize += docData.getSize();
     }
 
     /**
@@ -176,6 +200,7 @@ public class SpimiInverter implements IIndexer {
         PostingBufferMerger merger = new PostingBufferMerger(this.termIdMap, this.vb, this, this.postingPaths, this.docPaths, this.cityPaths, this.targetPath);
         merger.mergeOnTermID(this.postingPaths, 4096, "TERMS");
         merger.mergeOnTermID(this.cityPaths, 4096, "CITY");
+        merger.mergeOnTermID(this.docPaths,4096,"DOC");
 
     }
 
@@ -228,8 +253,6 @@ public class SpimiInverter implements IIndexer {
                 termList) {
             try {
 
-                if(termIdMap.size() != idTermMap.size())
-                    System.out.println("");
                 //this term is no special , check wether it starts with upper or lower
                 if (isOneWord(term)) {
 
@@ -429,6 +452,9 @@ public class SpimiInverter implements IIndexer {
      */
     private byte[] encodeCityInfo(String word) {
 
+        if(word == null || word.equals(""))
+            return new byte[]{-1};
+
         byte[] ans = new byte[word.length()];
 
         for (int i = 0; i < word.length(); i++) {
@@ -587,13 +613,15 @@ public class SpimiInverter implements IIndexer {
 
     /**
      * *****************WRITING FORMAT ****************************
-     * -docID- -maxTF- -uniqueTermsNum- -city- 00
+     * -docID- -maxTF- -uniqueTermsNum- -name- 0 -author- 0 -city- 0 -lang- 0 type- 00
      * <p>
      * -docID- : ID of the doc
      * -maxTF- : the max term frequency in the doc
      * -uniqueTermsNum- the number of unique terms in the doc
      * -city- the city in the tag
      *
+     * if a field is empty or null , -1 will be written.
+     *  0 : delimiter between docs info
      * @param buffer
      * @param path
      */
@@ -603,17 +631,37 @@ public class SpimiInverter implements IIndexer {
 
             this.writer.setPath(path);
             byte[] mainBuffer = new byte[4096], zero = new byte[]{0};//4KB
+            byte[] doubleZero = new byte[]{0,0};
             int currentPosition = 0, index = 0;
             Set<Integer> set = buffer.keySet();
             Integer[] sorted = set.stream().toArray(Integer[]::new);
             Arrays.sort(sorted);
 
             while (index < sorted.length) {
+
                 BufferDataDoc temp = buffer.get(sorted[index]);
+
+                byte[] encodedAuthor = encodeCityInfo(temp.getAuthor());
+                byte[] encodedType = encodeCityInfo(temp.getType());
+                byte[] encodedLang = encodeCityInfo(temp.getLang());
+                byte[] encodedCity = encodeCityInfo(temp.getCity());
+                byte[] encodedName = encodeCityInfo(temp.getName());
+
+                currentPosition = moveDataToMainBuffer(vb.encodeNumber(temp.getID()),currentPosition);
                 currentPosition = moveDataToMainBuffer(temp.getMaxTF(), currentPosition);
                 currentPosition = moveDataToMainBuffer(temp.getUniqueNumber(), currentPosition);
+                currentPosition = moveDataToMainBuffer(encodedName,currentPosition);
+                currentPosition = moveDataToMainBuffer(zero,currentPosition);
+                currentPosition = moveDataToMainBuffer(encodedAuthor,currentPosition);
+                currentPosition = moveDataToMainBuffer(zero,currentPosition);
+                currentPosition = moveDataToMainBuffer(encodedCity,currentPosition);
+                currentPosition = moveDataToMainBuffer(zero,currentPosition);
+                currentPosition = moveDataToMainBuffer(encodedLang,currentPosition);
+                currentPosition = moveDataToMainBuffer(zero,currentPosition);
+                currentPosition = moveDataToMainBuffer(encodedType,currentPosition);
                 currentPosition = moveDataToMainBuffer(zero, currentPosition);
 
+                currentPosition = moveDataToMainBuffer(doubleZero,currentPosition);
                 index++;
             }
             this.writer.close();
@@ -790,11 +838,11 @@ public class SpimiInverter implements IIndexer {
                 }
                 else
                     this.idTermMap.put(termid, proccessedTerm);
+                //PostingDataStructure pdata = this.termIdMap.get(term);
                 this.termIdMap.remove(upperTerm);
                 PostingDataStructure temp = termIdMap.get(proccessedTerm);
                 if (temp != null) {
-                    PostingDataStructure pdata = this.termIdMap.get(term);
-                    LinkedList<Integer> templist = (LinkedList<Integer>)vb.decode(pdata.getEncodedData());
+                    LinkedList<Integer> templist = (LinkedList<Integer>)vb.decode(temp.getEncodedData());
                     LinkedList<Integer> dlist = (LinkedList<Integer>)vb.decode(data.getEncodedData());
                     int updatedTF = templist.pollFirst() + dlist.pollFirst();
                     templist.addFirst(updatedTF);
