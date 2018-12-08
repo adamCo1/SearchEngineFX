@@ -31,6 +31,7 @@ public class Model implements IModel {
     @Override
     public void deleteOutputFiles(File file) {
         this.engine.deleteAllFiles(file);
+        this.engine = new Engine();
     }
 
     @Override

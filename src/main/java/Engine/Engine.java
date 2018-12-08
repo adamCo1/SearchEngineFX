@@ -29,7 +29,8 @@ import java.util.*;
         private IIndexer spimi;
         private IReader reader;
         private IBufferController controller;
-        private Thread readThread , indexThread , parseThread;
+      //  private Thread readThread , indexThread , parseThread;
+        private int docCount;
 
         public Engine(boolean stemmerOn , String corpusPath) {
 
@@ -47,6 +48,7 @@ import java.util.*;
             this.spimi = spimi;
             this.controller = controller;
             this.reader = new ReadFile(this.controller);
+            this.docCount = 0;
             spimi.setParser(parser);
 
         }
@@ -89,8 +91,8 @@ import java.util.*;
 
             try {
 
-                indexThread = new Thread(() -> this.spimi.index(maxsize));
-                parseThread = new Thread(() -> parser.parse(text));
+                Thread indexThread = new Thread(() -> this.spimi.index(maxsize));
+                Thread parseThread = new Thread(() -> parser.parse(text));
                 System.out.println("Starting Sample");
                 long t1 = System.nanoTime();
 
@@ -128,11 +130,11 @@ import java.util.*;
 
             try {
 
-                readThread = new Thread(() -> this.reader.read(corpusPath));
-                indexThread = new Thread(() -> this.spimi.index(MAX_SIZE_FOR_BUFFERS));
-                parseThread = new Thread(() -> parse());
+                Thread readThread = new Thread(() -> this.reader.read(corpusPath));
+                Thread indexThread = new Thread(() -> this.spimi.index(MAX_SIZE_FOR_BUFFERS));
+                Thread parseThread = new Thread(() -> parse());
                 System.out.println("Starting");
-                Thread.sleep(200);
+
                 long t1 = System.nanoTime();
                 readThread.start();
                 indexThread.start();
@@ -146,6 +148,7 @@ import java.util.*;
                 storeDictionariesOnDisk();
 
                 System.out.println("Total time in seconds : " + ((System.nanoTime() - t1) / (1000 * 1000 * 1000)));
+                System.out.println("Total number of documents parsed and indexed : " + this.docCount);
                 System.out.println("Number of unique terms found : " + this.termIdMap.size());
                 System.out.println("Stemmer status : " + status);
             }catch (Exception e){
@@ -185,9 +188,8 @@ import java.util.*;
                 while (!this.reader.getDone()) {
                     temp =(Doc) controller.getBuffer();
                     this.parser.parse(temp);
-                    id++;
+                    this.docCount++;
                 }
-                System.out.println("Total number of documents parsed and indexed : " + id);
                 this.parser.setDone(true);
             }catch (Exception e){
                 System.out.println(temp);
@@ -235,17 +237,19 @@ import java.util.*;
      */
     public void deleteAllFiles(File file){
 
+            this.controller = new DocController();
             this.idTermMap = new HashMap<>();
             this.termIdTreeMap = new TreeMap<>();
             this.termIdMap = new HashMap<>();
             this.reader.reset();
             this.parser.reset();
             this.spimi.reset();
+            this.docCount = 0;
 
             try{
                 FileUtils.cleanDirectory(file);
-
-            }catch (IOException e){
+                Thread.sleep(2000);
+            }catch (Exception e){
                 e.printStackTrace();
             }
         System.out.println("All resources deleted and reseted ");

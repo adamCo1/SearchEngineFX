@@ -178,6 +178,9 @@ public class ParsingStrategies {
                 ans += c;
         }
 
+        if(ans.length() > 0 && ans.charAt(ans.length()-1) == '.')//cut the annoying '.' at the end
+            ans = ans.substring(0,ans.length()-1);
+
         return ans;
     }
 

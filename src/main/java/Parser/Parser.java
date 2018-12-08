@@ -31,7 +31,7 @@ public class Parser implements IParser {
     private final char DOLLAR_SIGN = '$' , PERCENT_SIGN = '%';
     private int startIndex = 0;
     byte currentOnTitle;
-    private Semaphore putBufferSem = new Semaphore(500) , getTakeBufferSem = new Semaphore(0);
+    private Semaphore putBufferSem , getTakeBufferSem ;
     private Mutex mutex = new Mutex();
     private ParsingStrategies strategies;
     private HashMap<String, City> cityDict;
@@ -45,6 +45,8 @@ public class Parser implements IParser {
     private Pattern countryPatterns;
 
     public Parser()  {
+        this.putBufferSem = new Semaphore(5);
+        this.getTakeBufferSem = new Semaphore(0);
         this.strategies = new ParsingStrategies();
         this.tokenListBuffers = new LinkedList<>();
         this.termList = new ArrayList<>();
@@ -142,8 +144,6 @@ public class Parser implements IParser {
         int len = this.currentText.length();
         int  goback = 0 ;
 
-        // System.out.println("1");
-        // System.out.println(docID);
         while (startIndex < len) {
             try {
 
@@ -525,9 +525,6 @@ public class Parser implements IParser {
                         }
                     }
                 }
-
-//                        System.out.println(words[0]);
-
                 if(strategies.checkForNumber(words[0]))
                     words[0] = strategies.handleNumbersAlone(words[0]);
 
@@ -535,8 +532,6 @@ public class Parser implements IParser {
                     currentTokenList.add(words[0]);
                     continue;
                 }
-
-
                 words[0] = this.strategies.stripSigns(words[0]);
 
                 if(words[0].length() > 1) {//OUR RULE - 1 char rule
@@ -544,9 +539,7 @@ public class Parser implements IParser {
                         currentTokenList.add(words[0]);
                     else
                         currentTokenList.add(words[0]);
-
                 }
-
             }catch(Exception e){
             }
 
@@ -648,6 +641,9 @@ public class Parser implements IParser {
         this.docLangs = new TreeSet<>();
         this.hashSetCountries = new HashSet<>();
         this.countries = new TreeSet<>();
+        this.getTakeBufferSem = new Semaphore(0);
+        this.putBufferSem = new Semaphore(5);
+        this.mutex = new Mutex();
         if(allCities.size() == 0)
             ReadFromWeb.getCities();
         loadAllCountries();

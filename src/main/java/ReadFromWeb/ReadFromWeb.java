@@ -28,9 +28,12 @@ public class ReadFromWeb {
      * entries are cities first word in name.
      */
     public static HashMap<String,City> allCities = new HashMap<String, City>();
-
     public static HashMap<String,Pair<String,Integer>> countrySet = new HashMap<>();
     public static HashSet<String>countries = new HashSet<>();
+
+    public static void reset(){
+
+    }
 
     /**
      * get all city info from a given API url.

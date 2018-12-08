@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 import static ReadFromWeb.ReadFromWeb.allCities;
 
@@ -42,6 +43,7 @@ public class ReadFile implements IReader {
     @Override
     public void reset() {
         this.done = false;
+        allCities = new HashMap<String,City>();
     }
 
     /**

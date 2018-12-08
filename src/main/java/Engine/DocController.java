@@ -13,13 +13,15 @@ import java.util.concurrent.Semaphore;
 public class DocController implements IBufferController {
 
     private final int DOC_NUM = 5;
-    private Semaphore putDocSem = new Semaphore(DOC_NUM);
-    private Semaphore takeDocSem = new Semaphore(0);
+    private Semaphore putDocSem ;
+    private Semaphore takeDocSem ;
     private Mutex mutex = new Mutex();
-    private LinkedList<Doc> docBuffer = new LinkedList<>();
+    private LinkedList<Doc> docBuffer ;
 
     public DocController(){
         this.docBuffer = new LinkedList<>();
+        this.putDocSem = new Semaphore(DOC_NUM);
+        this.takeDocSem = new Semaphore(0);
     }
 
     /**

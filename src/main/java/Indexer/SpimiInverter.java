@@ -134,10 +134,6 @@ public class SpimiInverter implements IIndexer {
                 writeCityBufferToPostingList(cityPath);
                 writeDocumentsPostingList(docBuffer,docpath);
             }
-            //Files.deleteIfExists(Paths.get(postingPaths.get(0)));
-
-            //cityPaths.remove(cityPaths.size() - 1);
-            //System.out.println("number of terms : " + this.idTermMap.size());
             writeMergedSortedPostings();
             reset();
 
@@ -158,6 +154,7 @@ public class SpimiInverter implements IIndexer {
         this.cityBuffer = new HashMap<>();
         this.key = 1;
         this.onTitle = 2;
+        this.wroteBuffer = false;
         mainBuffer = new byte[4096];
         this.currentBufferSize = 0;
 
