@@ -37,6 +37,9 @@ public class ParsingStrategies {
      */
     public boolean cheeckForYear(String year){
 
+        if(!checkForNumber(year))
+            return false;
+
         try{
             Integer num = stringToInt(year);
             return num.intValue() >= 1000 && num.intValue() < 10000;
@@ -184,11 +187,17 @@ public class ParsingStrategies {
         return ans;
     }
 
-    public String stripFirstWnwantedSigns(String word){
+    public String stripFirstWnwantedSigns(String word) {
 
-        while(word.length() > 0 && word.charAt(0) == '-' || word.charAt(0) == '.' || word.charAt(0) == ',')
+        if (word.equals("") || word == null)
+            return word;
+
+        int length = word.length();
+
+        while (length > 0 && (word.charAt(0) == '-' || word.charAt(0) == '.' || word.charAt(0) == ',')){
             word = word.substring(1);
-
+            length -=1;
+    }
         return word;
     }
 
@@ -279,6 +288,7 @@ public class ParsingStrategies {
      */
     public String handlePricesWithoutIndicators(String number) {
         String num = "";
+
         if (number.charAt(number.length() - 1) == 'm') {
             num = handleNumbersWithIndicators(number, "million");
             return num.substring(0,num.length()-1)+ " M Dollars";
@@ -288,7 +298,10 @@ public class ParsingStrategies {
             return fromBNtoM(num.substring(0,num.length()-1)) + " M Dollars" ;
         }
 
-        return ""+num.substring(0,num.length()-1)+" " +num.charAt(num.length()-1) +" Dollars";
+        if(num.equals(""))
+            return ""+handleNumbersAlone(number)+" Dollars";
+        else
+            return ""+num.substring(0,num.length()-1)+" " +num.charAt(num.length()-1) +" Dollars";
     }
 
     public String handlePricesWithFraction(String number , String fraction){
@@ -661,10 +674,12 @@ public class ParsingStrategies {
         int i = 0 , ans = 0 ;
         boolean isNeg = false;
 
+     //   number = stripSigns(number);
+
         String fixednum = "";
-        if(number.charAt(number.length()-1) == 'm')
+        if(number.length() > 1 && number.charAt(number.length()-1) == 'm')
             fixednum = number.substring(0,number.length()-1);
-        else if(number.charAt(number.length()-1) == 'n')
+        else if( number.charAt(number.length()-1) == 'n')
             fixednum = number.substring(0,number.length()-2);
         else
             fixednum = number;

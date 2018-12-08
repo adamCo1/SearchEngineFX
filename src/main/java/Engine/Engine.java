@@ -99,7 +99,7 @@ import java.util.*;
                 indexThread.start();
                 parseThread.start();
                 parseThread.join();
-                Thread.sleep(100);
+                Thread.sleep(1000);
                 this.parser.setDone(true);
                 indexThread.join();
 

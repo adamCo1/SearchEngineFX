@@ -16,7 +16,7 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader();
         Parent root = loader.load(getClass().getClassLoader().getResource("mainWindow.fxml").openStream());
         primaryStage.setTitle("Engine");
-        primaryStage.setScene(new Scene(root, 600, 500));
+        primaryStage.setScene(new Scene(root, 600, 700));
 
         Controller controller = loader.getController();
         View view = new View(controller);

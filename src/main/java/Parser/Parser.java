@@ -65,9 +65,9 @@ public class Parser implements IParser {
     }
 
     public void parse(String text){
-
-        //parseText(text,(byte)1);
-       // parseText(text,(byte)0);
+        Doc doc = new Doc("2","2","2",text,new City("2","2","2","2",2),"2","2");
+        parseText(doc,(byte)1);
+        parseText(doc,(byte)0);
     }
 
     public void parse(Doc doc){
@@ -261,8 +261,10 @@ public class Parser implements IParser {
                             continue;
                         }
                     } else {//so its a regular number
-                        currentTokenList.add(this.strategies.handleNumbersAlone(words[0]));
+                        if (!words[0].equals("n")){
+                            currentTokenList.add(this.strategies.handleNumbersAlone(words[0]));
                         continue;
+                        }
                     }
 
 
@@ -316,36 +318,8 @@ public class Parser implements IParser {
 
                     }
                 }
+
 /**
-                if (current == DOLLAR_SIGN && strategies.checkForNumber(words[0].substring(1))) {
-                    //for if next words is a size indicator
-                    words[1] = getNextWord(startIndex);
-                    words[1] = strategies.partialStripSigns(words[1]);
-                    if (strategies.isIndicator(words[1])) {
-                        startIndex += words[1].length() + 1;
-                        currentTokenList.add(strategies.handleDollarsignWithIndicator(words[0].substring(1), words[1]));
-                        continue;
-                    } else {//so its '$' at the start with no indicator . <$number> rule
-                        String str = words[0].substring(1);
-                        if (strategies.checkForNumber(str)) {
-                            if (strategies.stringToInt(str) >= 1000000) {
-                                currentTokenList.add(strategies.handlePricesAlone(str));
-                                continue;
-                            }else{
-                                currentTokenList.add(str + " Dollars");
-                                continue;
-                            }
-                        }
-                    }
-                }//end of '$' check
-                else {//check for '%'
-                    if (words[0].length() > 1 && words[0].charAt(words[0].length() - 1) == PERCENT_SIGN) {// <number%> rule
-                        currentTokenList.add(strategies.handlePercents(words[0]));
-                        continue;
-                    }
-                }
-
-
                 if(words[0].indexOf('-') != -1 && words[0].indexOf('-') != 0 && words[0].indexOf('-') != words[0].length()-1 && isWordsAndNumbers(words[0]) ) {
                     currentTokenList.add(words[0]);
                     continue;
@@ -493,7 +467,7 @@ public class Parser implements IParser {
                             //check if the next words are the excepted words of the city name
                             for (int i = 1; i < numOfWordsInCityName; i++) {
                                 words[i] = getNextWord(startIndex);
-                                if (words[i].charAt(0) >= 65 && words[i].charAt(0) <= 90) {
+                                if (words[i].length()>0 &&  words[i].charAt(0) >= 65 && words[i].charAt(0) <= 90) {
                                     cityTerm += " " + words[i].toUpperCase();
                                     if (!allCities.containsKey(cityTerm)) {
                                         cityTerm = "noCity";
@@ -541,6 +515,7 @@ public class Parser implements IParser {
                         currentTokenList.add(words[0]);
                 }
             }catch(Exception e){
+              //  e.printStackTrace();
             }
 
         }//end while
