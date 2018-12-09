@@ -28,8 +28,6 @@
             <TableColumn fx:id="tfCol" prefWidth="128.0" text="tf" />
         </columns>
       </TableView>
-      <Button layoutX="16.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleSampleRun" prefHeight="31.0" prefWidth="149.0" text="Sample Run" />
-      <TextField fx:id="sampleField" layoutX="201.0" layoutY="529.0" prefHeight="31.0" prefWidth="379.0" />
       <Button layoutX="28.0" layoutY="583.0" mnemonicParsing="false" onAction="#handleDisplayLangs" prefHeight="39.0" prefWidth="124.0" text="Show Langs" />
       <ListView fx:id="listView" layoutX="190.0" layoutY="583.0" prefHeight="122.0" prefWidth="200.0" />
    </children>

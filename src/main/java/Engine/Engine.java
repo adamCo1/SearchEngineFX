@@ -64,7 +64,7 @@ import java.util.*;
         }
 
 
-        public void loadDictionaryToMemory() throws Exception{
+        public String loadDictionaryToMemory() throws Exception{
 
 
             FileInputStream in = new FileInputStream(targetPath+"\\"+TERM_ID_MAP_PATH);
@@ -73,6 +73,7 @@ import java.util.*;
             this.termIdTreeMap = dict;
             stream.close();
             in.close();
+            return "Dictionary loaded to memory.";
         }
 
 
@@ -238,7 +239,10 @@ import java.util.*;
      * initialize new maps and delete all the recent files in the
      * @param file
      */
-    public void deleteAllFiles(File file){
+    public String deleteAllFiles(File file){
+
+            if(file == null || !file.exists())
+                return "please choose a directory first.";
 
             this.controller = new DocController();
             this.idTermMap = new HashMap<>();
@@ -255,7 +259,7 @@ import java.util.*;
             }catch (Exception e){
                 e.printStackTrace();
             }
-        System.out.println("All resources deleted and reseted ");
+        return "All resources deleted and reseted ";
         }
 
         public TreeSet<String> getDocsLang(){

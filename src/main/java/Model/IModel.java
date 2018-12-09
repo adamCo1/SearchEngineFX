@@ -9,8 +9,8 @@ import java.util.TreeSet;
 public interface IModel {
 
     TreeMap runSample(String text,boolean stemmerOn);
-    void LoadDictionaryToMemory()throws Exception;
-    void deleteOutputFiles(File file);
+    String LoadDictionaryToMemory()throws Exception;
+    String deleteOutputFiles(File file);
     void setTargetPath(String path);
     void setCorpusPath(String path);
     void setEngine(Engine engine);

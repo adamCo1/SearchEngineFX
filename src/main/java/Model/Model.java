@@ -24,14 +24,16 @@ public class Model implements IModel {
     }
 
     @Override
-    public void LoadDictionaryToMemory()throws Exception {
-        this.engine.loadDictionaryToMemory();
+    public String LoadDictionaryToMemory()throws Exception {
+       String out = this.engine.loadDictionaryToMemory();
+        return out;
     }
 
     @Override
-    public void deleteOutputFiles(File file) {
-        this.engine.deleteAllFiles(file);
+    public String deleteOutputFiles(File file) {
+        String out = this.engine.deleteAllFiles(file);
         this.engine = new Engine();
+        return out;
     }
 
     @Override

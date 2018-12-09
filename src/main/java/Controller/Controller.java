@@ -58,7 +58,8 @@ public class Controller {
     }
 
     public void handleResetButton(){
-        this.model.deleteOutputFiles(new File(this.targetPathField.getText()));
+       String out = this.model.deleteOutputFiles(new File(this.targetPathField.getText()));
+        this.view.errorMessage(out);
     }
 
     public void handleRunEngine(){
@@ -86,8 +87,8 @@ public class Controller {
 
     public void handleLoadDictionary() {
         try {
-            this.model.LoadDictionaryToMemory();
-            System.out.println("Dictionary loaded");
+            String out = this.model.LoadDictionaryToMemory();
+            this.view.errorMessage(out);
         }catch (Exception e){
             this.view.errorMessage("Could not load a dictionary");
         }
@@ -139,6 +140,9 @@ public class Controller {
     public void handleDisplayLangs(){
         ObservableList<String> langList = FXCollections.observableArrayList();
         langList.addAll(this.model.getDocsLang());
+        if(langList == null || langList.size() == 0)
+            this.view.errorMessage("No language list to show");
+
         this.listView.setItems(langList);
 
     }
