@@ -14,7 +14,7 @@ public interface IModel {
     void setTargetPath(String path);
     void setCorpusPath(String path);
     void setEngine(Engine engine);
-    void runEngine(boolean stemmerStatus);
+    String runEngine(boolean stemmerStatus);
     TreeMap getDictionary();
     TreeSet getDocsLang();
 }

@@ -72,7 +72,8 @@ public class Controller {
 
         this.model.setCorpusPath(corpusPath);
         this.model.setTargetPath(targetPath);
-        this.model.runEngine(stemmerStatus);
+        String out = this.model.runEngine(stemmerStatus);
+        this.view.errorMessage(out);
     }
 
     public void handleBrowseButtonTargetPath() {

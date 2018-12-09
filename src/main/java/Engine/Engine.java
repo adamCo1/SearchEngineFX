@@ -116,7 +116,7 @@ import java.util.*;
             return this.termIdTreeMap;
         }
 
-        public void run(boolean stemmerStatus) {
+        public String run(boolean stemmerStatus) {
 
             this.spimi.setParser(this.parser);
             this.spimi.setStemOn(stemmerStatus);
@@ -147,12 +147,15 @@ import java.util.*;
                 convertTermIdToTreeMap();
                 storeDictionariesOnDisk();
 
-                System.out.println("Total time in seconds : " + ((System.nanoTime() - t1) / (1000 * 1000 * 1000)));
-                System.out.println("Total number of documents parsed and indexed : " + this.docCount);
-                System.out.println("Number of unique terms found : " + this.termIdMap.size());
-                System.out.println("Stemmer status : " + status);
+                String out = "";
+                out += "Total time in seconds : " + ((System.nanoTime() - t1) / (1000 * 1000 * 1000))+"\n";
+                out += "Total number of documents parsed and indexed : " + this.docCount+"\n";
+                out += "Number of unique terms found : " + this.termIdMap.size()+"\n";
+                out += "Stemmer status : " + status;
+                return out;
             }catch (Exception e){
                 e.printStackTrace();
+                return "Error running engine";
             }
         }
 

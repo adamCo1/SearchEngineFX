@@ -35,7 +35,7 @@ public class ErrorBox {
             }
         });
         pane.getChildren().addAll(button_close,label);
-        stage.setTitle("Error");
+        stage.setTitle("Result");
         stage.setResizable(false);
         stage.setScene(scene);
 

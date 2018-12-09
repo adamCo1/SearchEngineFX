@@ -50,8 +50,12 @@ public class Model implements IModel {
     }
 
     @Override
-    public void runEngine(boolean stemmerStatus) {
-        this.engine.run(stemmerStatus);
+    public String runEngine(boolean stemmerStatus) {
+        try {
+            return this.engine.run(stemmerStatus);
+        }catch (Exception e){
+            return "Error running Engine";
+        }
     }
 
     @Override
