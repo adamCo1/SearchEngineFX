@@ -2,10 +2,14 @@ package Ranking;
 
 import Structures.CorpusDocument;
 import Structures.Term;
+
 import java.util.ArrayList;
 
-public interface IRankingAlgorithm {
+public abstract class ARankingAlgorithm {
 
+    public ARankingAlgorithm(){
+
+    }
 
     /**
      * rank a document according to a term list given from a query
@@ -14,6 +18,7 @@ public interface IRankingAlgorithm {
      * @return the ranking value of the algorithm
      */
     public abstract double rank(CorpusDocument document, ArrayList<Term> termList);
+
 
 
 }
