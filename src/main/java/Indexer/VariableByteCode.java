@@ -57,7 +57,38 @@ public class VariableByteCode {
         return numbers;
     }
 
+    public LinkedList<Integer> decode(LinkedList<Byte> byteStream) {
+        LinkedList<Integer> numbers = new LinkedList<Integer>();
+        int n = 0;
+        for (byte b : byteStream) {
+            if ((b & 0xff) < 128) {
+                n = 128 * n + b;
+            } else {
+                int num = (128 * n + ((b - 128) & 0xff));
+                numbers.addLast(num);
+                n = 0;
+            }
+        }
+        return numbers;
+    }
+
     public int decodeNumber(byte[] byteStream){
+
+        int n = 0;
+        int ans = 0;
+        for (byte b : byteStream) {
+            if ((b & 0xff) < 128) {
+                n = 128 * n + b;
+            } else {
+                int num = (128 * n + ((b - 128) & 0xff));
+                ans = num;
+                n = 0;
+            }
+        }
+        return ans;
+    }
+
+    public int decodeNumber(LinkedList<Byte> byteStream){
 
         int n = 0;
         int ans = 0;

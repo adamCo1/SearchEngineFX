@@ -97,21 +97,6 @@ public class Controller {
     public void handleDisplayDicitionary(){
         TreeMap<String, PostingDataStructure> d = model.getDictionary();
         try{
-/**
-        TreeMap<Integer,String> dSortByTf = new TreeMap<>();
-        for (String key:d.keySet()
-        ) {
-            dSortByTf.put(d.get(key)[0],key);
-        }
-        int i = 0 ;
-        for(Integer key:dSortByTf.keySet()){
-            if(i <= 10){
-                System.out.println("Term: "+dSortByTf.get(key)+" TF: "+key);
-            }
-            i++;
-
-        }
-**/
         if (d==null){
             return;
         }

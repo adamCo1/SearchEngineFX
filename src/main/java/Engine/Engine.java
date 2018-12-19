@@ -18,11 +18,13 @@ import java.util.*;
 
     public class Engine {
 
+        private int avgDocLength ;
         private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data";
         private final int MAX_SIZE_FOR_BUFFERS = 30720000;//30mb;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
+        private HashMap<Integer,Integer> docLengths;
         private TreeMap<String, PostingDataStructure> termIdTreeMap;
         private HashMap<String, PostingDataStructure> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
         private IParser parser ;
@@ -38,6 +40,7 @@ import java.util.*;
             this.idTermMap = new HashMap<>();
             this.controller = new DocController();
             this.reader = new ReadFile(controller);
+            this.docLengths = new HashMap<>();
         }
 
         public Engine(IIndexer spimi , IParser parser , IReader reader , IBufferController controller){
@@ -49,6 +52,7 @@ import java.util.*;
             this.controller = controller;
             this.reader = new ReadFile(this.controller);
             this.docCount = 0;
+            this.docLengths = new HashMap<>();
             spimi.setParser(parser);
 
         }
@@ -59,7 +63,8 @@ import java.util.*;
             this.idTermMap = new HashMap<>();
             this.controller = new DocController();
             this.reader = new ReadFile(controller);
-            this.spimi = new SpimiInverter(termIdMap, idTermMap , parser);
+            this.spimi = new SpimiInverter(docLengths,termIdMap, idTermMap , parser);
+            this.docLengths = new HashMap<>();
 
         }
 
@@ -186,14 +191,18 @@ import java.util.*;
 
         private void parse(){
             Doc temp = null;
-            int id = 1;
+            int id = 1 , len;
 
             try {
                 while (!this.reader.getDone()) {
                     temp =(Doc) controller.getBuffer();
+                    len = temp.getDocText().length();
+                    this.docLengths.put(id++,len);
+                    this.avgDocLength += len;
                     this.parser.parse(temp);
                     this.docCount++;
                 }
+                this.avgDocLength /= docCount ;
                 this.parser.setDone(true);
             }catch (Exception e){
                 System.out.println(temp);
@@ -260,6 +269,15 @@ import java.util.*;
                 e.printStackTrace();
             }
         return "All resources deleted and reseted ";
+        }
+
+
+        public int getDocLength(int docID){
+            return this.docLengths.get(docID);
+        }
+
+        public void addDoclength(int docID, int len){
+            this.docLengths.put(docID,len);
         }
 
         public TreeSet<String> getDocsLang(){

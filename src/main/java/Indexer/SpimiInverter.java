@@ -28,6 +28,7 @@ public class SpimiInverter implements IIndexer {
     private int key, maxTF , onTitle , currentBufferSize;
     private IParser parser;
     private VariableByteCode vb;
+    private HashMap<Integer,Integer> docLengths;
     private HashMap<Integer, ABufferData> cityBuffer;
     private HashMap<Integer, HashMap<Integer, Data>> termInfoMap;
     private HashMap<Integer, String> idTermMap; // ID - TERM map
@@ -36,10 +37,11 @@ public class SpimiInverter implements IIndexer {
     private PostingWriter writer;
     private byte[] mainBuffer = new byte[4096];
 
-    public SpimiInverter(HashMap termIdMap, HashMap idTermMap , IParser parser) {
+    public SpimiInverter(HashMap docLengths,HashMap termIdMap, HashMap idTermMap , IParser parser) {
 
         titleSet = new HashSet<>();
         porterStemmer = new Stemmer();
+        this.docLengths = docLengths;
         this.parser = parser;
         this.cityPaths = new ArrayList<>();
         this.docPaths = new ArrayList<>();
@@ -610,7 +612,7 @@ public class SpimiInverter implements IIndexer {
 
     /**
      * *****************WRITING FORMAT ****************************
-     * -docID- -maxTF- -uniqueTermsNum- -name- 0 -author- 0 -city- 0 -lang- 0 type- 00
+     * -docID- -length- -maxTF- -uniqueTermsNum- -name- 0 -author- 0 -city- 0 -lang- 0 type- 00
      * <p>
      * -docID- : ID of the doc
      * -maxTF- : the max term frequency in the doc
@@ -645,6 +647,7 @@ public class SpimiInverter implements IIndexer {
                 byte[] encodedName = encodeCityInfo(temp.getName());
 
                 currentPosition = moveDataToMainBuffer(vb.encodeNumber(temp.getID()),currentPosition);
+                currentPosition = moveDataToMainBuffer(vb.encodeNumber(docLengths.get(temp.getID())),currentPosition);
                 currentPosition = moveDataToMainBuffer(temp.getMaxTF(), currentPosition);
                 currentPosition = moveDataToMainBuffer(temp.getUniqueNumber(), currentPosition);
                 currentPosition = moveDataToMainBuffer(encodedName,currentPosition);
