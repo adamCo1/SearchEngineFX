@@ -1,7 +1,5 @@
 package Structures;
 
-import com.sun.xml.internal.bind.v2.model.core.ID;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -33,5 +31,9 @@ public class Term implements IData {
 
     public LinkedList<Integer> getPositions(int docID){
         return (LinkedList<Integer>)this.docToDataMap.get(docID).getThird();
+    }
+
+    public HashMap<Integer, Triplet> getDocToDataMap() {
+        return docToDataMap;
     }
 }

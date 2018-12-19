@@ -18,7 +18,7 @@ import java.util.*;
 
     public class Engine {
 
-        private int avgDocLength ;
+        private double avgDocLength ;
         private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data";
         private final int MAX_SIZE_FOR_BUFFERS = 30720000;//30mb;
         private String corpusPath , targetPath ;
