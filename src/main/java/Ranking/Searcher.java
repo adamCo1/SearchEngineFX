@@ -1,6 +1,8 @@
 package Ranking;
 
+import IO.ABufferReader;
 import IO.BufferReader;
+import IO.DocBufferReader;
 import Indexer.VariableByteCode;
 import Parser.IParser;
 import Structures.CorpusDocument;
@@ -16,7 +18,7 @@ public class Searcher implements ISearcher {
     private final int DOCS_RETURN_NUMBER = 50;
     private IRanker ranker ;
     private IParser parser;
-    private BufferReader termReader ;
+    private ABufferReader termReader , docReader ;
     private HashMap<String, PostingDataStructure> termIdMap;
     private VariableByteCode vb;
     private int blockSize;
@@ -27,6 +29,7 @@ public class Searcher implements ISearcher {
             this.parser = parser;
             this.blockSize = blockSize;
             this.termReader = new BufferReader(termOutPath, blockSize);
+            this.docReader = new DocBufferReader(docOutPath,blockSize);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -50,12 +53,12 @@ public class Searcher implements ISearcher {
                     queryTerms) {
                 byte[] data = this.termIdMap.get(term).getEncodedData();
                 LinkedList<Integer> decodedData = vb.decode(data);
-                termList.add(this.termReader.getTermData(decodedData.get(2) * blockSize +
+                termList.add((Term)this.termReader.getData(decodedData.get(2) * blockSize +
                         decodedData.get(3)));
             }
         }catch (Exception e){
             e.printStackTrace();
-            System.out.println("at searcher");
+            System.out.println("at searcher getDataOnQueryTerms");
         }
     }
 
