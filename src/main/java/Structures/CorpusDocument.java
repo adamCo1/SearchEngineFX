@@ -1,6 +1,6 @@
 package Structures;
 
-public class CorpusDocument {
+public class CorpusDocument implements IData{
 
     private int docID , length , maxTF , uniqueNumberOfTerms;
     private String name , author , city , lang , type;
