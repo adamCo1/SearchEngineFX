@@ -1,9 +1,11 @@
 package Structures;
 
+import com.sun.xml.internal.bind.v2.model.core.ID;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class Term {
+public class Term implements IData {
 
     private HashMap<Integer,Triplet> docToDataMap;
     private int totalTF;
