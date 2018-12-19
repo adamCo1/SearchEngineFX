@@ -5,7 +5,7 @@ import Structures.Term;
 
 import java.util.ArrayList;
 
-public class ClusterPruningAlgorithm implements IRankingAlgorithm{
+public class ClusterPruningAlgorithm extends ARankingAlgorithm{
 
     @Override
     public double rank(CorpusDocument document, ArrayList<Term> termList) {
