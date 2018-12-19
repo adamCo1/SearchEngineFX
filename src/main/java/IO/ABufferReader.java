@@ -78,7 +78,7 @@ public abstract class ABufferReader {
         return tempList;
     }
 
-    protected void close() throws IOException{
+    public void close() throws IOException{
         this.randomAccessFile.close();
     }
 }
