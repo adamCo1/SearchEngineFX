@@ -28,7 +28,7 @@ public class Controller {
     @FXML
     private CheckBox stemmerCheckBox;
     @FXML
-    private TextField corpusPathField , targetPathField , sampleField;
+    private TextField corpusPathField , targetPathField , sampleField , queryField;
 
     @FXML
     private StringProperty termP;
@@ -129,6 +129,16 @@ public class Controller {
             this.view.errorMessage("No language list to show");
 
         this.listView.setItems(langList);
+
+    }
+
+    public void handleRunQuery(){
+        String query = queryField.getText();
+
+        if(query.equals(null))
+            return;
+
+        this.model.runQueryOnEngine(query);
 
     }
 

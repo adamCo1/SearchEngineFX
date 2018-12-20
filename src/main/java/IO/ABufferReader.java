@@ -35,6 +35,12 @@ public abstract class ABufferReader {
         this.index = 0;
     }
 
+    protected void initializeBuffer(int positionInFile)throws IOException{
+
+        this.randomAccessFile.seek(positionInFile);
+        this.randomAccessFile.read(buffer);
+    }
+
     /**
      * get data on the term . this function looks for single data ints like tf , doc-id and such
      * @return

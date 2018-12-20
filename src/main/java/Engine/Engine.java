@@ -8,6 +8,7 @@ import Parser.IParser;
 import Parser.Parser;
 import Ranking.ISearcher;
 import Ranking.Searcher;
+import Structures.CorpusDocument;
 import Structures.Doc;
 import Structures.Pair;
 import Structures.PostingDataStructure;
@@ -22,7 +23,7 @@ import java.util.*;
     public class Engine {
 
         private double avgDocLength ;
-        private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "term_out" , DOCS_OUT = "docs_out";
+        private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "terms_out" , DOCS_OUT = "docs_out";
         private final int MAX_SIZE_FOR_BUFFERS = 20480000;//20mb;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
@@ -67,14 +68,15 @@ import java.util.*;
 
 
         public Engine(){
+
+            this.docsPositions = new HashMap<>();
+            this.docLengths = new HashMap<>();
             this.parser = new Parser();
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
             this.controller = new DocController();
             this.reader = new ReadFile(controller);
             this.spimi = new SpimiInverter(docLengths,termIdMap, idTermMap , docsPositions, parser);
-            this.docLengths = new HashMap<>();
-            this.docsPositions = new HashMap<>();
             this.searcher = new Searcher(termIdMap,docsPositions,parser,TERMS_OUT,DOCS_OUT,4098);
         }
 
@@ -299,6 +301,11 @@ import java.util.*;
             this.docLengths.remove(docID);
 
             return len;
+        }
+
+        public ArrayList<CorpusDocument> runQuery(String query){
+            this.searcher.setOutPaths(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT);
+            return this.searcher.analyzeAndRank(query);
         }
 
         public void addDoclength(int docID, int len){

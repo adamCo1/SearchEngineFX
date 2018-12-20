@@ -18,8 +18,7 @@ public class BufferReader extends ABufferReader {
     public Term getData(int positionInFile) throws IOException{
 
         this.blocksRead = 0;
-        this.randomAccessFile.seek(positionInFile);
-
+        initializeBuffer(positionInFile);
         return readAllTermData();
     }
 
@@ -34,7 +33,6 @@ public class BufferReader extends ABufferReader {
         int docID  , tf , totalTF , onTitle;
         Term term ;
 
-        fillBuffer();
         getSingleData();//blank read for the term id. we already know it .
 
         totalTF = vb.decodeNumber(getSingleData());

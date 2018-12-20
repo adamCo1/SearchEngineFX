@@ -11,7 +11,7 @@ public class VariableByteCode {
 
     public byte[] encodeNumber(int n) {
         if (n == 0) {
-            return new byte[]{0};
+            return new byte[]{-128};
         }
         int i = (int) (Math.log(n) / Math.log(128)) + 1;
         byte[] rv = new byte[i];

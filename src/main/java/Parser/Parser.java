@@ -64,10 +64,11 @@ public class Parser implements IParser {
 
     }
 
-    public void parse(String text){
+    public ArrayList<String> parse(String text){
         Doc doc = new Doc("2","2","2",text,new City("2","2","2","2",2),"2","2");
-        parseText(doc,(byte)1);
+        //parseText(doc,(byte)1);
         parseText(doc,(byte)0);
+        return getBuffer().getTokenList();
     }
 
     public void parse(Doc doc){
@@ -601,9 +602,9 @@ public class Parser implements IParser {
     public void setDone(boolean done){
        // System.out.println(countries.size());
         this.done = done;
-        this.stopWordsTrietree = null;
-        this.strategies = null;
-        this.getTakeBufferSem.release();
+        //this.stopWordsTrietree = null;
+        //this.strategies = null;
+        //this.getTakeBufferSem.release();
     }
 
     public void reset(){
@@ -692,7 +693,7 @@ public class Parser implements IParser {
             this.strategies = new ParsingStrategies();
             this.stopWordsTrietree = new TrieTree();
             this.done = false;
-            this.stopWordsTrietree.insertFromTextFile(path + "\\stoplist.txt");
+            this.stopWordsTrietree.insertFromTextFile(path + "\\stop_words.txt");
         }catch (IOException e){
             e.printStackTrace();
         }

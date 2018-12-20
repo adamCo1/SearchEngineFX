@@ -30,5 +30,7 @@
       </TableView>
       <Button layoutX="28.0" layoutY="583.0" mnemonicParsing="false" onAction="#handleDisplayLangs" prefHeight="39.0" prefWidth="124.0" text="Show Langs" />
       <ListView fx:id="listView" layoutX="190.0" layoutY="583.0" prefHeight="122.0" prefWidth="200.0" />
+      <Button onAction="#handleRunQuery" layoutX="250.0" layoutY="483.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="79.0" text="Run" />
+      <TextField fx:id="queryField" layoutX="28.0" layoutY="483.0" />
    </children>
 </AnchorPane>
