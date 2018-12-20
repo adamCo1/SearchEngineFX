@@ -183,6 +183,11 @@ public class PostingBufferMerger {
     }
 
 
+    private void moveDataToMainBuffer(byte[] termID , LinkedList<Byte> allData){
+        moveToMainBuffer(termID);
+        moveToMainBuffer(allData);
+    }
+
     private void moveDataToMainBuffer(LinkedList<Byte> termID, LinkedList<Integer> termTF, LinkedList<Byte> docid,
                                       LinkedList<Byte> docTF, LinkedList<Byte> onTitle, LinkedList<Byte> positions) {
 
@@ -249,6 +254,75 @@ public class PostingBufferMerger {
     }
 
 
+    public void merge(ArrayList<String> paths , int maxBlockSize , String type){
+        initializeBuffers(paths);
+
+        int outIndicator = determineOutIndicator(type);
+
+        try {
+            ArrayList<PostingBuffer> toRemove = new ArrayList<>();
+            mainBuffer = new byte[maxBlockSize];
+            blockNum = 0;
+            bufferIndex = 0;
+            int bufferStatus = 0, currentIDOnMerge = 1 ;
+            byte[] termDelimiter = {0,0};
+            openWriterOnPath(type);
+            boolean firstBufferWithID = true;
+
+            while (this.buffers.size() != 0) {
+
+                if (currentIDOnMerge % ID_BAR == 0) {//CHANGE TO SIZE
+                    writeMainBuffer();
+                    //blockNum++ ;
+                }
+
+                firstBufferWithID = true;//so it will update the position in the first match
+
+                for(int i = 0 ; i < buffers.size() ; i++){
+                    PostingBuffer buffer = buffers.get(i);
+                    try {
+
+                        int id = buffer.readTermID(vb,currentIDOnMerge);
+
+                        if (id != -1) {//move all data to the main buffer
+                            //  while (!buffer.checkEndOfTermID()) {//so more info on this term
+
+                            if(firstBufferWithID)
+                                if(type.equals("DOC"))
+                                    updatePositionOnDocPositionMap(id);
+
+                            firstBufferWithID = false;
+
+                            LinkedList<Integer> termID = new LinkedList<Integer>() {{
+                                add(id);
+                            }};
+
+
+                            LinkedList<Byte> allData = buffer.readToEndOfTerm();
+                            moveDataToMainBuffer(vb.encode(termID),allData);
+                            //add 00
+                            moveToMainBuffer(termDelimiter);
+                        }
+                    } catch (Exception e) {
+                        if(e instanceof EOFException){
+                            toRemove.add(buffer);
+                            Files.deleteIfExists(Paths.get(buffer.getTempPostingPath()));
+                        }
+                    }
+
+                }
+                buffers.removeAll(toRemove);
+                toRemove=new ArrayList<>();
+                currentIDOnMerge++;//
+            }//the merge loop
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        this.writer.flush();
+        this.writer.close();
+
+    }
+
     /**
      * the merging method on term id . can implement more methods
      *
@@ -271,9 +345,6 @@ public class PostingBufferMerger {
             boolean firstBufferWithID = true;
 
             while (this.buffers.size() != 0) {
-
-                if(currentIDOnMerge == 23868)
-                    System.out.println("textbook!");
 
                 if (currentIDOnMerge % ID_BAR == 0) {//CHANGE TO SIZE
                     writeMainBuffer();
@@ -303,14 +374,17 @@ public class PostingBufferMerger {
                                 add(id);
                             }};
 
+
                                 LinkedList<Integer> termTF = new LinkedList<Integer>() {{
                                     add(spimi.getTermTF(id));
                                 }};
+
                                 LinkedList<Byte> allData = buffer.readToEndOfTerm();
                                 if(termTF.getFirst().equals(0))
                                     continue;
-                               // moveDataToMainBuffer(termID, termTF, docid, docTF, onTitle, positions);
-                                moveDataToMainBuffer(vb.encode(termID),termTF,allData);
+
+                                    moveDataToMainBuffer(vb.encode(termID),termTF,allData);
+
                             //add 00
                             moveToMainBuffer(termDelimiter);
                             }

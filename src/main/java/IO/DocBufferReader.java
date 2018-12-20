@@ -16,7 +16,7 @@ public class DocBufferReader extends ABufferReader{
     @Override
     public IData getData(int positionInFile) throws IOException {
         this.blocksRead = 0 ;
-        this.randomAccessFile.seek(positionInFile);
+        initializeBuffer(positionInFile);
 
         return readAllDocData();
     }
@@ -46,10 +46,13 @@ public class DocBufferReader extends ABufferReader{
 
     private String byteToString(LinkedList<Byte> stream){
         String ans = "";
+        LinkedList<Integer> decoded = vb.decode(stream);
+        char c ;
 
-        for (byte b:
-                stream) {
-            ans += (char)b;
+        for (Integer i:
+                decoded) {
+            c = (char)i.byteValue() ;
+            ans += c;
         }
 
         return ans;

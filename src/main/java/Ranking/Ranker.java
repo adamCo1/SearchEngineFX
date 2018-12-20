@@ -16,12 +16,14 @@ public class Ranker implements IRanker {
     private ArrayList<CorpusDocument> docBuffer;
     private HashMap<Integer, Pair> docPos;
 
-    public Ranker(String termOutPath , String docOutPath , String cityOutPath , int blockSize){
+    public Ranker(HashMap docPos,int blockSize){
         this.termOutPath = termOutPath;
         this.docOutPath = docOutPath;
         this.cityOutPath = cityOutPath;
         this.blockSize = blockSize;
+        this.docPos = docPos;
         this.docRanks = new HashMap<>();
+        this.docBuffer = new ArrayList<>();
     }
 
 
@@ -30,7 +32,7 @@ public class Ranker implements IRanker {
         try {
             PriorityQueue<DocRank> rankStack = new PriorityQueue<>(new DocRankComparator());
 
-            readDocsPostings(getRelevantDocIDs(termList));
+            fillDocDataBuffer(getRelevantDocIDs(termList));
 
             Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
           //  Thread readDocPostingsThread = new Thread(() -> readDocsPostings(getRelevantDocIDs(termList)));
@@ -52,6 +54,12 @@ public class Ranker implements IRanker {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void setPaths(String termsPath, String docsPath) {
+        this.termOutPath = termsPath;
+        this.docOutPath = docsPath;
     }
 
     private void readDocsPostings(ArrayList<Integer> docIDS){
@@ -97,11 +105,11 @@ public class Ranker implements IRanker {
 
         try {
             DocBufferReader docBufferReader = new DocBufferReader(this.docOutPath, this.blockSize);
-
+            Arrays.toString(relevantDocIDS.toArray());
             for (Integer docID:
                  relevantDocIDS) {
                 Pair p = docPos.get(docID);
-                int pos = (Integer)p.getFirstValue() + (Integer)p.getSecondValue();
+                int pos = (Integer)p.getFirstValue()*this.blockSize + (Integer)p.getSecondValue();
                 docBuffer.add((CorpusDocument)docBufferReader.getData(pos));
             }
 

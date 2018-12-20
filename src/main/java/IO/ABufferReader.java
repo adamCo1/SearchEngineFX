@@ -78,6 +78,9 @@ public abstract class ABufferReader {
                 fillBuffer();
 
             current = buffer[index++];
+            if(current == 0)
+                break ;
+
             tempList.addLast(current);
         }while(current != 0);
 
