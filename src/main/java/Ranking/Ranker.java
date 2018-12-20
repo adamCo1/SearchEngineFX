@@ -9,6 +9,7 @@ import java.util.*;
 
 public class Ranker implements IRanker {
 
+    private final double BM_25_B = 1.2 , BM_25_K = 0.75;
     private final double TITLE_WEIGHT = 0.4 , POSITIONS_WEIGHT = 0.3 , BM25_WEIGHT = 0.3;
     private String termOutPath,docOutPath,cityOutPath;
     private int blockSize;
@@ -32,7 +33,9 @@ public class Ranker implements IRanker {
         try {
             PriorityQueue<DocRank> rankStack = new PriorityQueue<>(new DocRankComparator());
 
-            fillDocDataBuffer(getRelevantDocIDs(termList));
+            ArrayList<Integer> relevantDocIDS = getRelevantDocIDs(termList);
+            initializeRankMap(relevantDocIDS);
+            fillDocDataBuffer(relevantDocIDS);
 
             Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
           //  Thread readDocPostingsThread = new Thread(() -> readDocsPostings(getRelevantDocIDs(termList)));
@@ -44,15 +47,24 @@ public class Ranker implements IRanker {
             //readDocPostingsThread.join();
             //when the 2 threads are done we have all the documents . now we can calculate BM25
 
-            Thread bm25Thread = new Thread(() -> rankByBM25(termList));
+           // Thread bm25Thread = new Thread(() -> rankByBM25(termList));
             //Thread clusterPrunningThread = new Thread(() -> rankByPruning(termList));
-
-            bm25Thread.start();
-
-            bm25Thread.join();
-
+            long t1 = System.nanoTime();
+           // bm25Thread.start();
+            rankByBM25(termList);
+          //  bm25Thread.join();
+            System.out.println(System.nanoTime()-t1);
+            System.out.println("termList = [" + termList + "]");
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    private void initializeRankMap(ArrayList<Integer> relevantDocIDS){
+
+        for (Integer i :
+             relevantDocIDS) {
+            this.docRanks.put(i,new DocRank());
         }
     }
 
@@ -121,7 +133,7 @@ public class Ranker implements IRanker {
 
     private void rankByBM25(ArrayList<Term> termList){
 
-        BM25Algorithm bm25Algorithm = new BM25Algorithm(3,BM25_WEIGHT);
+        BM25Algorithm bm25Algorithm = new BM25Algorithm(3,BM25_WEIGHT,BM_25_B,BM_25_K);
 
         try{
 
