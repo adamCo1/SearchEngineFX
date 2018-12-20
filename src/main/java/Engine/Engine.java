@@ -305,6 +305,8 @@ import java.util.*;
             this.docLengths.put(docID,len);
         }
 
+        public int getDocCount(){return docCount;}
+
         public TreeSet<String> getDocsLang(){
             return ((Parser)this.parser).getDocLangs();
         }
