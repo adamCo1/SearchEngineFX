@@ -18,6 +18,7 @@ public class BufferReader extends ABufferReader {
     public Term getData(int positionInFile) throws IOException{
 
         this.blocksRead = 0;
+        index = 0 ;
         initializeBuffer(positionInFile);
         return readAllTermData();
     }

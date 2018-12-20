@@ -16,6 +16,7 @@ public class DocBufferReader extends ABufferReader{
     @Override
     public IData getData(int positionInFile) throws IOException {
         this.blocksRead = 0 ;
+        index = 0;
         initializeBuffer(positionInFile);
 
         return readAllDocData();

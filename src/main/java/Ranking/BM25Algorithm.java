@@ -7,14 +7,14 @@ import java.util.ArrayList;
 
 public class BM25Algorithm extends ARankingAlgorithm {
 
-    private double avgDocLength ;
-    private double totalDocCount ;
-    private double k;
-    private double b;
+    private double k , b , avgDocLength , totalDocCount;
 
-    public BM25Algorithm(double avgDocLength , double weight){
+    public BM25Algorithm(double avgDocLength , double weight , double b , double k){
         super(weight);
+        this.totalDocCount = 472500;
         this.avgDocLength = avgDocLength;
+        this.b = b ;
+        this.k = k ;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class BM25Algorithm extends ARankingAlgorithm {
         double docRank = 0;
 
         for (Term term:termList) {
-            double tfInDoc = (double)term.getDocToDataMap().get(document.getDocID()).getFirst();
+            double tfInDoc =  (Integer)term.getDocToDataMap().get(document.getDocID()).getFirst();
             docRank+=(getTermIdf(term)*tfInDoc*(k+1))/(tfInDoc+k*(1-b+b*(document.getLength()/avgDocLength)));
         }
 
