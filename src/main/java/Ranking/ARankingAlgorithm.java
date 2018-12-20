@@ -7,8 +7,10 @@ import java.util.ArrayList;
 
 public abstract class ARankingAlgorithm {
 
-    public ARankingAlgorithm(){
+    protected double weight;
 
+    public ARankingAlgorithm(double weight){
+        this.weight = weight;
     }
 
     /**

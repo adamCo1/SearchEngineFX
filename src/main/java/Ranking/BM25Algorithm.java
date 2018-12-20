@@ -7,10 +7,10 @@ import java.util.ArrayList;
 
 public class BM25Algorithm extends ARankingAlgorithm {
 
-    private int avgDocLength ;
+    private double avgDocLength ;
 
-    public BM25Algorithm(int avgDocLength){
-        super();
+    public BM25Algorithm(double avgDocLength , double weight){
+        super(weight);
         this.avgDocLength = avgDocLength;
     }
 

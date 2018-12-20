@@ -5,18 +5,18 @@ import IO.DocBufferReader;
 import Indexer.VariableByteCode;
 import Parser.IParser;
 import Structures.CorpusDocument;
+import Structures.Pair;
 import Structures.PostingDataStructure;
 import Structures.Term;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 
 public class Searcher implements ISearcher {
 
     private final int DOCS_RETURN_NUMBER = 50;
-    private double[] docRanks;
+    private HashMap<Integer, Pair> docPositions ;
     private IRanker ranker ;
     private IParser parser;
     private String outTermPath , outDocPath ;
@@ -24,8 +24,10 @@ public class Searcher implements ISearcher {
     private VariableByteCode vb;
     private int blockSize;
 
-    public Searcher(IParser parser , String termOutPath , String docOutPath , int blockSize) {
+    public Searcher(HashMap termIdMap , HashMap docPositions, IParser parser , String termOutPath , String docOutPath , int blockSize) {
         try {
+            this.termIdMap = termIdMap;
+            this.docPositions = docPositions;
             this.vb = new VariableByteCode();
             this.parser = parser;
             this.blockSize = blockSize;
@@ -52,7 +54,6 @@ public class Searcher implements ISearcher {
         try {
             fillTermDataList(queryTerms,termList);
             this.ranker.rankByTerms(termList);
-           // Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
 
         }catch (Exception e){
             e.printStackTrace();
@@ -80,6 +81,19 @@ public class Searcher implements ISearcher {
 
     }
 
+    /**
+     * read doc data from the doc posting list and fill a buffer with it .
+     */
+    private void fillDocDataBuffer(ArrayList<Integer> relevantDocIDS) {
+
+        try {
+            DocBufferReader docBufferReader = new DocBufferReader(this.outDocPath, this.blockSize);
+
+            docBufferReader.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     private ArrayList<String> parse(String query){
 

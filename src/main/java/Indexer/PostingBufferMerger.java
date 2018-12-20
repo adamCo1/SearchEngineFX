@@ -24,14 +24,16 @@ public class PostingBufferMerger {
     private ArrayList<PostingBuffer> buffers;
     private byte[] mainBuffer;
     private int bufferIndex, pathIndex;
+    private HashMap<Integer,Pair> docPositions;
     private HashMap<String,PostingDataStructure> termIdMap;
     private ArrayList<String> outPaths;
     private PostingWriter writer;
     private SpimiInverter spimi;
 
-    public PostingBufferMerger(HashMap<String, PostingDataStructure> termIdMap , VariableByteCode vb, SpimiInverter spimi, ArrayList<String> paths, ArrayList<String> docPaths, ArrayList<String> cityPaths, String targetPath) {
+    public PostingBufferMerger(HashMap<String, PostingDataStructure> termIdMap,HashMap docPositions , VariableByteCode vb, SpimiInverter spimi, ArrayList<String> paths, ArrayList<String> docPaths, ArrayList<String> cityPaths, String targetPath) {
         this.spimi = spimi;
         this.targetPath = targetPath;
+        this.docPositions = docPositions;
         this.termIdMap = termIdMap;
         this.vb = vb;
         this.buffers = new ArrayList<>();
@@ -205,6 +207,14 @@ public class PostingBufferMerger {
         return 2;//for docs
     }
 
+    /**
+     * update where the given doc starts in the posting docs file
+     * @param id
+     */
+    private void updatePositionOnDocPositionMap(int id){
+
+        this.docPositions.put(id,new Pair(blockNum,bufferIndex));
+    }
 
     /**
      * update the starting position of the term using the blockNum and bufferIndex .
@@ -245,6 +255,8 @@ public class PostingBufferMerger {
         try {
             ArrayList<PostingBuffer> toRemove = new ArrayList<>();
             mainBuffer = new byte[maxBlockSize];
+            blockNum = 0;
+            bufferIndex = 0;
             int bufferStatus = 0, currentIDOnMerge = 1 ;
             byte[] termDelimiter = {0,0};
             openWriterOnPath(type);
@@ -269,7 +281,10 @@ public class PostingBufferMerger {
                           //  while (!buffer.checkEndOfTermID()) {//so more info on this term
 
                             if(firstBufferWithID)
-                                updatePositionOntermMap(id,outIndicator);
+                                if(type.equals("TERMS"))
+                                    updatePositionOntermMap(id,outIndicator);
+                                else if(type.equals("DOC"))
+                                    updatePositionOnDocPositionMap(id);
 
                             firstBufferWithID = false;
 

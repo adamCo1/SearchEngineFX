@@ -6,6 +6,7 @@ import Engine.Stemmer;
 import IO.PostingWriter;
 import Parser.IParser;
 import ReadFromWeb.City;
+import Structures.Pair;
 import Structures.PostingDataStructure;
 import Structures.TokensStructure;
 import com.sun.xml.internal.ws.policy.spi.PolicyAssertionValidator;
@@ -29,6 +30,7 @@ public class SpimiInverter implements IIndexer {
     private IParser parser;
     private VariableByteCode vb;
     private HashMap<Integer,Integer> docLengths;
+    private HashMap<Integer, Pair> docPositions;
     private HashMap<Integer, ABufferData> cityBuffer;
     private HashMap<Integer, HashMap<Integer, Data>> termInfoMap;
     private HashMap<Integer, String> idTermMap; // ID - TERM map
@@ -37,10 +39,11 @@ public class SpimiInverter implements IIndexer {
     private PostingWriter writer;
     private byte[] mainBuffer = new byte[4096];
 
-    public SpimiInverter(HashMap docLengths,HashMap termIdMap, HashMap idTermMap , IParser parser) {
+    public SpimiInverter(HashMap docLengths,HashMap termIdMap, HashMap idTermMap,HashMap docPositions , IParser parser) {
 
         titleSet = new HashSet<>();
         porterStemmer = new Stemmer();
+        this.docPositions = docPositions;
         this.docLengths = docLengths;
         this.parser = parser;
         this.cityPaths = new ArrayList<>();
@@ -196,7 +199,7 @@ public class SpimiInverter implements IIndexer {
      * merge the temporary postings
      */
     private void writeMergedSortedPostings() {
-        PostingBufferMerger merger = new PostingBufferMerger(this.termIdMap, this.vb, this, this.postingPaths, this.docPaths, this.cityPaths, this.targetPath);
+        PostingBufferMerger merger = new PostingBufferMerger(this.termIdMap,this.docPositions, this.vb, this, this.postingPaths, this.docPaths, this.cityPaths, this.targetPath);
         merger.mergeOnTermID(this.postingPaths, 4096, "TERMS");
         merger.mergeOnTermID(this.cityPaths, 4096, "CITY");
         merger.mergeOnTermID(this.docPaths,4096,"DOC");

@@ -2,18 +2,19 @@ package Ranking;
 
 import IO.DocBufferReader;
 import Structures.CorpusDocument;
+import Structures.Pair;
 import Structures.Term;
-import Structures.Triplet;
 
 import java.util.*;
 
 public class Ranker implements IRanker {
 
-    private final double TITLE_WEIGHT = 0.4 , POSITIONS_WEIGHT = 0.3 ;
+    private final double TITLE_WEIGHT = 0.4 , POSITIONS_WEIGHT = 0.3 , BM25_WEIGHT = 0.3;
     private String termOutPath,docOutPath,cityOutPath;
     private int blockSize;
     private HashMap<Integer,DocRank> docRanks ;
     private ArrayList<CorpusDocument> docBuffer;
+    private HashMap<Integer, Pair> docPos;
 
     public Ranker(String termOutPath , String docOutPath , String cityOutPath , int blockSize){
         this.termOutPath = termOutPath;
@@ -94,6 +95,8 @@ public class Ranker implements IRanker {
         try {
             DocBufferReader docBufferReader = new DocBufferReader(this.docOutPath, this.blockSize);
 
+            
+
             docBufferReader.close();
         }catch (Exception e){
             e.printStackTrace();
@@ -102,7 +105,7 @@ public class Ranker implements IRanker {
 
     private void rankByBM25(ArrayList<Term> termList){
 
-        BM25Algorithm bm25Algorithm = new BM25Algorithm(3);
+        BM25Algorithm bm25Algorithm = new BM25Algorithm(3,BM25_WEIGHT);
 
         try{
 
@@ -123,19 +126,17 @@ public class Ranker implements IRanker {
      */
     private void rankByTitleAndPosition(ArrayList<Term> termList){
 
-        TitleAlgorithm titleAlgorithm = new TitleAlgorithm();
-        PositionsAlgorithm positionsAlgorithm = new PositionsAlgorithm();
+        TitleAlgorithm titleAlgorithm = new TitleAlgorithm(this.TITLE_WEIGHT);
+        PositionsAlgorithm positionsAlgorithm = new PositionsAlgorithm(this.POSITIONS_WEIGHT);
 
         try{
 
-            Thread titleAlgThread = new Thread(() -> titleAlgorithm.rank(null,termList));
-            Thread positionAlgThread = new Thread(() -> positionsAlgorithm.rank(null,termList));
-
-            titleAlgThread.start();
-            positionAlgThread.start();
-
-            titleAlgThread.join();
-            positionAlgThread.join();
+            for (CorpusDocument doc:
+                 this.docBuffer) {
+                DocRank docRank = this.docRanks.get(doc.getDocID());
+                docRank.addRank(titleAlgorithm.rank(doc,termList));
+                docRank.addRank(positionsAlgorithm.rank(doc,termList));
+            }
 
         }catch (Exception e){
 
