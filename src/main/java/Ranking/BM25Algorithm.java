@@ -19,11 +19,14 @@ public class BM25Algorithm extends ARankingAlgorithm {
 
     @Override
     public double rank(CorpusDocument document, ArrayList<Term> termList) {
+
         double docRank = 0;
+
         for (Term term:termList) {
             double tfInDoc = (double)term.getDocToDataMap().get(document.getDocID()).getFirst();
             docRank+=(getTermIdf(term)*tfInDoc*(k+1))/(tfInDoc+k*(1-b+b*(document.getLength()/avgDocLength)));
         }
+
         return docRank;
     }
 

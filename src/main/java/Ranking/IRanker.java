@@ -7,4 +7,5 @@ import java.util.ArrayList;
 public interface IRanker {
 
     void rankByTerms(ArrayList<Term> termList);
+    void setPaths(String termsPath , String docsPath);
 }

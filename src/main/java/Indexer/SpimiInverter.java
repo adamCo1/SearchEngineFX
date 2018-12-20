@@ -201,8 +201,8 @@ public class SpimiInverter implements IIndexer {
     private void writeMergedSortedPostings() {
         PostingBufferMerger merger = new PostingBufferMerger(this.termIdMap,this.docPositions, this.vb, this, this.postingPaths, this.docPaths, this.cityPaths, this.targetPath);
         merger.mergeOnTermID(this.postingPaths, 4096, "TERMS");
-        merger.mergeOnTermID(this.cityPaths, 4096, "CITY");
-        merger.mergeOnTermID(this.docPaths,4096,"DOC");
+        merger.merge(this.cityPaths, 4096, "CITY");
+        merger.merge(this.docPaths,4096,"DOC");
 
     }
 

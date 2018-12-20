@@ -26,7 +26,7 @@ public class Searcher implements ISearcher {
 
     public Searcher(HashMap termIdMap , HashMap docPositions, IParser parser , String termOutPath , String docOutPath , int blockSize) {
         try {
-            this.ranker = new Ranker(termOutPath,docOutPath,"t",blockSize);
+            this.ranker = new Ranker(docPositions,blockSize);
             this.termIdMap = termIdMap;
             this.docPositions = docPositions;
             this.vb = new VariableByteCode();
@@ -58,6 +58,7 @@ public class Searcher implements ISearcher {
 
         try {
             fillTermDataList(queryTerms,termList);
+            this.ranker.setPaths(outTermPath,outDocPath);
             this.ranker.rankByTerms(termList);
 
         }catch (Exception e){
@@ -81,7 +82,7 @@ public class Searcher implements ISearcher {
             byte[] data = this.termIdMap.get(term).getEncodedData();
             LinkedList<Integer> decodedData = vb.decode(data);
             termList.add(bufferReader.getData(decodedData.get(2) * blockSize +
-                    decodedData.get(3) - 1));
+                    decodedData.get(3)));
         }
 
     }

@@ -77,7 +77,7 @@ import java.util.*;
             this.controller = new DocController();
             this.reader = new ReadFile(controller);
             this.spimi = new SpimiInverter(docLengths,termIdMap, idTermMap , docsPositions, parser);
-            this.searcher = new Searcher(termIdMap,docsPositions,parser,TERMS_OUT,DOCS_OUT,4098);
+            this.searcher = new Searcher(termIdMap,docsPositions,parser,TERMS_OUT,DOCS_OUT,4096);
         }
 
 
