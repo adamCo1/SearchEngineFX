@@ -6,7 +6,10 @@ import Indexer.IIndexer;
 import Indexer.SpimiInverter;
 import Parser.IParser;
 import Parser.Parser;
+import Ranking.ISearcher;
+import Ranking.Searcher;
 import Structures.Doc;
+import Structures.Pair;
 import Structures.PostingDataStructure;
 import org.apache.commons.io.FileUtils;
 import java.io.*;
@@ -19,17 +22,19 @@ import java.util.*;
     public class Engine {
 
         private double avgDocLength ;
-        private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data";
-        private final int MAX_SIZE_FOR_BUFFERS = 30720000;//30mb;
+        private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "term_out" , DOCS_OUT = "docs_out";
+        private final int MAX_SIZE_FOR_BUFFERS = 20480000;//20mb;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
         private HashMap<Integer,String> idTermMap; // ID - TERM map
+        private HashMap<Integer, Pair> docsPositions ;
         private HashMap<Integer,Integer> docLengths;
         private TreeMap<String, PostingDataStructure> termIdTreeMap;
         private HashMap<String, PostingDataStructure> termIdMap;// 0 - TF , 1 - ID , 2 - blockNumber , 3-index in block , 4 - out path id to be used with the out paths dictionary
         private IParser parser ;
         private IIndexer spimi;
         private IReader reader;
+        private ISearcher searcher;
         private IBufferController controller;
       //  private Thread readThread , indexThread , parseThread;
         private int docCount;
@@ -41,6 +46,7 @@ import java.util.*;
             this.controller = new DocController();
             this.reader = new ReadFile(controller);
             this.docLengths = new HashMap<>();
+            this.docsPositions = new HashMap<>();
         }
 
         public Engine(IIndexer spimi , IParser parser , IReader reader , IBufferController controller){
@@ -53,9 +59,12 @@ import java.util.*;
             this.reader = new ReadFile(this.controller);
             this.docCount = 0;
             this.docLengths = new HashMap<>();
+            this.docsPositions = new HashMap<>();
             spimi.setParser(parser);
 
         }
+
+
 
         public Engine(){
             this.parser = new Parser();
@@ -63,9 +72,10 @@ import java.util.*;
             this.idTermMap = new HashMap<>();
             this.controller = new DocController();
             this.reader = new ReadFile(controller);
-            this.spimi = new SpimiInverter(docLengths,termIdMap, idTermMap , parser);
+            this.spimi = new SpimiInverter(docLengths,termIdMap, idTermMap , docsPositions, parser);
             this.docLengths = new HashMap<>();
-
+            this.docsPositions = new HashMap<>();
+            this.searcher = new Searcher(termIdMap,docsPositions,parser,TERMS_OUT,DOCS_OUT,4098);
         }
 
 
@@ -78,6 +88,12 @@ import java.util.*;
             this.termIdTreeMap = dict;
             stream.close();
             in.close();
+
+            in = new FileInputStream(targetPath+"\\"+DOC_POSITIONS_OUT);
+            stream = new ObjectInputStream(in);
+            HashMap docpos = (HashMap)stream.readObject();
+            this.docsPositions = docpos;
+
             return "Dictionary loaded to memory.";
         }
 
@@ -184,6 +200,12 @@ import java.util.*;
                 out.close();
                 stream.close();
 
+                out = new FileOutputStream(targetPath+"\\"+DOC_POSITIONS_OUT);
+                stream = new ObjectOutputStream(out);
+                stream.writeObject(this.docsPositions);
+                out.close();
+                stream.close();
+
             }catch (IOException e){
                 e.printStackTrace();
             }
@@ -273,7 +295,10 @@ import java.util.*;
 
 
         public int getDocLength(int docID){
-            return this.docLengths.get(docID);
+            int len = this.docLengths.get(docID);
+            this.docLengths.remove(docID);
+
+            return len;
         }
 
         public void addDoclength(int docID, int len){
