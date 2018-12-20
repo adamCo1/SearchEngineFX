@@ -17,7 +17,7 @@ class BufferReaderTest {
         stream.write(arr);
 
         BufferReader reader = new BufferReader("file",arr.length);
-        Term term = reader.getTermData(0);
+        //Term term = reader.getTermData(0);
 
         System.out.println("done");
     }

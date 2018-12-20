@@ -26,6 +26,7 @@ public class Searcher implements ISearcher {
 
     public Searcher(HashMap termIdMap , HashMap docPositions, IParser parser , String termOutPath , String docOutPath , int blockSize) {
         try {
+            this.ranker = new Ranker(termOutPath,docOutPath,"t",blockSize);
             this.termIdMap = termIdMap;
             this.docPositions = docPositions;
             this.vb = new VariableByteCode();
@@ -40,11 +41,15 @@ public class Searcher implements ISearcher {
 
     @Override
     public ArrayList<CorpusDocument> analyzeAndRank(String query) {
-        ArrayList<String> queryTermList = parse(query);
-        ArrayList<Term> terms = new ArrayList<>();
 
-        getDataOnQueryTerms(queryTermList,terms);
-        
+        try {
+            ArrayList<String> queryTermList = parser.parse(query);
+            ArrayList<Term> terms = new ArrayList<>();
+
+            getDataOnQueryTerms(queryTermList, terms);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         return null ;
     }
@@ -76,7 +81,7 @@ public class Searcher implements ISearcher {
             byte[] data = this.termIdMap.get(term).getEncodedData();
             LinkedList<Integer> decodedData = vb.decode(data);
             termList.add(bufferReader.getData(decodedData.get(2) * blockSize +
-                    decodedData.get(3)));
+                    decodedData.get(3) - 1));
         }
 
     }
@@ -95,13 +100,15 @@ public class Searcher implements ISearcher {
         }
     }
 
-    private ArrayList<String> parse(String query){
-
-        return null;
-    }
 
     public void setRanker(IRanker ranker){
         this.ranker = ranker;
+    }
+
+    @Override
+    public void setOutPaths(String termsOutPath, String docOutPath) {
+        this.outTermPath = termsOutPath;
+        this.outDocPath = docOutPath;
     }
 
 }

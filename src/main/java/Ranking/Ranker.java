@@ -30,14 +30,16 @@ public class Ranker implements IRanker {
         try {
             PriorityQueue<DocRank> rankStack = new PriorityQueue<>(new DocRankComparator());
 
+            readDocsPostings(getRelevantDocIDs(termList));
+
             Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
-            Thread readDocPostingsThread = new Thread(() -> readDocsPostings(getRelevantDocIDs(termList)));
+          //  Thread readDocPostingsThread = new Thread(() -> readDocsPostings(getRelevantDocIDs(termList)));
 
             titleAndPositionThread.start();
-            readDocPostingsThread.start();
+            //readDocPostingsThread.start();
 
             titleAndPositionThread.join();
-            readDocPostingsThread.join();
+            //readDocPostingsThread.join();
             //when the 2 threads are done we have all the documents . now we can calculate BM25
 
             Thread bm25Thread = new Thread(() -> rankByBM25(termList));
@@ -92,10 +94,16 @@ public class Ranker implements IRanker {
      */
     private void fillDocDataBuffer(ArrayList<Integer> relevantDocIDS) {
 
+
         try {
             DocBufferReader docBufferReader = new DocBufferReader(this.docOutPath, this.blockSize);
 
-            
+            for (Integer docID:
+                 relevantDocIDS) {
+                Pair p = docPos.get(docID);
+                int pos = (Integer)p.getFirstValue() + (Integer)p.getSecondValue();
+                docBuffer.add((CorpusDocument)docBufferReader.getData(pos));
+            }
 
             docBufferReader.close();
         }catch (Exception e){

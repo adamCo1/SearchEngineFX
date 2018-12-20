@@ -55,12 +55,16 @@ public class PostingBufferMerger {
      */
     private void initializeBuffers(ArrayList<String> paths) {
 
-        this.buffers = new ArrayList<>();
+        try {
+            this.buffers = new ArrayList<>();
 
-        for (String path :
-                paths) {
-            PostingBuffer buffer = new PostingBuffer(path, BLOCK_SIZE);
-            this.buffers.add(buffer);
+            for (String path :
+                    paths) {
+                PostingBuffer buffer = new PostingBuffer(path, BLOCK_SIZE);
+                this.buffers.add(buffer);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -91,7 +95,9 @@ public class PostingBufferMerger {
         String path = this.outPaths.get(pathIndex);
         try {
             this.writer.write(mainBuffer);
+            this.mainBuffer = new byte[4096];
             this.bufferIndex = 0;
+            this.blockNum++;
             this.writer.flush();
            // this.termToPostingMap.get(currentTermID).setSecondValue(blockNum);
         } catch (Exception e) {
@@ -228,12 +234,14 @@ public class PostingBufferMerger {
             byte[] encodedData = this.termIdMap.get(term).getEncodedData();
             LinkedList<Integer> tlist = (LinkedList<Integer>) vb.decode(encodedData);
             LinkedList<Integer> flist = new LinkedList<Integer>(){{
-               add(tlist.get(0));
+               add(tlist.get(0));//tf
+               add(termID);
                add(blockNum) ;
                add(bufferIndex);
-               add(outIndicator);
+               add(outIndicator+1);
             }};
 
+            byte[] encoded = vb.encode(flist);
             this.termIdMap.get(term).setEncodedData(vb.encode(flist));
         }catch (Exception e){
                // e.printStackTrace();
@@ -264,9 +272,12 @@ public class PostingBufferMerger {
 
             while (this.buffers.size() != 0) {
 
+                if(currentIDOnMerge == 23868)
+                    System.out.println("textbook!");
+
                 if (currentIDOnMerge % ID_BAR == 0) {//CHANGE TO SIZE
                     writeMainBuffer();
-                    blockNum++ ;
+                    //blockNum++ ;
                 }
 
                 firstBufferWithID = true;//so it will update the position in the first match
@@ -300,6 +311,8 @@ public class PostingBufferMerger {
                                     continue;
                                // moveDataToMainBuffer(termID, termTF, docid, docTF, onTitle, positions);
                                 moveDataToMainBuffer(vb.encode(termID),termTF,allData);
+                            //add 00
+                            moveToMainBuffer(termDelimiter);
                             }
                     } catch (Exception e) {
                         if(e instanceof EOFException){
@@ -307,8 +320,6 @@ public class PostingBufferMerger {
                             Files.deleteIfExists(Paths.get(buffer.getTempPostingPath()));
                         }
                     }
-                    //add 00
-                    moveToMainBuffer(termDelimiter);
 
                  }
                   buffers.removeAll(toRemove);
