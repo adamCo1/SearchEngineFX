@@ -182,6 +182,10 @@ public class PostingBufferMerger {
         moveToMainBuffer(allData);
     }
 
+    private void moveDataToMainBuffer(LinkedList<Integer> tf , LinkedList<Byte> alldata){
+        moveToMainBuffer(vb.encode(tf));
+        moveToMainBuffer(alldata);
+    }
 
     private void moveDataToMainBuffer(byte[] termID , LinkedList<Byte> allData){
         moveToMainBuffer(termID);
@@ -224,6 +228,7 @@ public class PostingBufferMerger {
      */
     private void updatePositionOnDocPositionMap(int id){
 
+        System.out.println(id);
         this.docPositions.put(id,new Pair(blockNum,bufferIndex));
     }
 
@@ -287,9 +292,10 @@ public class PostingBufferMerger {
                         if (id != -1) {//move all data to the main buffer
                             //  while (!buffer.checkEndOfTermID()) {//so more info on this term
 
-                            if(firstBufferWithID)
-                                if(type.equals("DOC"))
+                            if(firstBufferWithID) {
+                                if (type.equals("DOC"))
                                     updatePositionOnDocPositionMap(id);
+                            }
 
                             firstBufferWithID = false;
 
@@ -300,8 +306,8 @@ public class PostingBufferMerger {
 
                             LinkedList<Byte> allData = buffer.readToEndOfTerm();
                             moveDataToMainBuffer(vb.encode(termID),allData);
-                            //add 00
-                            moveToMainBuffer(termDelimiter);
+
+                            //end of 1 buffer
                         }
                     } catch (Exception e) {
                         if(e instanceof EOFException){
@@ -311,6 +317,8 @@ public class PostingBufferMerger {
                     }
 
                 }
+                //add 00
+                moveToMainBuffer(termDelimiter);
                 buffers.removeAll(toRemove);
                 toRemove=new ArrayList<>();
                 currentIDOnMerge++;//
@@ -368,8 +376,6 @@ public class PostingBufferMerger {
                                 else if(type.equals("DOC"))
                                     updatePositionOnDocPositionMap(id);
 
-                            firstBufferWithID = false;
-
                             LinkedList<Integer> termID = new LinkedList<Integer>() {{
                                 add(id);
                             }};
@@ -383,11 +389,12 @@ public class PostingBufferMerger {
                                 if(termTF.getFirst().equals(0))
                                     continue;
 
-                                    moveDataToMainBuffer(vb.encode(termID),termTF,allData);
-
-                            //add 00
-                            moveToMainBuffer(termDelimiter);
-                            }
+                                if(firstBufferWithID) {
+                                    moveDataToMainBuffer(vb.encode(termID), termTF, allData);
+                                    firstBufferWithID = false;
+                                }else
+                                    moveDataToMainBuffer(termTF,allData);
+                        }
                     } catch (Exception e) {
                         if(e instanceof EOFException){
                             toRemove.add(buffer);
@@ -396,6 +403,8 @@ public class PostingBufferMerger {
                     }
 
                  }
+                 //add 00
+                  moveToMainBuffer(termDelimiter);
                   buffers.removeAll(toRemove);
                   toRemove=new ArrayList<>();
                   currentIDOnMerge++;//

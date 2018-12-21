@@ -32,6 +32,7 @@ public class Ranker implements IRanker {
     public void rankByTerms(ArrayList<Term> termList) {
         try {
             PriorityQueue<DocRank> rankStack = new PriorityQueue<>(new DocRankComparator());
+            docBuffer = new ArrayList<>();
 
             ArrayList<Integer> relevantDocIDS = getRelevantDocIDs(termList);
             initializeRankMap(relevantDocIDS);
@@ -49,17 +50,30 @@ public class Ranker implements IRanker {
 
            // Thread bm25Thread = new Thread(() -> rankByBM25(termList));
             //Thread clusterPrunningThread = new Thread(() -> rankByPruning(termList));
-            long t1 = System.nanoTime();
+            long t1 = System.currentTimeMillis();
            // bm25Thread.start();
             rankByBM25(termList);
           //  bm25Thread.join();
-            System.out.println(System.nanoTime()-t1);
-            System.out.println("termList = [" + termList + "]");
+            System.out.println("query process time : " + (System.currentTimeMillis()-t1));
+
+            System.out.println("Ranked " + this.docRanks.size() + " Documents : ");
+            Iterator iterator = this.docRanks.entrySet().iterator();
+            while(iterator.hasNext()){
+                Map.Entry<Integer,DocRank> entry = (Map.Entry)iterator.next();
+                System.out.println("DOC ID : " + entry.getKey());
+                System.out.println("RANK : " + entry.getValue());
+            }
+
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
+    /**
+     * initalizes the ranking map . this map holds an entry for each document that is
+     * relevant to the query
+     * @param relevantDocIDS
+     */
     private void initializeRankMap(ArrayList<Integer> relevantDocIDS){
 
         for (Integer i :
@@ -72,6 +86,11 @@ public class Ranker implements IRanker {
     public void setPaths(String termsPath, String docsPath) {
         this.termOutPath = termsPath;
         this.docOutPath = docsPath;
+    }
+
+    @Override
+    public void setDictionaries(HashMap<Integer, Pair> docPositions) {
+        this.docPos = docPositions;
     }
 
     private void readDocsPostings(ArrayList<Integer> docIDS){
@@ -121,6 +140,8 @@ public class Ranker implements IRanker {
             for (Integer docID:
                  relevantDocIDS) {
                 Pair p = docPos.get(docID);
+                if(p == null)
+                    continue;
                 int pos = (Integer)p.getFirstValue()*this.blockSize + (Integer)p.getSecondValue();
                 docBuffer.add((CorpusDocument)docBufferReader.getData(pos));
             }
