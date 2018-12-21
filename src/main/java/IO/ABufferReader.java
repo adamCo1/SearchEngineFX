@@ -33,6 +33,7 @@ public abstract class ABufferReader {
         this.randomAccessFile.seek(blocksRead*blockSize);
         this.randomAccessFile.read(this.buffer);
         this.index = 0;
+        this.blocksRead++ ;
     }
 
     protected void initializeBuffer(int positionInFile)throws IOException{

@@ -154,14 +154,16 @@ public class Ranker implements IRanker {
 
     private void rankByBM25(ArrayList<Term> termList){
 
-        BM25Algorithm bm25Algorithm = new BM25Algorithm(3,BM25_WEIGHT,BM_25_B,BM_25_K);
-
+        BM25Algorithm bm25Algorithm = new BM25Algorithm(700,BM25_WEIGHT,BM_25_B,BM_25_K);
+        DocRank docRank ;
         try{
 
             for (CorpusDocument doc :
                     this.docBuffer) {
                 double rank = bm25Algorithm.rank(doc,termList);
-                this.docRanks.get(doc.getDocID()).addRank(rank);
+                docRank = this.docRanks.get(doc.getDocID());
+                if(docRank != null)//till we solve the EOF bug
+                    docRank.addRank(rank);
             }
 
         }catch (Exception e){
