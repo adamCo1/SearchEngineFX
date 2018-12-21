@@ -1,5 +1,6 @@
 package Ranking;
 
+import Structures.CorpusDocument;
 import Structures.Pair;
 import Structures.PostingDataStructure;
 import java.util.ArrayList;
@@ -10,6 +11,6 @@ public interface ISearcher {
 
     void setRanker(IRanker ranker);
     void setOutPaths(String termsOutPath , String docOutPath);
-    ArrayList<String> analyzeAndRank(String query);
+    ArrayList<CorpusDocument> analyzeAndRank(String query);
     void setDictionaries(TreeMap<String, PostingDataStructure> termIdMap , HashMap<Integer, Pair> docPositions);
 }

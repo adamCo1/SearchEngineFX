@@ -2,6 +2,7 @@ package Structures;
 
 public class CorpusDocument implements IData{
 
+    private double rank ;
     private int docID , length , maxTF , uniqueNumberOfTerms;
     private String name , author , city , lang , type;
 
@@ -16,6 +17,14 @@ public class CorpusDocument implements IData{
         this.city = city;
         this.lang = lang;
         this.type = type;
+    }
+
+    public double getRank() {
+        return rank;
+    }
+
+    public void addRank(double rank){
+        this.rank += rank;
     }
 
     public int getDocID() {
@@ -52,5 +61,9 @@ public class CorpusDocument implements IData{
 
     public int getLength() {
         return length;
+    }
+
+    public String toString(){
+        return this.name;
     }
 }

@@ -1,5 +1,6 @@
 package Ranking;
 
+import Structures.CorpusDocument;
 import Structures.Pair;
 import Structures.Term;
 
@@ -12,7 +13,7 @@ public interface IRanker {
      * the main ranking function
      * @param termList a list of the query terms after parsing
      */
-    ArrayList<String> rankByTerms(ArrayList<Term> termList);
+    ArrayList<CorpusDocument> rankByTerms(ArrayList<Term> termList);
 
     /**
      * set the paths to the postings lists

@@ -1,11 +1,13 @@
 package Ranking;
 
+import Structures.CorpusDocument;
+
 import java.util.Comparator;
 
-public class DocRankComparator implements Comparator<DocRank> {
+public class DocRankComparator implements Comparator<CorpusDocument> {
 
     @Override
-    public int compare(DocRank o1, DocRank o2) {
+    public int compare(CorpusDocument o1, CorpusDocument o2) {
 
         if(o1.getRank() > o2.getRank())
             return -1;

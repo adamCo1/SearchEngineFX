@@ -36,13 +36,13 @@ public class Searcher implements ISearcher {
     }
 
     @Override
-    public ArrayList<String> analyzeAndRank(String query) {
+    public ArrayList<CorpusDocument> analyzeAndRank(String query) {
 
         try {
             ArrayList<String> queryTermList = parser.parse(query);
             ArrayList<Term> terms = new ArrayList<>();
 
-            ArrayList<String> ans = getDataOnQueryTerms(queryTermList, terms);
+            ArrayList<CorpusDocument> ans = getDataOnQueryTerms(queryTermList, terms);
 
             System.out.println("Best documents found : ");
             System.out.println(Arrays.toString(ans.toArray()));
@@ -61,7 +61,7 @@ public class Searcher implements ISearcher {
         this.ranker.setDictionaries(docPositions);
     }
 
-    private ArrayList<String> getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList){
+    private ArrayList<CorpusDocument> getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList){
 
         try {
             fillTermDataList(queryTerms,termList);
