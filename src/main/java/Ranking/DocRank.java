@@ -19,4 +19,8 @@ public class DocRank {
     public void addRank(double rank){
         this.rank += rank;
     }
+
+    public String toString(){
+        return ""+this.rank;
+    }
 }

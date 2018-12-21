@@ -57,6 +57,7 @@ public class Searcher implements ISearcher {
     public void setDictionaries(TreeMap<String, PostingDataStructure> termIdMap, HashMap<Integer, Pair> docPositions) {
         this.docPositions = docPositions;
         this.termIdMap = termIdMap;
+        this.ranker.setDictionaries(docPositions);
     }
 
     private void getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList){

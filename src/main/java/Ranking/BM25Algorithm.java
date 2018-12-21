@@ -21,10 +21,15 @@ public class BM25Algorithm extends ARankingAlgorithm {
     public double rank(CorpusDocument document, ArrayList<Term> termList) {
 
         double docRank = 0;
+        try {
 
-        for (Term term:termList) {
-            double tfInDoc =  (Integer)term.getDocToDataMap().get(document.getDocID()).getFirst();
-            docRank+=(getTermIdf(term)*tfInDoc*(k+1))/(tfInDoc+k*(1-b+b*(document.getLength()/avgDocLength)));
+
+            for (Term term : termList) {
+                double tfInDoc = (Integer) term.getDocToDataMap().get(document.getDocID()).getFirst();
+                docRank += (getTermIdf(term) * tfInDoc * (k + 1)) / (tfInDoc + k * (1 - b + b * (document.getLength() / avgDocLength)));
+            }
+        }catch (NullPointerException e){//in case that the term is not in the given document
+            docRank += 0;
         }
 
         return docRank;
