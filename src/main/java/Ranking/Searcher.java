@@ -82,10 +82,13 @@ public class Searcher implements ISearcher {
     private void fillTermDataList(ArrayList<String> queryTerms ,ArrayList<Term> termList)throws IOException {
 
         BufferReader bufferReader = new BufferReader(this.outTermPath,this.blockSize);
-
+        PostingDataStructure posting ;
         for (String term :
                 queryTerms) {
-            byte[] data = this.termIdMap.get(term).getEncodedData();
+            posting = this.termIdMap.get(term);
+            if(posting == null)//so there is no record of this term , go to the next one
+                continue;
+            byte[] data = posting.getEncodedData();
             LinkedList<Integer> decodedData = vb.decode(data);
             termList.add(bufferReader.getData(decodedData.get(2) * blockSize +
                     decodedData.get(3)));
