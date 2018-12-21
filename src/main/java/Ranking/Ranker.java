@@ -172,4 +172,10 @@ public class Ranker implements IRanker {
     }
 
 
+    public double getDocRank(int docId){
+        return this.docRanks.get(docId).getRank();
+
+    }
+
+
 }

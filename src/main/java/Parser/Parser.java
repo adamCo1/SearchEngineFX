@@ -39,9 +39,9 @@ public class Parser implements IParser {
     private TrieTree stopWordsTrietree;
     private String currentText ;
     private boolean done ;
-    private HashSet<String> hashSetCountries;
-    private TreeSet<String> countries;
-    private static int numberOfDiffrentCounties=0;
+//    private HashSet<String> hashSetCountries;
+//    private TreeSet<String> countries;
+//    private static int numberOfDiffrentCounties=0;
     private Pattern countryPatterns;
 
     public Parser()  {
@@ -54,11 +54,11 @@ public class Parser implements IParser {
         this.done = false;
         this.cityDict = new HashMap<>();
         this.docLangs = new TreeSet<>();
-        this.hashSetCountries = new HashSet<>();
-        this.countries = new TreeSet<>();
+//        this.hashSetCountries = new HashSet<>();
+//        this.countries = new TreeSet<>();
         if(allCities.size() == 0)
             ReadFromWeb.getCities();
-        loadAllCountries();
+//        loadAllCountries();
 //
         countryPatterns = getCountryPatterns();
 
@@ -85,34 +85,34 @@ public class Parser implements IParser {
         parseText(doc,(byte)0);
     }
 
-    private void loadAllCountries(){
-        int parPos=0;
-        int endParPos=0;
-        for (String cityName:allCities.keySet()
-             ) {
-            String originalCountryName = allCities.get(cityName).getCountry();
-            if(originalCountryName.length() == 0)
-                continue;
-
-
-            if(originalCountryName.contains("(")) {
-//                System.out.println("country: "+c.getCountry()+" has paranthsis");
-                parPos = originalCountryName.indexOf("(");
-                endParPos = originalCountryName.indexOf(")");
-//                System.out.println("position of paranthsis: "+parPos);
-                originalCountryName= originalCountryName.substring(0,parPos-1)+originalCountryName.substring(endParPos+1);
-//                System.out.println(ans);
-            }
-
-                this.countries.add(originalCountryName);
-        }
-
-        for(String countryName:countries){
-            this.hashSetCountries.add(countryName);
-        }
-
-
-    }
+//    private void loadAllCountries(){
+//        int parPos=0;
+//        int endParPos=0;
+//        for (String cityName:allCities.keySet()
+//             ) {
+//            String originalCountryName = allCities.get(cityName).getCountry();
+//            if(originalCountryName.length() == 0)
+//                continue;
+//
+//
+//            if(originalCountryName.contains("(")) {
+////                System.out.println("country: "+c.getCountry()+" has paranthsis");
+//                parPos = originalCountryName.indexOf("(");
+//                endParPos = originalCountryName.indexOf(")");
+////                System.out.println("position of paranthsis: "+parPos);
+//                originalCountryName= originalCountryName.substring(0,parPos-1)+originalCountryName.substring(endParPos+1);
+////                System.out.println(ans);
+//            }
+//
+//                this.countries.add(originalCountryName);
+//        }
+//
+//        for(String countryName:countries){
+//            this.hashSetCountries.add(countryName);
+//        }
+//
+//
+//    }
 
 
     private Pattern getCountryPatterns(){
@@ -125,7 +125,7 @@ public class Parser implements IParser {
         regex+="(China)";
 
         Pattern countryPattern = Pattern.compile(regex);
-        countries = new TreeSet<>();
+//        countries = new TreeSet<>();
         return countryPattern;
     }
 
@@ -615,14 +615,14 @@ public class Parser implements IParser {
         this.done = false;
         this.cityDict = new HashMap<>();
         this.docLangs = new TreeSet<>();
-        this.hashSetCountries = new HashSet<>();
-        this.countries = new TreeSet<>();
+//        this.hashSetCountries = new HashSet<>();
+//        this.countries = new TreeSet<>();
         this.getTakeBufferSem = new Semaphore(0);
         this.putBufferSem = new Semaphore(5);
         this.mutex = new Mutex();
         if(allCities.size() == 0)
             ReadFromWeb.getCities();
-        loadAllCountries();
+//        loadAllCountries();
     }
 
     public boolean isDone(){

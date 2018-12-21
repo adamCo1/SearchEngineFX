@@ -29,7 +29,7 @@ public class ReadFromWeb {
      */
     public static HashMap<String,City> allCities = new HashMap<String, City>();
     public static HashMap<String,Pair<String,Integer>> countrySet = new HashMap<>();
-    public static HashSet<String>countries = new HashSet<>();
+//    public static HashSet<String>countries = new HashSet<>();
 
     public static void reset(){
 
@@ -74,25 +74,25 @@ public class ReadFromWeb {
             String fullCityName = ((JsonObject) c).get("capital").toString().toUpperCase().replaceAll("[,'\".]","");
             long lPopultion = ((JsonObject) c).get("population").getAsLong();
             String popultion = longFormat(lPopultion);
-            int parPos=-1;
-            int endParPos=-1;
-            int numOfWordsInCountryName=1;
-            String tempFullCountryName="";
-            String [] brokenCountry=null;
-            if(fullCountryName.contains("(")) {
-                parPos = fullCountryName.indexOf("(");
-                endParPos = fullCountryName.indexOf(")");
-                tempFullCountryName= fullCountryName.substring(0,parPos-1)+fullCountryName.substring(endParPos+1);
-
-            }
-            else{
-                tempFullCountryName = fullCountryName;
-            }
-            brokenCountry = tempFullCountryName.split(" ");
-            if(brokenCountry.length>1) {
-                numOfWordsInCountryName = brokenCountry.length;
-                tempFullCountryName = brokenCountry[0];
-            }
+//            int parPos=-1;
+//            int endParPos=-1;
+//            int numOfWordsInCountryName=1;
+//            String tempFullCountryName="";
+//            String [] brokenCountry=null;
+//            if(fullCountryName.contains("(")) {
+//                parPos = fullCountryName.indexOf("(");
+//                endParPos = fullCountryName.indexOf(")");
+//                tempFullCountryName= fullCountryName.substring(0,parPos-1)+fullCountryName.substring(endParPos+1);
+//
+//            }
+//            else{
+//                tempFullCountryName = fullCountryName;
+//            }
+//            brokenCountry = tempFullCountryName.split(" ");
+//            if(brokenCountry.length>1) {
+//                numOfWordsInCountryName = brokenCountry.length;
+//                tempFullCountryName = brokenCountry[0];
+//            }
 
 
 
@@ -111,14 +111,14 @@ public class ReadFromWeb {
                 }
 
 
-
-                countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
-               // System.out.println("added: "+tempFullCountryName);
-                for(int i =1; i<numOfWordsInCountryName;i++){
-                    tempFullCountryName+=" " + brokenCountry[i];
-                    countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
-                   // System.out.println("added: "+tempFullCountryName);
-                }
+//
+//                countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
+//               // System.out.println("added: "+tempFullCountryName);
+//                for(int i =1; i<numOfWordsInCountryName;i++){
+//                    tempFullCountryName+=" " + brokenCountry[i];
+//                    countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
+//                   // System.out.println("added: "+tempFullCountryName);
+//                }
 
 
             }
