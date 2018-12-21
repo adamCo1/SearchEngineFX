@@ -80,7 +80,7 @@ import java.util.*;
             this.controller = new DocController();
             this.reader = new ReadFile(controller);
             this.spimi = new SpimiInverter(docLengths,termIdMap, idTermMap , docsPositions, parser);
-            this.searcher = new Searcher(termIdMap,docsPositions,parser,TERMS_OUT,DOCS_OUT,4096);
+            this.searcher = new Searcher(parser,TERMS_OUT,DOCS_OUT,4096);
         }
 
 
@@ -99,9 +99,15 @@ import java.util.*;
             HashMap docpos = (HashMap)stream.readObject();
             this.docsPositions = docpos;
 
+            preProcessVectorSpace();
+            setDictionariesToSearcher();
             return "Dictionary loaded to memory.";
         }
 
+
+        private void setDictionariesToSearcher(){
+            this.searcher.setDictionaries(this.termIdTreeMap , this.docsPositions);
+        }
 
         public TreeMap sampleRun(String text , boolean stemmerOn){
 
@@ -171,8 +177,14 @@ import java.util.*;
                 parseThread.join();
                 indexThread.join();
 
+                /**
+                 * convert the hashmap to a sorted map , store on disk and set the searcher
+                 * dictionaries
+                 */
                 convertTermIdToTreeMap();
                 storeDictionariesOnDisk();
+                preProcessVectorSpace();
+                setDictionariesToSearcher();
 
                 String out = "";
                 out += "Total time in seconds : " + ((System.nanoTime() - t1) / (1000 * 1000 * 1000))+"\n";
@@ -191,7 +203,11 @@ import java.util.*;
             return this.termIdTreeMap;
         }
 
-        private void storeDictionariesOnDisk(){
+
+    /**
+     * store searcher's dictionaires
+     */
+    private void storeDictionariesOnDisk(){
             try{
                 FileOutputStream out = new FileOutputStream(targetPath+"\\"+TERM_ID_MAP_PATH);
                 ObjectOutputStream stream = new ObjectOutputStream(out);
@@ -247,6 +263,14 @@ import java.util.*;
     public void setCorpusPath(String path){
             this.corpusPath = path;
         }
+
+    /**
+     * preprocess the vector sapce model for the corpus .
+     * also choose the leaders and followers to the cluster pruning algorithm
+      */
+    private void preProcessVectorSpace(){
+
+    }
 
     /**
      * set path for writing files to

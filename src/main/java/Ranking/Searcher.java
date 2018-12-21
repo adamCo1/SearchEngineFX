@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.TreeMap;
 
 public class Searcher implements ISearcher {
 
@@ -20,15 +21,13 @@ public class Searcher implements ISearcher {
     private IRanker ranker ;
     private IParser parser;
     private String outTermPath , outDocPath ;
-    private HashMap<String, PostingDataStructure> termIdMap;
+    private TreeMap<String, PostingDataStructure> termIdMap;
     private VariableByteCode vb;
     private int blockSize;
 
-    public Searcher(HashMap termIdMap , HashMap docPositions, IParser parser , String termOutPath , String docOutPath , int blockSize) {
+    public Searcher(IParser parser , String termOutPath , String docOutPath , int blockSize) {
         try {
             this.ranker = new Ranker(docPositions,blockSize);
-            this.termIdMap = termIdMap;
-            this.docPositions = docPositions;
             this.vb = new VariableByteCode();
             this.parser = parser;
             this.blockSize = blockSize;
@@ -54,6 +53,13 @@ public class Searcher implements ISearcher {
         return null ;
     }
 
+    @Override
+    public void setDictionaries(TreeMap<String, PostingDataStructure> termIdMap, HashMap<Integer, Pair> docPositions) {
+        this.docPositions = docPositions;
+        this.termIdMap = termIdMap;
+        this.ranker.setDictionaries(docPositions);
+    }
+
     private void getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList){
 
         try {
@@ -76,10 +82,13 @@ public class Searcher implements ISearcher {
     private void fillTermDataList(ArrayList<String> queryTerms ,ArrayList<Term> termList)throws IOException {
 
         BufferReader bufferReader = new BufferReader(this.outTermPath,this.blockSize);
-
+        PostingDataStructure posting ;
         for (String term :
                 queryTerms) {
-            byte[] data = this.termIdMap.get(term).getEncodedData();
+            posting = this.termIdMap.get(term);
+            if(posting == null)//so there is no record of this term , go to the next one
+                continue;
+            byte[] data = posting.getEncodedData();
             LinkedList<Integer> decodedData = vb.decode(data);
             termList.add(bufferReader.getData(decodedData.get(2) * blockSize +
                     decodedData.get(3)));
