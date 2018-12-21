@@ -7,8 +7,10 @@ package Ranking;
 public class DocRank {
 
     private double rank ;
+    private String name ;
 
     public DocRank(){
+        this.name = "";
         this.rank = 0;
     }
 
@@ -18,6 +20,18 @@ public class DocRank {
 
     public void addRank(double rank){
         this.rank += rank;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean hasName(){
+        return !this.name.equals("");
     }
 
     public String toString(){

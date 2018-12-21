@@ -54,7 +54,7 @@ public class Model implements IModel {
     }
 
     @Override
-    public ArrayList<CorpusDocument> runQueryOnEngine(String query) {
+    public ArrayList<String> runQueryOnEngine(String query) {
         return this.engine.runQuery(query);
     }
 

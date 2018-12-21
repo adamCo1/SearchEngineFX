@@ -12,7 +12,7 @@ public interface IRanker {
      * the main ranking function
      * @param termList a list of the query terms after parsing
      */
-    void rankByTerms(ArrayList<Term> termList);
+    ArrayList<String> rankByTerms(ArrayList<Term> termList);
 
     /**
      * set the paths to the postings lists

@@ -9,10 +9,7 @@ import Structures.Pair;
 import Structures.PostingDataStructure;
 import Structures.Term;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Searcher implements ISearcher {
 
@@ -39,13 +36,17 @@ public class Searcher implements ISearcher {
     }
 
     @Override
-    public ArrayList<CorpusDocument> analyzeAndRank(String query) {
+    public ArrayList<String> analyzeAndRank(String query) {
 
         try {
             ArrayList<String> queryTermList = parser.parse(query);
             ArrayList<Term> terms = new ArrayList<>();
 
-            getDataOnQueryTerms(queryTermList, terms);
+            ArrayList<String> ans = getDataOnQueryTerms(queryTermList, terms);
+
+            System.out.println("Best documents found : ");
+            System.out.println(Arrays.toString(ans.toArray()));
+            return ans;
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -60,17 +61,19 @@ public class Searcher implements ISearcher {
         this.ranker.setDictionaries(docPositions);
     }
 
-    private void getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList){
+    private ArrayList<String> getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList){
 
         try {
             fillTermDataList(queryTerms,termList);
             this.ranker.setPaths(outTermPath,outDocPath);
-            this.ranker.rankByTerms(termList);
+            return this.ranker.rankByTerms(termList);
 
         }catch (Exception e){
             e.printStackTrace();
             System.out.println("at searcher getDataOnQueryTerms");
         }
+
+        return null ;
     }
 
     /**
