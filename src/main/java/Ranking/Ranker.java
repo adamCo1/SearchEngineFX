@@ -16,7 +16,7 @@ public class Ranker implements IRanker {
     private Mutex rankMutex;
     private String termOutPath,docOutPath,cityOutPath;
     private int blockSize;
-    private HashMap<Integer,DocRank> docRanks;
+    private ArrayList<CorpusDocument> docRanks;
     private ArrayList<CorpusDocument> docBuffer;
     private HashMap<Integer, Pair> docPos;
 
@@ -26,16 +26,16 @@ public class Ranker implements IRanker {
         this.cityOutPath = cityOutPath;
         this.blockSize = blockSize;
         this.docPos = docPos;
-        this.docRanks = new HashMap<>();
         this.docBuffer = new ArrayList<>();
         this.rankMutex = new Mutex();
+        this.docRanks = new ArrayList<>();
     }
 
 
     @Override
-    public ArrayList<String> rankByTerms(ArrayList<Term> termList) {
+    public ArrayList<CorpusDocument> rankByTerms(ArrayList<Term> termList) {
 
-        PriorityQueue<DocRank> rankStack = new PriorityQueue<>(new DocRankComparator());
+        PriorityQueue<CorpusDocument> rankStack = new PriorityQueue<>(new DocRankComparator());
         try {
 
             docBuffer = new ArrayList<>();
@@ -57,13 +57,11 @@ public class Ranker implements IRanker {
 
             System.out.println("query process time : " + (System.currentTimeMillis()-t1));
             System.out.println("Ranked " + this.docRanks.size() + " Documents : ");
-            Iterator iterator = this.docRanks.entrySet().iterator();
+           // Iterator iterator = this.docRanks.entrySet().iterator();
 
-            while(iterator.hasNext()){
-                Map.Entry<Integer,DocRank> entry = (Map.Entry)iterator.next();
-                rankStack.add(entry.getValue());
-              //  System.out.println("DOC ID : " + entry.getKey());
-              //  System.out.println("RANK : " + entry.getValue());
+            for (CorpusDocument doc:
+                 this.docBuffer) {
+                rankStack.add(doc);
             }
 
         }catch (Exception e){
@@ -81,13 +79,13 @@ public class Ranker implements IRanker {
      * @param rankQ
      * @return
      */
-    private ArrayList<String> retrieveBestDocuments(PriorityQueue<DocRank> rankQ){
+    private ArrayList<CorpusDocument> retrieveBestDocuments(PriorityQueue<CorpusDocument> rankQ){
 
         int i = 0 ;
-        ArrayList<String> bestDocumentsByOrder = new ArrayList<>();
+        ArrayList<CorpusDocument> bestDocumentsByOrder = new ArrayList<>();
 
         while(i < DOCUMENT_RETRIEVE_COUNT && rankQ.size() > 0){
-            bestDocumentsByOrder.add(i,rankQ.poll().getName());
+            bestDocumentsByOrder.add(i,rankQ.poll());
             i++;
         }
 
@@ -101,9 +99,9 @@ public class Ranker implements IRanker {
      */
     private void initializeRankMap(ArrayList<Integer> relevantDocIDS){
 
-        for (Integer i :
-             relevantDocIDS) {
-            this.docRanks.put(i,new DocRank());
+        for (CorpusDocument doc :
+             this.docBuffer) {
+            this.docRanks.add(doc);
         }
     }
 
@@ -180,7 +178,6 @@ public class Ranker implements IRanker {
     private void rankByBM25(ArrayList<Term> termList){
 
         BM25Algorithm bm25Algorithm = new BM25Algorithm(400,BM25_WEIGHT,BM_25_B,BM_25_K);
-        DocRank docRank ;
         try{
 
             for (CorpusDocument doc :
@@ -219,11 +216,7 @@ public class Ranker implements IRanker {
     private void addRank(CorpusDocument doc , double rank ){
         this.rankMutex.lock();
         try{
-            DocRank docRank = this.docRanks.get(doc.getDocID());
-            docRank.addRank(rank);
-            if(!docRank.hasName())
-                docRank.setName(doc.getName());
-
+            doc.addRank(rank);
         }catch (Exception e){
             //
         }
