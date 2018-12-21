@@ -330,7 +330,7 @@ import java.util.*;
             return len;
         }
 
-        public ArrayList<CorpusDocument> runQuery(String query){
+        public ArrayList<String> runQuery(String query){
             this.searcher.setOutPaths(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT);
             return this.searcher.analyzeAndRank(query);
         }

@@ -8,10 +8,10 @@ public class DocRankComparator implements Comparator<DocRank> {
     public int compare(DocRank o1, DocRank o2) {
 
         if(o1.getRank() > o2.getRank())
-            return 1;
+            return -1;
         else if (o1.getRank() == o2.getRank())
             return 0;
 
-        return -1;
+        return 1;
     }
 }
