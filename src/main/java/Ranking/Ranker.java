@@ -11,7 +11,7 @@ import java.util.*;
 public class Ranker implements IRanker {
 
     private final double BM_25_B = 1.2 , BM_25_K = 0.75;
-    private final double TITLE_WEIGHT = 0.4 , POSITIONS_WEIGHT = 0.3 , BM25_WEIGHT = 0.3;
+    private final double TITLE_WEIGHT = 0.4 , POSITIONS_WEIGHT = 0.3 , BM25_WEIGHT = 0.3 , IDF_LOWER_BOUND = 3.4;
     private final int DOCUMENT_RETRIEVE_COUNT = 50 ;
     private Mutex rankMutex;
     private String termOutPath,docOutPath,cityOutPath;
@@ -36,14 +36,13 @@ public class Ranker implements IRanker {
     public ArrayList<CorpusDocument> rankByTerms(ArrayList<Term> termList) {
 
         PriorityQueue<CorpusDocument> rankStack = new PriorityQueue<>(new DocRankComparator());
+        docBuffer = new ArrayList<>();
+        docRanks = new ArrayList<>();
+
         try {
-
-            docBuffer = new ArrayList<>();
-            long t1 = System.currentTimeMillis();
-
             ArrayList<Integer> relevantDocIDS = getRelevantDocIDs(termList);
             fillDocDataBuffer(relevantDocIDS);
-            initializeRankMap(relevantDocIDS);
+            initializeRankMap(relevantDocIDS,termList);
 
             Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
             titleAndPositionThread.start();
@@ -55,7 +54,6 @@ public class Ranker implements IRanker {
             bm25Thread.join();
             titleAndPositionThread.join();
 
-            System.out.println("query process time : " + (System.currentTimeMillis()-t1));
             System.out.println("Ranked " + this.docRanks.size() + " Documents : ");
            // Iterator iterator = this.docRanks.entrySet().iterator();
 
@@ -92,16 +90,25 @@ public class Ranker implements IRanker {
         return bestDocumentsByOrder;
     }
 
+    private boolean idfMoreThanBound(CorpusDocument doc , ArrayList<Term> termList){
+
+
+
+        return true;
+    }
+
     /**
      * initalizes the ranking map . this map holds an entry for each document that is
      * relevant to the query
      * @param relevantDocIDS
      */
-    private void initializeRankMap(ArrayList<Integer> relevantDocIDS){
+    private void initializeRankMap(ArrayList<Integer> relevantDocIDS , ArrayList<Term> termList){
 
         for (CorpusDocument doc :
              this.docBuffer) {
-            this.docRanks.add(doc);
+
+            if(idfMoreThanBound(doc,termList))
+                this.docRanks.add(doc);
         }
     }
 

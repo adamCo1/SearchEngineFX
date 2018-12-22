@@ -41,9 +41,9 @@ public class Searcher implements ISearcher {
         try {
             ArrayList<String> queryTermList = parser.parse(query);
             ArrayList<Term> terms = new ArrayList<>();
-
+            long t1 = System.currentTimeMillis();
             ArrayList<CorpusDocument> ans = getDataOnQueryTerms(queryTermList, terms);
-
+            System.out.println("query process time : " + (System.currentTimeMillis()-t1));
             System.out.println("Best documents found : ");
             System.out.println(Arrays.toString(ans.toArray()));
             return ans;
