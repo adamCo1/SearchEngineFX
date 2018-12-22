@@ -40,16 +40,14 @@ public class BufferReader extends ABufferReader {
         term = new Term(totalTF);
 
         while(true){
-
-            if(numberOfZeroes == 3)
-                break;
-
             if(index >= buffer.length)
                 fillBuffer();
 
             if(buffer[index] == 0){
                 index++;
                 numberOfZeroes++;
+                if(numberOfZeroes == 3)
+                    break;
                 continue;
             }
 

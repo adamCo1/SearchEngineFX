@@ -11,13 +11,14 @@ public abstract class ABufferReader {
 
     protected VariableByteCode vb ;
     protected RandomAccessFile randomAccessFile ;
-    protected int blockSize , index , blocksRead;
+    protected int blockSize , index , blocksRead,initialPosition;
     protected byte[] buffer;
 
     public ABufferReader(String path , int blockSize ) throws IOException {
         this.randomAccessFile = new RandomAccessFile(path,"r");
         this.blockSize = blockSize;
         this.blocksRead = 0;
+        this.initialPosition = 0;
         this.vb = new VariableByteCode();
         this.buffer = new byte[blockSize];
     }
@@ -30,14 +31,14 @@ public abstract class ABufferReader {
      * @throws IOException
      */
     protected void fillBuffer() throws IOException{
-        this.randomAccessFile.seek(blocksRead*blockSize);
+        this.randomAccessFile.seek(initialPosition+(blocksRead*blockSize));
         this.randomAccessFile.read(this.buffer);
         this.index = 0;
         this.blocksRead++ ;
     }
 
     protected void initializeBuffer(int positionInFile)throws IOException{
-
+        this.initialPosition = positionInFile;
         this.randomAccessFile.seek(positionInFile);
         this.randomAccessFile.read(buffer);
     }
