@@ -30,6 +30,7 @@ public class DocBufferReader extends ABufferReader{
         String name , author , city, language , type;
 
         docID = vb.decodeNumber(getSingleData());
+
         length = vb.decodeNumber(getSingleData());
         maxTF = vb.decodeNumber(getSingleData());
         uniqueTermsNumber = vb.decodeNumber(getSingleData());
