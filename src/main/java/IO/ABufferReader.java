@@ -60,7 +60,7 @@ public abstract class ABufferReader {
 
             current = buffer[index++];
             tempList.addLast(current);
-        }while(current > 0 );
+        }while(current >= 0 );
 
         return tempList;
     }
