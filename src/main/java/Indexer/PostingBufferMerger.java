@@ -182,8 +182,8 @@ public class PostingBufferMerger {
         moveToMainBuffer(allData);
     }
 
-    private void moveDataToMainBuffer(LinkedList<Integer> tf , LinkedList<Byte> alldata){
-        moveToMainBuffer(vb.encode(tf));
+    private void moveDataToMainBuffer( LinkedList<Byte> alldata){
+      //  moveToMainBuffer(vb.encode(tf));
         moveToMainBuffer(alldata);
     }
 
@@ -322,6 +322,15 @@ public class PostingBufferMerger {
                 buffers.removeAll(toRemove);
                 toRemove=new ArrayList<>();
                 currentIDOnMerge++;//
+
+                if(currentIDOnMerge > termIdMap.size()) {//so we are done
+                    for(int j = 0 ; j < buffers.size() ; j++){
+                        toRemove.add(buffers.get(j));
+                        Files.deleteIfExists(Paths.get(buffers.get(j).getTempPostingPath()));
+                    }
+                    buffers.removeAll(toRemove);
+                }
+
             }//the merge loop
         }catch(IOException e){
             e.printStackTrace();
@@ -360,7 +369,8 @@ public class PostingBufferMerger {
                 }
 
                 firstBufferWithID = true;//so it will update the position in the first match
-
+                if(currentIDOnMerge == 8572)
+                    System.out.println("");
                 for(int i = 0 ; i < buffers.size() ; i++){
                     PostingBuffer buffer = buffers.get(i);
                     try {
@@ -369,6 +379,8 @@ public class PostingBufferMerger {
 
                         if (id != -1) {//move all data to the main buffer
                           //  while (!buffer.checkEndOfTermID()) {//so more info on this term
+
+
 
                             if(firstBufferWithID)
                                 if(type.equals("TERMS"))
@@ -393,7 +405,8 @@ public class PostingBufferMerger {
                                     moveDataToMainBuffer(vb.encode(termID), termTF, allData);
                                     firstBufferWithID = false;
                                 }else
-                                    moveDataToMainBuffer(termTF,allData);
+                                    moveDataToMainBuffer(allData);
+                                //    moveDataToMainBuffer(termTF,allData);
                         }
 
                         if(buffer.isDone()) {//got to the end of the temp file , delete it
@@ -414,6 +427,14 @@ public class PostingBufferMerger {
                   buffers.removeAll(toRemove);
                   toRemove=new ArrayList<>();
                   currentIDOnMerge++;//
+                  if(currentIDOnMerge > termIdMap.size()) {//so we are done
+                      for(int j = 0 ; j < buffers.size() ; j++){
+                          toRemove.add(buffers.get(j));
+                          Files.deleteIfExists(Paths.get(buffers.get(j).getTempPostingPath()));
+                      }
+                      buffers.removeAll(toRemove);
+                  }
+
                 }//the merge loop
             }catch(IOException e){
                 e.printStackTrace();

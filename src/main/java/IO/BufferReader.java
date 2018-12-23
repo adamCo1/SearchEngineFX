@@ -39,8 +39,9 @@ public class BufferReader extends ABufferReader {
 
         totalTF = vb.decodeNumber(getSingleData());
         term = new Term(totalTF,id);
-
+        int times = 0 ;
         while(true){
+            times++;
             if(index >= buffer.length)
                 fillBuffer();
 
@@ -69,6 +70,7 @@ public class BufferReader extends ABufferReader {
             term.addDocEntry(docID,tf,onTitle,positions);
         }
 
+        System.out.println(times);
         return term;
     }
 

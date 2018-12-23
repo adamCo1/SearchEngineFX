@@ -23,6 +23,7 @@ import java.util.List;
 
 public class SpimiInverter implements IIndexer {
 
+    int ic = 0 ;
     private String targetPath;
     private boolean wroteBuffer, stemOn;
     private HashSet<String> titleSet;
@@ -613,6 +614,7 @@ public class SpimiInverter implements IIndexer {
             }
 
             mainBuffer[temp++] = data[idx++];
+            ic++;
         }
         // System.out.println("moved steps : " + (currentInMain-temp));
         return temp;
@@ -740,6 +742,7 @@ public class SpimiInverter implements IIndexer {
                 BufferDataByte info = (BufferDataByte) buffer.get(currentTermID);
                 //so we can always know where the next termID starts
                 //       index = moveDataToMainBuffer(mainBuffer,encodeNumber(info.getDataSize()),index);
+
 
                 while (info.hasMore()) {
 
@@ -984,6 +987,15 @@ public class SpimiInverter implements IIndexer {
         byte[] etitle = encodeNumber(title);
         byte[] epositions = vb.encode(docPositions);
 
+        currentInMain = moveDataToMainBuffer(edocID,currentInMain);
+        currentInMain = moveDataToMainBuffer(edocTF,currentInMain);
+        currentInMain = moveDataToMainBuffer(echamp,currentInMain);
+        currentInMain = moveDataToMainBuffer(etitle,currentInMain);
+        currentInMain = moveDataToMainBuffer(epositions,currentInMain);
+        currentInMain = moveDataToMainBuffer(new byte[]{0},currentInMain);
+
+        return currentInMain;
+        /**
         int totalLength = edocID.length+edocTF.length+echamp.length+etitle.length+epositions.length;
         byte[] ans = new byte[totalLength+1];
 
@@ -995,10 +1007,13 @@ public class SpimiInverter implements IIndexer {
         ans[ans.length-1] = (byte)0;//doc delimiter
 
         return moveDataToMainBuffer(ans,currentInMain);
+
+         **/
     }
 
     private void setChampions(String path){
 
+        ic = 0 ;
         boolean takeIntoConsidaration = true ;
         double idfBar = 0.65;
         byte[] td = new byte[]{0,0} , buffer = new byte[4096];
@@ -1006,6 +1021,7 @@ public class SpimiInverter implements IIndexer {
         Term term;
         PriorityQueue<Pair> champQ ;
         mainBuffer = new byte[4096];
+        HashSet<Integer> possss = new HashSet<>();
 
         Set<Integer> keyset = idTermMap.keySet();
         Integer[] sorted = keyset.stream().toArray(Integer[]::new);
@@ -1027,6 +1043,8 @@ public class SpimiInverter implements IIndexer {
                 int initialPosition = bufferReader.getPositinInFile() ;
                 int position = decodedData.get(2)*4096 + decodedData.get(3);
 
+                if(sortedKey == 306)
+                    System.out.println("path = [" + path + "]");
                 i = 0;
                 long t1 = System.currentTimeMillis();
                 term = bufferReader.getData(position);

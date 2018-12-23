@@ -1,5 +1,6 @@
 package Indexer;
 
+import java.io.EOFException;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
 
@@ -8,7 +9,7 @@ public class PostingBuffer {
     private String tempPostingPath;
     private int nextID ,index , blocksRead , blockSize;
     private byte[] buffer ;
-    private boolean blockChanged , done;
+    private boolean blockChanged , done , reachedEOF;
 
     public PostingBuffer(String path , int blockSize) {
         this.tempPostingPath = path;
@@ -18,6 +19,7 @@ public class PostingBuffer {
         this.blocksRead = 0;
         this.buffer = new byte[blockSize];
         this.done = false;
+        this.reachedEOF = false;
         try {
             fillBuffer();
         }catch (Exception e){
@@ -50,6 +52,8 @@ public class PostingBuffer {
      */
     public int readTermID(VariableByteCode vb , int wantedID) throws Exception{
 
+        int zeronum = 0 ;
+
         if(nextID != -1) {
             if(nextID == wantedID){
                 int ans = nextID ;
@@ -72,6 +76,11 @@ public class PostingBuffer {
                 changed = true;
             }else
                 b = buffer[index++];
+
+            if(b == 0)
+                zeronum++;
+            if(zeronum >= 3)
+                throw new EOFException();
 
             ans.addLast(b);
 
@@ -111,7 +120,13 @@ public class PostingBuffer {
         while(times <= 2){
             b = getNextByte();
             if(b == 0){
+
                 if(index - lastZeroIndex != 1) {
+                    if(lastZeroIndex == 4096 && index == 1){
+                        lastZeroIndex = index;
+                        times++;
+                        continue;
+                    }
                     times = 0;
                     ans.addLast(b);
                 }
@@ -140,8 +155,14 @@ public class PostingBuffer {
             this.index = 0;
             in.close();
         } catch (Exception e) {//close the file and throw
+
+            if(this.reachedEOF) {
+                in.close();
+                throw e;
+            }
+
             in.read(this.buffer);//this is the last block
-            this.done = true;
+            this.reachedEOF = true;
             this.index = 0 ;
             in.close();
 
