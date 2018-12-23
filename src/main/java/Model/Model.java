@@ -74,4 +74,10 @@ public class Model implements IModel {
 
     @Override
     public TreeSet<String> getDocsLang(){return this.engine.getDocsLang();}
+
+    @Override
+    public void createResultFileForQueries(String queryFilePath,String resultsFilePath){
+        engine.createResultFileForQueries(queryFilePath,resultsFilePath);
+
+    }
 }

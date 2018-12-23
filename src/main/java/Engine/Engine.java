@@ -1,12 +1,15 @@
 package Engine;
 
 import IO.IReader;
+import IO.Query;
 import IO.ReadFile;
+import IO.ReadQueryFile;
 import Indexer.IIndexer;
 import Indexer.SpimiInverter;
 import Parser.IParser;
 import Parser.Parser;
 import Ranking.ISearcher;
+import Ranking.Ranker;
 import Ranking.Searcher;
 import Structures.CorpusDocument;
 import Structures.Doc;
@@ -330,6 +333,39 @@ import java.util.*;
         public ArrayList<CorpusDocument> runQuery(String query){
             this.searcher.setOutPaths(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT);
             return this.searcher.analyzeAndRank(query);
+        }
+
+
+        public void createResultFileForQueries(String pathToQueriesFileDir,String pathToWriteToResultsFile){
+            ArrayList<Query> queries = ReadQueryFile.readQueries(pathToQueriesFileDir);
+            //result tuple will be query_id, iter, docno, rank, sim, run_id
+            ArrayList<String>results = new ArrayList<>();
+            for(Query q:queries){
+                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q.getQueryText());
+                for(CorpusDocument doc: currQueryBestDocMatches){
+                    double docRank = doc.getRank();
+                    results.add(""+q.getQueryNum()+" "+"0"+ " "+ doc.getName()+" "+docRank+" "+docRank+" "+"run_name");
+                }
+            }
+
+            try {
+                FileWriter fw = new FileWriter(pathToWriteToResultsFile+"\\results.txt");
+                BufferedWriter bw = new BufferedWriter(fw);
+//                ObjectOutputStream ou = new ObjectOutputStream(fu);
+//                ou.flush();
+                bw.flush();
+                for(String res:results){
+                    bw.write(res+"\n");
+                    bw.newLine();
+                }
+                fw.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
         }
 
         public void addDoclength(int docID, int len){

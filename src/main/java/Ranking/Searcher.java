@@ -118,6 +118,8 @@ public class Searcher implements ISearcher {
         this.ranker = ranker;
     }
 
+    public IRanker getRanker(){return this.ranker;}
+
     @Override
     public void setOutPaths(String termsOutPath, String docOutPath) {
         this.outTermPath = termsOutPath;

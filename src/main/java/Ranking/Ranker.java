@@ -15,7 +15,7 @@ public class Ranker implements IRanker {
     private final int DOCUMENT_RETRIEVE_COUNT = 50 ;
     private Mutex rankMutex;
     private String termOutPath,docOutPath,cityOutPath;
-    private int blockSize , totalDocCount;
+    private int blockSize;
     private ArrayList<CorpusDocument> docRanks;
     private ArrayList<CorpusDocument> docBuffer;
     private HashMap<Integer, Pair> docPos;
@@ -41,7 +41,7 @@ public class Ranker implements IRanker {
 
         try {
             ArrayList<Integer> relevantDocIDS = getRelevantDocIDs(termList);
-            calculateAndSetIDF(termList);
+            //calculateAndSetIDF(termList);
             fillDocDataBuffer(relevantDocIDS);
             initializeRankMap(relevantDocIDS,termList);
 
@@ -122,7 +122,6 @@ public class Ranker implements IRanker {
     @Override
     public void setDictionaries(HashMap<Integer, Pair> docPositions) {
         this.docPos = docPositions;
-        this.totalDocCount = docPositions.size();
     }
 
     private void readDocsPostings(ArrayList<Integer> docIDS){
@@ -169,15 +168,12 @@ public class Ranker implements IRanker {
         try {
             DocBufferReader docBufferReader = new DocBufferReader(this.docOutPath, this.blockSize);
             Arrays.toString(relevantDocIDS.toArray());
-            CorpusDocument currentDocument ;
-
             for (Integer docID:
                  relevantDocIDS) {
                 Pair p = docPos.get(docID);
                 if(p == null)
                     continue;
                 int pos = (Integer)p.getFirstValue()*this.blockSize + (Integer)p.getSecondValue();
-               // currentDocument = ((CorpusDocument)docBufferReader.getData(pos));
                 docBuffer.add((CorpusDocument)docBufferReader.getData(pos));
             }
 
@@ -233,16 +229,6 @@ public class Ranker implements IRanker {
             //
         }
         this.rankMutex.unlock();
-    }
-
-    private void calculateAndSetIDF(ArrayList<Term> termList){
-
-        for (Term term:
-             termList) {
-            int termTotalOccurencesInDocs = term.getDocToDataMap().size();
-            double ans = Math.log((totalDocCount-termTotalOccurencesInDocs+0.5)/(termTotalOccurencesInDocs+0.5));
-            term.setIDF(ans);
-        }
     }
 
 }
