@@ -28,7 +28,7 @@ public class Controller {
     @FXML
     private CheckBox stemmerCheckBox;
     @FXML
-    private TextField corpusPathField , targetPathField , sampleField , queryField;
+    private TextField corpusPathField , targetPathField , sampleField , queryField , queryFilePathField, resultsFilePathField;
 
     @FXML
     private StringProperty termP;
@@ -161,6 +161,24 @@ public class Controller {
             this.corpusPathField.setText(text);
             model.setCorpusPath(this.corpusPathField.getText());
         }
+    }
+
+    public void handleBrowseButtonQueryFilePath() {
+        String text = this.view.showDirectoryBrowser((Stage) this.anchorPane.getScene().getWindow());
+        if (text != null) {
+            this.queryFilePathField.setText(text);
+        }
+    }
+
+    public void handleBrowseTargetResultFilePath() {
+        String text = this.view.showDirectoryBrowser((Stage) this.anchorPane.getScene().getWindow());
+        if (text != null) {
+            this.resultsFilePathField.setText(text);
+        }
+    }
+
+    public void handleCreateResultsFile(){
+        this.model.createResultFileForQueries(queryFilePathField.getText()+"\\queries.txt",resultsFilePathField.getText());
     }
 
     public void setView(IView view){

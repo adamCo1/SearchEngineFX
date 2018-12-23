@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
@@ -9,7 +12,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="649.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
       <Button layoutX="396.0" layoutY="55.0" mnemonicParsing="false" onAction="#handleBrowseButtonCorpusPath" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" />
       <TextField fx:id="corpusPathField" layoutX="178.0" layoutY="55.0" />
@@ -30,7 +33,13 @@
       </TableView>
       <Button layoutX="28.0" layoutY="583.0" mnemonicParsing="false" onAction="#handleDisplayLangs" prefHeight="39.0" prefWidth="124.0" text="Show Langs" />
       <ListView fx:id="listView" layoutX="190.0" layoutY="583.0" prefHeight="122.0" prefWidth="200.0" />
-      <Button onAction="#handleRunQuery" layoutX="250.0" layoutY="483.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="79.0" text="Run" />
+      <Button layoutX="250.0" layoutY="483.0" mnemonicParsing="false" onAction="#handleRunQuery" prefHeight="31.0" prefWidth="79.0" text="Run" />
       <TextField fx:id="queryField" layoutX="28.0" layoutY="483.0" />
+      <TextField fx:id="queryFilePathField" layoutX="520.0" layoutY="483.0" />
+      <TextField fx:id="resultsFilePathField" layoutX="520.0" layoutY="544.0" />
+      <Label layoutX="590.0" layoutY="443.0" text="Query File Results" />
+      <Button layoutX="754.0" layoutY="483.0" mnemonicParsing="false" onAction="#handleBrowseButtonQueryFilePath" text="Browse Query File" />
+      <Button layoutX="754.0" layoutY="544.0" mnemonicParsing="false" onAction="#handleBrowseTargetResultFilePath" text="Choose Results dir" />
+      <Button layoutX="519.0" layoutY="603.0" mnemonicParsing="false" onAction="#handleCreateResultsFile" prefHeight="39.0" prefWidth="186.0" text="Create Results File" />
    </children>
 </AnchorPane>

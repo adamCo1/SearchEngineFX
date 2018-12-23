@@ -343,19 +343,22 @@ import java.util.*;
             for(Query q:queries){
                 ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q.getQueryText());
                 for(CorpusDocument doc: currQueryBestDocMatches){
-                    double docRank = ((Ranker)((Searcher)searcher).getRanker()).getDocRank(doc.getDocID());
+                    double docRank = doc.getRank();
                     results.add(""+q.getQueryNum()+" "+"0"+ " "+ doc.getName()+" "+docRank+" "+docRank+" "+"run_name");
                 }
             }
 
             try {
-                FileOutputStream fu = new FileOutputStream(pathToWriteToResultsFile);
-                ObjectOutputStream ou = new ObjectOutputStream(fu);
-                ou.flush();
+                FileWriter fw = new FileWriter(pathToWriteToResultsFile+"\\results.txt");
+                BufferedWriter bw = new BufferedWriter(fw);
+//                ObjectOutputStream ou = new ObjectOutputStream(fu);
+//                ou.flush();
+                bw.flush();
                 for(String res:results){
-                    ou.writeObject(res);
+                    bw.write(res+"\n");
+                    bw.newLine();
                 }
-                ou.close();
+                fw.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {

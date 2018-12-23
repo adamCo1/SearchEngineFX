@@ -17,6 +17,7 @@ public interface IModel {
     void setCorpusPath(String path);
     void setEngine(Engine engine);
     ArrayList<CorpusDocument> runQueryOnEngine(String query);
+    void createResultFileForQueries(String queryFilePath,String resultsFilePath);
     String runEngine(boolean stemmerStatus);
     TreeMap getDictionary();
     TreeSet getDocsLang();
