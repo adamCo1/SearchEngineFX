@@ -41,6 +41,7 @@ public class Ranker implements IRanker {
 
         try {
             ArrayList<Integer> relevantDocIDS = getRelevantDocIDs(termList);
+            //calculateAndSetIDF(termList);
             fillDocDataBuffer(relevantDocIDS);
             initializeRankMap(relevantDocIDS,termList);
 
@@ -229,11 +230,5 @@ public class Ranker implements IRanker {
         }
         this.rankMutex.unlock();
     }
-
-    public double getDocRank(int docId){
-        return this.docRanks.get(docId).getRank();
-
-    }
-
 
 }

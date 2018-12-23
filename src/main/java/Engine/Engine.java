@@ -26,7 +26,7 @@ import java.util.*;
     public class Engine {
 
         private double avgDocLength ;
-        private final String TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "terms_out" , DOCS_OUT = "docs_out";
+        private final String TERMS_OUT_CHAMPS = "terms_out_c" ,TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "terms_out" , DOCS_OUT = "docs_out";
         private final int MAX_SIZE_FOR_BUFFERS = 20480000;//20mb;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
@@ -370,6 +370,10 @@ import java.util.*;
 
         public void addDoclength(int docID, int len){
             this.docLengths.put(docID,len);
+        }
+
+        public HashMap getDocLengths(){
+            return this.docLengths;
         }
 
         public int getDocCount(){return docCount;}

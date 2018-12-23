@@ -3,18 +3,19 @@ package Indexer;
 import Engine.Data;
 import Engine.Engine;
 import Engine.Stemmer;
+import IO.BufferReader;
 import IO.PostingWriter;
 import Parser.IParser;
 import ReadFromWeb.City;
-import Structures.Pair;
-import Structures.PostingDataStructure;
-import Structures.TokensStructure;
+import Structures.*;
 import com.sun.xml.internal.ws.policy.spi.PolicyAssertionValidator;
 import sun.awt.image.ImageWatched;
 
 import static ReadFromWeb.ReadFromWeb.allCities;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * implement a variation of the SPIMI algorithm for building posting lists
@@ -22,6 +23,7 @@ import java.util.*;
 
 public class SpimiInverter implements IIndexer {
 
+    int ic = 0 ;
     private String targetPath;
     private boolean wroteBuffer, stemOn;
     private HashSet<String> titleSet;
@@ -139,7 +141,11 @@ public class SpimiInverter implements IIndexer {
                 writeCityBufferToPostingList(cityPath);
                 writeDocumentsPostingList(docBuffer,docpath);
             }
+
+            termInfoMap = new HashMap<>();
+
             writeMergedSortedPostings();
+            setChampions(targetPath+"\\"+"terms_out_champs");
             reset();
 
         } catch (Exception e) {
@@ -608,6 +614,7 @@ public class SpimiInverter implements IIndexer {
             }
 
             mainBuffer[temp++] = data[idx++];
+            ic++;
         }
         // System.out.println("moved steps : " + (currentInMain-temp));
         return temp;
@@ -677,7 +684,7 @@ public class SpimiInverter implements IIndexer {
     /**
      * ************WRITING FORMAT **********************
      * we write in the following format :
-     * -termID1- -tf- -DOC-ID1- -tf1- -on-title- -info1- 0 ....... -DOC-IDN- -tfn- -ontitle- -INFON-
+     * -termID1- -tf- -DOC-ID1- -tf1- -champ- -on-title- -info1- 0 ....... -DOC-IDN- -tfn- -ontitle- -INFON-
      * 00
      * <p>
      * ******** the term TF in the entire corpus will be written in the merge process , because only then we
@@ -695,6 +702,8 @@ public class SpimiInverter implements IIndexer {
      * <p>
      * INFO : the information on the term .
      * <p>
+     * CHAMP : is this document a champion of the term - initialzie with -126
+     *
      * *************************************************
      * <p>
      * write each termID to a line with all its needed information
@@ -708,7 +717,7 @@ public class SpimiInverter implements IIndexer {
 
         int index = 0, blocknum = 0, idxtemp;
         // byte[] mainBuffer = new byte[4096]; //4KB - ALU size in windows
-        byte[] zero = new byte[]{0}, doublezero = new byte[]{0, 0};
+        byte[] zero = new byte[]{0} , champ = {-126}, doublezero = new byte[]{0, 0};
         mainBuffer = new byte[4096];
         Set<Integer> keyset = buffer.keySet();
         Integer[] sorted = keyset.stream().toArray(Integer[]::new);
@@ -734,6 +743,7 @@ public class SpimiInverter implements IIndexer {
                 //so we can always know where the next termID starts
                 //       index = moveDataToMainBuffer(mainBuffer,encodeNumber(info.getDataSize()),index);
 
+
                 while (info.hasMore()) {
 
                     byte[] docid = info.getInfo();
@@ -745,6 +755,7 @@ public class SpimiInverter implements IIndexer {
 
                     index = moveDataToMainBuffer(docid, index);
                     index = moveDataToMainBuffer(docTF, index);
+                    index = moveDataToMainBuffer(champ,index);//initialize none-champ or all docs
                     index = moveDataToMainBuffer(onTitle, index);
                     index = moveDataToMainBuffer(infoOnDocID, index);
                     index = moveDataToMainBuffer(zero, index);//a new docID will start after this 0
@@ -941,6 +952,157 @@ public class SpimiInverter implements IIndexer {
      */
     public void setStemOn(boolean stemStatus){
         this.stemOn = stemStatus;
+    }
+
+    private int moveFromTempToAns(byte[] temp , byte[] ans , int ansPos){
+
+        int i =0 ;
+        while(i < temp.length){
+            ans[ansPos++] = temp[i++];
+        }
+
+        return ansPos;
+    }
+
+    private void moveToChampsBuffer(byte[] arr ){
+
+
+    }
+
+    /**
+     *
+     * @param docID id of current doc
+     * @param docTF tf in the doc
+     * @param champ 1 for champ , 2 for not a champ
+     * @param title term on this docs title or not
+     * @param docPositions positions in the doc
+     * @return
+     */
+    private int docInfoOnTermToByteArray(int currentInMain,int docID , int docTF , int champ , int title , LinkedList<Integer> docPositions)throws Exception{
+
+        int ansPos = 0  ;
+        byte[] edocID = encodeNumber(docID);
+        byte[] edocTF = encodeNumber(docTF);
+        byte[] echamp = encodeNumber(champ);
+        byte[] etitle = encodeNumber(title);
+        byte[] epositions = vb.encode(docPositions);
+
+        currentInMain = moveDataToMainBuffer(edocID,currentInMain);
+        currentInMain = moveDataToMainBuffer(edocTF,currentInMain);
+        currentInMain = moveDataToMainBuffer(echamp,currentInMain);
+        currentInMain = moveDataToMainBuffer(etitle,currentInMain);
+        currentInMain = moveDataToMainBuffer(epositions,currentInMain);
+        currentInMain = moveDataToMainBuffer(new byte[]{0},currentInMain);
+
+        return currentInMain;
+        /**
+        int totalLength = edocID.length+edocTF.length+echamp.length+etitle.length+epositions.length;
+        byte[] ans = new byte[totalLength+1];
+
+        ansPos = moveFromTempToAns(edocID,ans,ansPos);
+        ansPos = moveFromTempToAns(edocTF,ans,ansPos);
+        ansPos = moveFromTempToAns(echamp,ans,ansPos);
+        ansPos = moveFromTempToAns(etitle,ans,ansPos);
+        ansPos = moveFromTempToAns(epositions,ans,ansPos);
+        ans[ans.length-1] = (byte)0;//doc delimiter
+
+        return moveDataToMainBuffer(ans,currentInMain);
+
+         **/
+    }
+
+    private void setChampions(String path){
+
+        ic = 0 ;
+        boolean takeIntoConsidaration = true ;
+        double idfBar = 0.65;
+        byte[] td = new byte[]{0,0} , buffer = new byte[4096];
+        int index=0,termID,totalTF,currentPositionInMainBuffer = 0,i,docTF , uniqueDocs , k = 500;
+        Term term;
+        PriorityQueue<Pair> champQ ;
+        mainBuffer = new byte[4096];
+        HashSet<Integer> possss = new HashSet<>();
+
+        Set<Integer> keyset = idTermMap.keySet();
+        Integer[] sorted = keyset.stream().toArray(Integer[]::new);
+        Arrays.sort(sorted);
+
+        try {
+            this.writer.setPath(targetPath+"\\"+"terms_out_c");
+            BufferReader bufferReader = new BufferReader(targetPath + "\\" + "terms_out", 4096);
+            for (Integer sortedKey:
+                    sorted) {
+
+                buffer = new byte[4096];
+                takeIntoConsidaration = true ;
+                index =0 ;
+                champQ = new PriorityQueue<>(new PairComparator());
+                byte[] encodedData = termIdMap.get(idTermMap.get(sortedKey)).getEncodedData();
+                LinkedList<Integer> decodedData = vb.decode(encodedData);
+
+                int initialPosition = bufferReader.getPositinInFile() ;
+                int position = decodedData.get(2)*4096 + decodedData.get(3);
+
+                if(sortedKey == 306)
+                    System.out.println("path = [" + path + "]");
+                i = 0;
+                long t1 = System.currentTimeMillis();
+                term = bufferReader.getData(position);
+              //  System.out.println("term time : " + (System.currentTimeMillis() -t1));
+                uniqueDocs = term.getDocToDataMap().size();
+                double idf = Math.log10((docPositions.size())/(uniqueDocs));
+
+                if(idf < idfBar)//dont consider low idf cuz those terms dont say anything about the docs
+                    takeIntoConsidaration = false;
+                    //continue;
+
+                totalTF = term.getTotalTF();
+                termID = term.getId();
+
+                long t2 = System.currentTimeMillis();
+                if(takeIntoConsidaration) {
+                    for (Integer docID :
+                            term.getDocToDataMap().keySet()) {
+                        docTF = term.getPositions(docID).size();//tf of the term in the current doc
+                        champQ.add(new Pair(docID, (1 + Math.log10(docTF) * idf)));
+                    }
+
+                    //move the top k champs to the champs hashset of the current term
+                    while (champQ.size() > 0 && i++ < k)
+                        term.addChampion((int) champQ.poll().getFirstValue());
+
+                }
+
+
+                currentPositionInMainBuffer = moveDataToMainBuffer(vb.encodeNumber(termID),currentPositionInMainBuffer);
+                currentPositionInMainBuffer = moveDataToMainBuffer(vb.encodeNumber(totalTF),currentPositionInMainBuffer);
+
+                for (Integer docID:
+                     term.getDocToDataMap().keySet()) {
+
+                    docTF = term.getPositions(docID).size();
+
+                    if(term.isChampion(docID))//so its a champion of this term
+                        currentPositionInMainBuffer = docInfoOnTermToByteArray(currentPositionInMainBuffer,docID,docTF,1,term.getOnTitle(docID),term.getPositions(docID));
+                    else
+                        currentPositionInMainBuffer = docInfoOnTermToByteArray(currentPositionInMainBuffer,docID,docTF,2,term.getOnTitle(docID),term.getPositions(docID));
+                }
+
+                //done with this term . add a term delimiter
+                currentPositionInMainBuffer = moveDataToMainBuffer(td,currentPositionInMainBuffer);
+              //  System.out.println("total champ time for term : " + (System.currentTimeMillis()-t2));
+            }//at the end of this process , the queue holds the best pairs of docid - tfidf . the first
+            //K are the champions of this terms .
+            if(!wroteBuffer)
+                this.writer.write(mainBuffer);
+
+            this.writer.flush();
+            this.writer.close();
+
+        }catch (Exception e){
+            this.writer.close();
+            e.printStackTrace();
+        }
     }
 
     private LinkedList<Integer> dataDecode(byte[] stream){

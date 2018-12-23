@@ -11,13 +11,14 @@ public abstract class ABufferReader {
 
     protected VariableByteCode vb ;
     protected RandomAccessFile randomAccessFile ;
-    protected int blockSize , index , blocksRead,initialPosition;
+    protected int blockSize , index , blocksRead,initialPosition , position;
     protected byte[] buffer;
 
     public ABufferReader(String path , int blockSize ) throws IOException {
         this.randomAccessFile = new RandomAccessFile(path,"r");
         this.blockSize = blockSize;
         this.blocksRead = 0;
+        this.position = 0;
         this.initialPosition = 0;
         this.vb = new VariableByteCode();
         this.buffer = new byte[blockSize];
@@ -59,6 +60,7 @@ public abstract class ABufferReader {
             }
 
             current = buffer[index++];
+            position++;
             tempList.addLast(current);
         }while(current >= 0 );
 
@@ -80,6 +82,7 @@ public abstract class ABufferReader {
                 fillBuffer();
 
             current = buffer[index++];
+            position ++;
             if(current == 0)
                 break ;
 
@@ -87,6 +90,10 @@ public abstract class ABufferReader {
         }while(current != 0);
 
         return tempList;
+    }
+
+    public int getPositinInFile(){
+        return position;
     }
 
     public void close() throws IOException{
