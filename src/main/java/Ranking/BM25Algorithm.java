@@ -26,7 +26,7 @@ public class BM25Algorithm extends ARankingAlgorithm {
 
             for (Term term : termList) {
                 double tfInDoc = (Integer) term.getDocToDataMap().get(document.getDocID()).getFirst();
-                docRank += (getTermIdf(term) * tfInDoc * (k + 1)) / (tfInDoc + k * (1 - b + b * (document.getLength() / avgDocLength)));
+                docRank += (term.getIdf() * tfInDoc * (k + 1)) / (tfInDoc + k * (1 - b + b * (document.getLength() / avgDocLength)));
             }
         }catch (NullPointerException e){//in case that the term is not in the given document
             docRank += 0;
@@ -48,9 +48,4 @@ public class BM25Algorithm extends ARankingAlgorithm {
         this.b = b;
     }
 
-    private double getTermIdf(Term term ){
-        int termTotalOccurencesInDocs = term.getDocToDataMap().size();
-        double ans = Math.log((totalDocCount-termTotalOccurencesInDocs+0.5)/(termTotalOccurencesInDocs+0.5));
-        return ans;
-    }
 }

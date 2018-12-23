@@ -2,6 +2,7 @@ package IO;
 
 import Structures.Term;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -31,13 +32,13 @@ public class BufferReader extends ABufferReader {
     private Term readAllTermData() throws IOException{
 
         byte numberOfZeroes = 0 ;
-        int docID  , tf , totalTF , onTitle;
+        int id , docID  , tf , totalTF , onTitle , champ;
         Term term ;
 
-        getSingleData();//blank read for the term id. we already know it .
+        id = vb.decodeNumber(getSingleData());//blank read for the term id. we already know it .
 
         totalTF = vb.decodeNumber(getSingleData());
-        term = new Term(totalTF);
+        term = new Term(totalTF,id);
 
         while(true){
             if(index >= buffer.length)
@@ -56,9 +57,14 @@ public class BufferReader extends ABufferReader {
 
             docID = vb.decodeNumber(getSingleData());
             tf = vb.decodeNumber(getSingleData());
+            champ = vb.decodeNumber(getSingleData());//is this doc a champ of the term?
             onTitle = vb.decodeNumber(getSingleData());
             LinkedList<Integer> positions = vb.decode(getDataTillZero());
             numberOfZeroes++;
+
+            if(champ == 1 ) {//this doc is in the champion list of this term
+                term.addChampion(docID);
+            }
 
             term.addDocEntry(docID,tf,onTitle,positions);
         }

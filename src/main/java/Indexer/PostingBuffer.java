@@ -8,7 +8,7 @@ public class PostingBuffer {
     private String tempPostingPath;
     private int nextID ,index , blocksRead , blockSize;
     private byte[] buffer ;
-    private boolean blockChanged;
+    private boolean blockChanged , done;
 
     public PostingBuffer(String path , int blockSize) {
         this.tempPostingPath = path;
@@ -17,7 +17,7 @@ public class PostingBuffer {
         this.blockSize = blockSize;
         this.blocksRead = 0;
         this.buffer = new byte[blockSize];
-
+        this.done = false;
         try {
             fillBuffer();
         }catch (Exception e){
@@ -140,10 +140,22 @@ public class PostingBuffer {
             this.index = 0;
             in.close();
         } catch (Exception e) {//close the file and throw
+            in.read(this.buffer);//this is the last block
+            this.done = true;
+            this.index = 0 ;
             in.close();
-            throw e;
+
+            /**
+             * in.close;
+             * throw e;
+             */
         }
     }
+
+    public boolean isDone() {
+        return done;
+    }
+
     public String getTempPostingPath(){
         return this.tempPostingPath;
     }

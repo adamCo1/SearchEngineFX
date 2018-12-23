@@ -395,6 +395,12 @@ public class PostingBufferMerger {
                                 }else
                                     moveDataToMainBuffer(termTF,allData);
                         }
+
+                        if(buffer.isDone()) {//got to the end of the temp file , delete it
+                            toRemove.add(buffer);
+                            Files.deleteIfExists(Paths.get(buffer.getTempPostingPath()));
+                        }
+
                     } catch (Exception e) {
                         if(e instanceof EOFException){
                             toRemove.add(buffer);
