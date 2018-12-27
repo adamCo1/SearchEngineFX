@@ -50,12 +50,16 @@ public  class ReadQueryFile {
                 if (fileTextWords.get(currWord).equals("<top>")) {
                     currWord++;
                     ArrayList<String> queryContent = new ArrayList<>();
+
+                    //extract the query between the <top> tags
                     while (!fileTextWords.get(currWord).equals("</top>")) {
                         queryContent.add(fileTextWords.get(currWord));
                         currWord++;
                     }
 
+                    //get the query num and text fom each top tag content
                     String queryNum = "";
+                    ArrayList<String> originalQueryWords = new ArrayList<>();
                     for (int i = 0; i < queryContent.size(); i++) {
                         if (queryContent.get(i).equals("Number:")) {
                             queryNum = queryContent.get(i+1);
@@ -66,8 +70,29 @@ public  class ReadQueryFile {
                             i++;
                             while (!queryContent.get(i).equals("<desc>")) {
                                 queryText += queryContent.get(i)+" ";
+                                originalQueryWords.add(queryContent.get(i));
                                 i++;
                             }
+
+                            //lets pass <desc> and description:
+                            i++;
+                            i++;
+                            //and the start decription word
+                            i++;
+                            while (!queryContent.get(i).equals("<narr>")) {
+                                //add to the query entities form the desc, and next word after the original query word query
+                                if((queryContent.get(i).charAt(0)>=65 && queryContent.get(i).charAt(0)<=90) && !(originalQueryWords.contains(queryContent.get(i)))) {
+                                    queryText += queryContent.get(i).replace("?|,|.|:|!|/","").toUpperCase() + " ";
+                                    i++;
+                                    continue;
+                                }
+                                else if(originalQueryWords.contains(queryContent.get(i-1)) && !(originalQueryWords.contains(queryContent.get(i))) )
+                                    queryText += queryContent.get(i) + " ";
+                                    i++;
+                                    continue;
+                                }
+                                i++;
+
                             ans.add(new Query(queryNum, queryText.substring(0,queryText.length()-1)));
                             break;
 
