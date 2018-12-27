@@ -10,17 +10,19 @@ import java.util.*;
 
 public class Ranker implements IRanker {
 
-    private final double BM_25_B = 1.2 , BM_25_K = 0.75;
-    private final double TITLE_WEIGHT = 0.4 , POSITIONS_WEIGHT = 0.3 , BM25_WEIGHT = 0.3 , IDF_LOWER_BOUND = 3.4;
-    private final int DOCUMENT_RETRIEVE_COUNT = 50 ;
+    private  double BM_25_B = 0.75 , BM_25_K = 1.1;
+    private  double IDF_DELTA = 1, TITLE_WEIGHT = 2 , POSITIONS_WEIGHT = 0.9 , BM25_WEIGHT = 0.9 , IDF_LOWER_BOUND = 3.2;
+    private  int DOCUMENT_RETRIEVE_COUNT = 50 ;
     private Mutex rankMutex;
     private String termOutPath,docOutPath,cityOutPath;
     private int blockSize;
+    private double avgDocLength ;
     private ArrayList<CorpusDocument> docRanks;
     private ArrayList<CorpusDocument> docBuffer;
     private HashMap<Integer, Pair> docPos;
 
     public Ranker(HashMap docPos,int blockSize){
+        this.avgDocLength = 250;
         this.termOutPath = termOutPath;
         this.docOutPath = docOutPath;
         this.cityOutPath = cityOutPath;
@@ -39,20 +41,31 @@ public class Ranker implements IRanker {
         docBuffer = new ArrayList<>();
         docRanks = new ArrayList<>();
 
+
+        for (Term term:
+             termList) {
+            setIDF(term);
+        }
+        if(termList.size() > 1)
+            dropTermsByIDF(termList);
+
+
         try {
             ArrayList<Integer> relevantDocIDS = getRelevantDocIDs(termList);
             //calculateAndSetIDF(termList);
             fillDocDataBuffer(relevantDocIDS);
             initializeRankMap(relevantDocIDS,termList);
+            dropTermsByIDF(termList);
 
             Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
             titleAndPositionThread.start();
+            rankByBM25(termList);
             //when the 2 threads are done we have all the documents . now we can calculate BM25
-            Thread bm25Thread = new Thread(() -> rankByBM25(termList));
+            //Thread bm25Thread = new Thread(() -> rankByBM25(termList));
             //Thread clusterPrunningThread = new Thread(() -> rankByPruning(termList));
-            bm25Thread.start();
+            //bm25Thread.start();
             //rankByBM25(termList);
-            bm25Thread.join();
+            //bm25Thread.join();
             titleAndPositionThread.join();
 
             System.out.println("Ranked " + this.docRanks.size() + " Documents : ");
@@ -91,10 +104,38 @@ public class Ranker implements IRanker {
         return bestDocumentsByOrder;
     }
 
-    private boolean idfMoreThanBound(CorpusDocument doc , ArrayList<Term> termList){
+    private void dropTermsByIDF(ArrayList<Term> termList){
 
+        int numberOfLowerTerms = 0 ;
+        ArrayList<Term> remove = new ArrayList<>();
 
+        for (Term term:
+             termList) {
+            if(term.getIdf() < IDF_LOWER_BOUND) {//we dont want to consider this term
+                remove.add(term);
+                numberOfLowerTerms ++ ;
+            }
+        }
 
+        if(remove.size() == termList.size()){
+            for (Term term:
+                 remove) {
+                for (Term term2:
+                     remove) {
+                    if(!term.equals(term2) && (term.getIdf() - term2.getIdf()) > IDF_DELTA)
+                        termList.remove(term2);
+                }
+
+            }
+        }else
+            termList.remove(remove);
+
+    }
+
+    private boolean idfMoreThanBound(double idf){
+
+        if(idf < IDF_LOWER_BOUND)
+            return false;
         return true;
     }
 
@@ -108,13 +149,12 @@ public class Ranker implements IRanker {
         for (CorpusDocument doc :
              this.docBuffer) {
 
-            if(idfMoreThanBound(doc,termList))
-                this.docRanks.add(doc);
         }
     }
 
     @Override
-    public void setPaths(String termsPath, String docsPath) {
+    public void setAttributes(String termsPath, String docsPath , double docaAvgLength) {
+        this.avgDocLength = avgDocLength;
         this.termOutPath = termsPath;
         this.docOutPath = docsPath;
     }
@@ -122,6 +162,18 @@ public class Ranker implements IRanker {
     @Override
     public void setDictionaries(HashMap<Integer, Pair> docPositions) {
         this.docPos = docPositions;
+    }
+
+    @Override
+    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
+        this.BM_25_K = k;
+        this.BM_25_B = b ;
+        this.POSITIONS_WEIGHT = weightPos;
+        this.TITLE_WEIGHT = weightTitle;
+        this.BM25_WEIGHT = weightBM;
+        this.IDF_LOWER_BOUND = idfLower;
+        this.IDF_DELTA = idfDelta;
+
     }
 
     private void readDocsPostings(ArrayList<Integer> docIDS){
@@ -185,7 +237,7 @@ public class Ranker implements IRanker {
 
     private void rankByBM25(ArrayList<Term> termList){
 
-        BM25Algorithm bm25Algorithm = new BM25Algorithm(400,BM25_WEIGHT,BM_25_B,BM_25_K);
+        BM25Algorithm bm25Algorithm = new BM25Algorithm(avgDocLength,BM25_WEIGHT,BM_25_B,BM_25_K);
         try{
 
             for (CorpusDocument doc :
@@ -217,7 +269,7 @@ public class Ranker implements IRanker {
             }
 
         }catch (Exception e){
-
+            e.printStackTrace();
         }
     }
 
@@ -231,4 +283,9 @@ public class Ranker implements IRanker {
         this.rankMutex.unlock();
     }
 
+    private void setIDF(Term term){
+
+        double idf = Math.log10(this.docPos.size()/term.getDocToDataMap().size());
+        term.setIDF(idf);
+    }
 }

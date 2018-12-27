@@ -24,6 +24,7 @@ import java.util.List;
 public class SpimiInverter implements IIndexer {
 
     int ic = 0 ;
+
     private String targetPath;
     private boolean wroteBuffer, stemOn;
     private HashSet<String> titleSet;
@@ -31,6 +32,7 @@ public class SpimiInverter implements IIndexer {
     private int key, maxTF , onTitle , currentBufferSize;
     private IParser parser;
     private VariableByteCode vb;
+    private DocuemntEntities docuemntEntities;
     private HashMap<Integer,Integer> docLengths;
     private HashMap<Integer, Pair> docPositions;
     private HashMap<Integer, ABufferData> cityBuffer;
@@ -45,6 +47,7 @@ public class SpimiInverter implements IIndexer {
 
         titleSet = new HashSet<>();
         porterStemmer = new Stemmer();
+        this.docuemntEntities = new DocuemntEntities();
         this.docPositions = docPositions;
         this.docLengths = docLengths;
         this.parser = parser;
@@ -104,6 +107,7 @@ public class SpimiInverter implements IIndexer {
                     writePostingList(buffer, path);
                     writeDocumentsPostingList(docBuffer, docpath);
                     writeCityBufferToPostingList(cityPath);
+                    this.docuemntEntities = new DocuemntEntities();
 
                     buffer = new HashMap<>();
                     docBuffer = new HashMap<>();
@@ -145,7 +149,7 @@ public class SpimiInverter implements IIndexer {
             termInfoMap = new HashMap<>();
 
             writeMergedSortedPostings();
-            setChampions(targetPath+"\\"+"terms_out_champs");
+          //  setChampions(targetPath+"\\"+"terms_out_champs");
             reset();
 
         } catch (Exception e) {
@@ -207,7 +211,7 @@ public class SpimiInverter implements IIndexer {
     private void writeMergedSortedPostings() {
         PostingBufferMerger merger = new PostingBufferMerger(this.termIdMap,this.docPositions, this.vb, this, this.postingPaths, this.docPaths, this.cityPaths, this.targetPath);
         merger.mergeOnTermID(this.postingPaths, 4096, "TERMS");
-        merger.merge(this.cityPaths, 4096, "CITY");
+       // merger.merge(this.cityPaths, 4096, "CITY");
         merger.merge(this.docPaths,4096,"DOC");
 
     }
@@ -558,30 +562,6 @@ public class SpimiInverter implements IIndexer {
     }
 
     /**
-     * for each row , read the term id , then the length left for its data.
-     *
-     * @param path
-
-    public void readPostingListl(String path) {
-
-        try {
-            PostingReader reader = new PostingReader(new FileInputStream(path), vb);
-            LinkedList<Integer> line = reader.readLine();
-            while (!reader.isDone()) {
-                System.out.println(line);
-                line = reader.readLine();
-            }
-
-
-        } catch (Exception e) {
-            System.out.println("at readPosting");
-            e.printStackTrace();
-        }
-
-    }
-*/
-
-    /**
      * encode an integer using VB encoding
      *
      * @param number
@@ -609,6 +589,7 @@ public class SpimiInverter implements IIndexer {
             if (temp >= mainBuffer.length) {//so its full. write it to disk
                 this.writer.write(mainBuffer);
                 temp = 0;
+
                 mainBuffer = new byte[4096];
                 wroteBuffer = true;
             }
@@ -622,7 +603,7 @@ public class SpimiInverter implements IIndexer {
 
     /**
      * *****************WRITING FORMAT ****************************
-     * -docID- -length- -maxTF- -uniqueTermsNum- -name- 0 -author- 0 -city- 0 -lang- 0 type- 00
+     * -docID- -length- -maxTF- -uniqueTermsNum- -name- 0 -author- 0 -city- 0 -lang- 0 type- bestent1 0 ... bestent5 00
      * <p>
      * -docID- : ID of the doc
      * -maxTF- : the max term frequency in the doc
@@ -631,6 +612,9 @@ public class SpimiInverter implements IIndexer {
      *
      * if a field is empty or null , -1 will be written.
      *  0 : delimiter between docs info
+     *
+     *  for each document , write the id's of the strongest entities
+     *
      * @param buffer
      * @param path
      */
@@ -648,6 +632,8 @@ public class SpimiInverter implements IIndexer {
 
             while (index < sorted.length) {
 
+                int numEntities = 0 , entitityID = 0;
+                LinkedList<Integer> bestEntities = new LinkedList<>();
                 BufferDataDoc temp = buffer.get(sorted[index]);
 
                 byte[] encodedAuthor = encodeCityInfo(temp.getAuthor());
@@ -655,6 +641,15 @@ public class SpimiInverter implements IIndexer {
                 byte[] encodedLang = encodeCityInfo(temp.getLang());
                 byte[] encodedCity = encodeCityInfo(temp.getCity());
                 byte[] encodedName = encodeCityInfo(temp.getName());
+
+                do{
+                    entitityID = this.docuemntEntities.getBestEntityID(temp.getID());
+                    if(entitityID == -1)
+                        break;
+
+                   bestEntities.addLast(entitityID);
+
+                }while(this.docuemntEntities.getBestEntityID(temp.getID()) != -1 && numEntities < 5);
 
                 currentPosition = moveDataToMainBuffer(vb.encodeNumber(temp.getID()),currentPosition);
                 currentPosition = moveDataToMainBuffer(vb.encodeNumber(docLengths.get(temp.getID())),currentPosition);
@@ -671,11 +666,21 @@ public class SpimiInverter implements IIndexer {
                 currentPosition = moveDataToMainBuffer(encodedType,currentPosition);
                 currentPosition = moveDataToMainBuffer(zero, currentPosition);
 
+                //write the best entities id's
+                numEntities = 0;
+                while(bestEntities.size() > 0 && numEntities < 5 ){
+                    currentPosition = moveDataToMainBuffer(vb.encodeNumber(bestEntities.getFirst()),currentPosition);
+                    currentPosition = moveDataToMainBuffer(zero,currentPosition);
+                    bestEntities.removeFirst();
+                    numEntities++;
+                }
+
                 currentPosition = moveDataToMainBuffer(doubleZero,currentPosition);
                 index++;
             }
             this.writer.close();
         } catch (Exception e) {
+            this.writer.close();
             e.printStackTrace();
         }
     }
@@ -738,6 +743,8 @@ public class SpimiInverter implements IIndexer {
                 //still need to encode the keys . encode them and move them to the main buffer
 
                 Integer currentTermID = sorted[i];
+                String term = this.idTermMap.get(currentTermID);
+
                 index = moveDataToMainBuffer(encodeNumber(currentTermID), index);//moved the termID
                 BufferDataByte info = (BufferDataByte) buffer.get(currentTermID);
                 //so we can always know where the next termID starts
@@ -747,11 +754,14 @@ public class SpimiInverter implements IIndexer {
                 while (info.hasMore()) {
 
                     byte[] docid = info.getInfo();
+                    this.docuemntEntities.addEntry(vb.decodeNumber(docid));
                     byte[] onTitle = info.getInfo();
                     byte[] infoOnDocID = info.getInfo();//position list . the length of this list is
                     //the tf of this term on the current document.
                     List<Integer> tf = vb.decode(infoOnDocID);
                     byte[] docTF = encodeNumber(tf.size());
+                    if(term.charAt(0) >= 65 && term.charAt(0) <= 90)//its an entirty
+                        this.docuemntEntities.addEntityTf(vb.decodeNumber(docid),currentTermID,vb.decodeNumber(docTF));
 
                     index = moveDataToMainBuffer(docid, index);
                     index = moveDataToMainBuffer(docTF, index);
@@ -964,10 +974,6 @@ public class SpimiInverter implements IIndexer {
         return ansPos;
     }
 
-    private void moveToChampsBuffer(byte[] arr ){
-
-
-    }
 
     /**
      *
@@ -1016,7 +1022,7 @@ public class SpimiInverter implements IIndexer {
         ic = 0 ;
         boolean takeIntoConsidaration = true ;
         double idfBar = 0.65;
-        byte[] td = new byte[]{0,0} , buffer = new byte[4096];
+        byte[] td = new byte[]{0,0} ;
         int index=0,termID,totalTF,currentPositionInMainBuffer = 0,i,docTF , uniqueDocs , k = 500;
         Term term;
         PriorityQueue<Pair> champQ ;
@@ -1033,22 +1039,22 @@ public class SpimiInverter implements IIndexer {
             for (Integer sortedKey:
                     sorted) {
 
-                buffer = new byte[4096];
+               // buffer = new byte[4096];
                 takeIntoConsidaration = true ;
                 index =0 ;
                 champQ = new PriorityQueue<>(new PairComparator());
                 byte[] encodedData = termIdMap.get(idTermMap.get(sortedKey)).getEncodedData();
                 LinkedList<Integer> decodedData = vb.decode(encodedData);
 
-                int initialPosition = bufferReader.getPositinInFile() ;
+                //int initialPosition = bufferReader.getPositinInFile() ;
                 int position = decodedData.get(2)*4096 + decodedData.get(3);
 
-                if(sortedKey == 306)
+                if(sortedKey == 20)
                     System.out.println("path = [" + path + "]");
                 i = 0;
                 long t1 = System.currentTimeMillis();
                 term = bufferReader.getData(position);
-              //  System.out.println("term time : " + (System.currentTimeMillis() -t1));
+
                 uniqueDocs = term.getDocToDataMap().size();
                 double idf = Math.log10((docPositions.size())/(uniqueDocs));
 
@@ -1073,12 +1079,15 @@ public class SpimiInverter implements IIndexer {
 
                 }
 
-
+                wroteBuffer = false;
                 currentPositionInMainBuffer = moveDataToMainBuffer(vb.encodeNumber(termID),currentPositionInMainBuffer);
                 currentPositionInMainBuffer = moveDataToMainBuffer(vb.encodeNumber(totalTF),currentPositionInMainBuffer);
+                int times = 0;
 
                 for (Integer docID:
                      term.getDocToDataMap().keySet()) {
+
+                    times++;
 
                     docTF = term.getPositions(docID).size();
 
@@ -1090,12 +1099,13 @@ public class SpimiInverter implements IIndexer {
 
                 //done with this term . add a term delimiter
                 currentPositionInMainBuffer = moveDataToMainBuffer(td,currentPositionInMainBuffer);
-              //  System.out.println("total champ time for term : " + (System.currentTimeMillis()-t2));
+
             }//at the end of this process , the queue holds the best pairs of docid - tfidf . the first
             //K are the champions of this terms .
             if(!wroteBuffer)
                 this.writer.write(mainBuffer);
 
+            bufferReader.close();
             this.writer.flush();
             this.writer.close();
 

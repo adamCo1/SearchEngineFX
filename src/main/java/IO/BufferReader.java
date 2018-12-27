@@ -39,9 +39,9 @@ public class BufferReader extends ABufferReader {
 
         totalTF = vb.decodeNumber(getSingleData());
         term = new Term(totalTF,id);
-        int times = 0 ;
+      //  int times = 0 ;
         while(true){
-            times++;
+        //    times++;
             if(index >= buffer.length)
                 fillBuffer();
 
@@ -60,7 +60,7 @@ public class BufferReader extends ABufferReader {
             tf = vb.decodeNumber(getSingleData());
             champ = vb.decodeNumber(getSingleData());//is this doc a champ of the term?
             onTitle = vb.decodeNumber(getSingleData());
-            LinkedList<Integer> positions = vb.decode(getDataTillZero());
+            LinkedList<Integer> positions = openGaps(vb.decode(getDataTillZero()));
             numberOfZeroes++;
 
             if(champ == 1 ) {//this doc is in the champion list of this term
@@ -70,8 +70,21 @@ public class BufferReader extends ABufferReader {
             term.addDocEntry(docID,tf,onTitle,positions);
         }
 
-        System.out.println(times);
+        //System.out.println(times);
         return term;
     }
 
+    private LinkedList<Integer> openGaps(LinkedList<Integer> gappedPositions){
+
+        LinkedList<Integer> ans = new LinkedList<Integer>();
+        int last = 0 , current;
+
+        while(gappedPositions.size() != 0){
+            current = gappedPositions.poll();
+            ans.addLast(current + last);
+            last = current;
+        }
+
+        return ans;
+    }
 }

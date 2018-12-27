@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
@@ -12,34 +9,59 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
-      <Button layoutX="396.0" layoutY="55.0" mnemonicParsing="false" onAction="#handleBrowseButtonCorpusPath" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" />
-      <TextField fx:id="corpusPathField" layoutX="178.0" layoutY="55.0" />
-      <Button layoutX="396.0" layoutY="102.0" mnemonicParsing="false" onAction="#handleBrowseButtonTargetPath" prefHeight="31.0" prefWidth="149.0" text="Browse Target Path" />
-      <TextField fx:id="targetPathField" layoutX="178.0" layoutY="102.0" />
-      <CheckBox fx:id="stemmerCheckBox" layoutX="315.0" layoutY="179.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="96.0" text="Stemmer" />
-      <Button layoutX="28.0" layoutY="330.0" mnemonicParsing="false" onAction="#handleResetButton" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" />
-      <Button layoutX="28.0" layoutY="221.0" mnemonicParsing="false" onAction="#handleShowDictionary" prefHeight="31.0" prefWidth="149.0" text="Show Dictionary" />
-      <Button layoutX="28.0" layoutY="279.0" mnemonicParsing="false" onAction="#handleLoadDictionary" prefHeight="31.0" prefWidth="149.0" text="Load Dictionary" />
-      <Button layoutX="28.0" layoutY="160.0" mnemonicParsing="false" onAction="#handleRunEngine" prefHeight="39.0" prefWidth="149.0" text="Run Engine" />
-      <Label layoutX="45.0" layoutY="55.0" prefHeight="31.0" prefWidth="114.0" text="Enter Corp. path" />
-      <Label layoutX="45.0" layoutY="97.0" prefHeight="31.0" prefWidth="114.0" text="Enter target path" />
-      <TableView fx:id="tableView" layoutX="190.0" layoutY="213.0" prefHeight="216.0" prefWidth="359.0">
+      <Button layoutX="367.0" layoutY="24.0" mnemonicParsing="false" onAction="#handleBrowseButtonCorpusPath" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" />
+      <TextField fx:id="corpusPathField" layoutX="157.0" layoutY="24.0" />
+      <Button layoutX="367.0" layoutY="71.0" mnemonicParsing="false" onAction="#handleBrowseButtonTargetPath" prefHeight="31.0" prefWidth="149.0" text="Browse Target Path" />
+      <TextField fx:id="targetPathField" layoutX="157.0" layoutY="71.0" />
+      <CheckBox fx:id="stemmerCheckBox" layoutX="393.0" layoutY="118.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="96.0" text="Stemmer" />
+      <Button layoutX="16.0" layoutY="279.0" mnemonicParsing="false" onAction="#handleResetButton" prefHeight="31.0" prefWidth="149.0" text="Reset Engine" />
+      <Button layoutX="16.0" layoutY="180.0" mnemonicParsing="false" onAction="#handleShowDictionary" prefHeight="31.0" prefWidth="149.0" text="Show Dictionary" />
+      <Button layoutX="16.0" layoutY="232.0" mnemonicParsing="false" onAction="#handleLoadDictionary" prefHeight="31.0" prefWidth="149.0" text="Load Dictionary" />
+      <Button layoutX="16.0" layoutY="125.0" mnemonicParsing="false" onAction="#handleRunEngine" prefHeight="39.0" prefWidth="149.0" text="Run Engine" />
+      <Label layoutX="33.0" layoutY="24.0" prefHeight="31.0" prefWidth="114.0" text="Enter Corp. path" />
+      <Label layoutX="33.0" layoutY="66.0" prefHeight="31.0" prefWidth="114.0" text="Enter target path" />
+      <TableView fx:id="tableView" layoutX="178.0" layoutY="155.0" prefHeight="216.0" prefWidth="359.0">
         <columns>
           <TableColumn fx:id="termCol" prefWidth="113.0" text="term" />
             <TableColumn fx:id="tfCol" prefWidth="128.0" text="tf" />
         </columns>
       </TableView>
-      <Button layoutX="28.0" layoutY="583.0" mnemonicParsing="false" onAction="#handleDisplayLangs" prefHeight="39.0" prefWidth="124.0" text="Show Langs" />
-      <ListView fx:id="listView" layoutX="190.0" layoutY="583.0" prefHeight="122.0" prefWidth="200.0" />
-      <Button layoutX="250.0" layoutY="483.0" mnemonicParsing="false" onAction="#handleRunQuery" prefHeight="31.0" prefWidth="79.0" text="Run" />
-      <TextField fx:id="queryField" layoutX="28.0" layoutY="483.0" />
-      <TextField fx:id="queryFilePathField" layoutX="520.0" layoutY="483.0" />
-      <TextField fx:id="resultsFilePathField" layoutX="520.0" layoutY="544.0" />
-      <Label layoutX="590.0" layoutY="443.0" text="Query File Results" />
-      <Button layoutX="754.0" layoutY="483.0" mnemonicParsing="false" onAction="#handleBrowseButtonQueryFilePath" text="Browse Query File" />
-      <Button layoutX="754.0" layoutY="544.0" mnemonicParsing="false" onAction="#handleBrowseTargetResultFilePath" text="Choose Results dir" />
-      <Button layoutX="519.0" layoutY="603.0" mnemonicParsing="false" onAction="#handleCreateResultsFile" prefHeight="39.0" prefWidth="186.0" text="Create Results File" />
+      <Button layoutX="603.0" layoutY="161.0" mnemonicParsing="false" onAction="#handleDisplayLangs" prefHeight="39.0" prefWidth="105.0" text="Show Langs" />
+      <ListView fx:id="listView" layoutX="555.0" layoutY="203.0" prefHeight="122.0" prefWidth="200.0" />
+      <Button layoutX="43.0" layoutY="417.0" mnemonicParsing="false" onAction="#handleRunQuery" prefHeight="31.0" prefWidth="96.0" text="Run Query" />
+      <TextField fx:id="queryField" layoutX="178.0" layoutY="417.0" />
+      <TextField fx:id="queryFilePathField" layoutX="512.0" layoutY="527.0" />
+      <TextField fx:id="resultsFilePathField" layoutX="515.0" layoutY="591.0" />
+      <Label layoutX="537.0" layoutY="504.0" text="Query File Results" />
+      <Button layoutX="754.0" layoutY="543.0" mnemonicParsing="false" onAction="#handleBrowseButtonQueryFilePath" text="Browse Query File" />
+      <Button layoutX="752.0" layoutY="591.0" mnemonicParsing="false" onAction="#handleBrowseTargetResultFilePath" text="Choose Results dir" />
+      <Button layoutX="515.0" layoutY="656.0" mnemonicParsing="false" onAction="#handleCreateResultsFile" prefHeight="39.0" prefWidth="186.0" text="Create Results File" />
+      <Label layoutX="765.0" layoutY="29.0" prefHeight="21.0" prefWidth="43.0" text="set k" />
+      <Label layoutX="770.0" layoutY="71.0" text="set b" />
+      <Label layoutX="774.0" layoutY="129.0" text="W k" />
+      <Label layoutX="774.0" layoutY="177.0" text="W b" />
+      <Label layoutX="765.0" layoutY="216.0" text="W pos" />
+      <Label layoutX="768.0" layoutY="269.0" text="W bm" />
+      <Label layoutX="766.0" layoutY="323.0" text="W title" />
+      <TextField fx:id="kField" layoutX="831.0" layoutY="24.0" prefHeight="31.0" prefWidth="73.0" />
+      <TextField fx:id="bField" layoutX="831.0" layoutY="71.0" prefHeight="31.0" prefWidth="73.0" />
+      <TextField fx:id="weightK" layoutX="831.0" layoutY="124.0" prefHeight="31.0" prefWidth="73.0" />
+      <TextField fx:id="weightB" layoutX="831.0" layoutY="172.0" prefHeight="31.0" prefWidth="73.0" />
+      <TextField fx:id="weightPos" layoutX="831.0" layoutY="211.0" prefHeight="31.0" prefWidth="73.0" />
+      <TextField fx:id="weightBM" layoutX="831.0" layoutY="264.0" prefHeight="31.0" prefWidth="73.0" />
+      <TextField fx:id="weightTitle" layoutX="831.0" layoutY="318.0" prefHeight="31.0" prefWidth="73.0" />
+      <TextField fx:id="idfLower" layoutX="665.0" layoutY="87.0" prefHeight="31.0" prefWidth="73.0" />
+      <Label layoutX="592.0" layoutY="92.0" text="IDF lower" />
+      <Label layoutX="596.0" layoutY="40.0" text="idf delta" />
+      <TextField fx:id="idfDelta" layoutX="666.0" layoutY="35.0" prefHeight="31.0" prefWidth="73.0" />
+      <TableView fx:id="queryResultsView" layoutX="56.0" layoutY="504.0" prefHeight="200.0" prefWidth="275.0">
+        <columns>
+          <TableColumn fx:id="docName" prefWidth="75.0" text="C1" />
+          <TableColumn fx:id="docRank" prefWidth="75.0" text="C2" />
+        </columns>
+      </TableView>
+      <Label layoutX="56.0" layoutY="475.0" prefHeight="21.0" prefWidth="88.0" text="Query results" />
    </children>
 </AnchorPane>

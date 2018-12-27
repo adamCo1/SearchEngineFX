@@ -13,7 +13,20 @@ public class TitleAlgorithm extends ARankingAlgorithm {
 
     @Override
     public double rank(CorpusDocument document, ArrayList<Term> termList) {
-        return 0;
+
+        double rank = 0;
+
+        for (Term term:
+             termList) {
+            try {
+                if (term.getOnTitle(document.getDocID()) == 1)
+                    rank += weight;
+            }catch (Exception e){
+
+            }
+        }
+
+        return rank;
 
     }
 }

@@ -14,6 +14,49 @@ public class PositionsAlgorithm extends ARankingAlgorithm {
         super(weight);
     }
 
+
+    public double rank(CorpusDocument document , ArrayList<Term> termList){
+
+        if(document == null || termList == null || termList.size() == 1)
+            return 0;
+
+        int[] foundInSeq = new int[termList.size()];
+        double[] logWeights = new double[termList.size()];
+        double rank = 0 , summedWeights = 0;
+        int docID = document.getDocID(), index = 0 ,consecutive = 0 ;
+        Term next , current ;
+
+        while(index < termList.size()-1){
+            try {
+                current = termList.get(index);
+                next = termList.get(index + 1);
+
+                for (Integer position :
+                        current.getPositions(docID)) {
+                    if (next.consecutivePos(docID, position)) {
+                        consecutive++;
+                        foundInSeq[index] = 1;
+                        foundInSeq[index + 1] = 1;
+                        logWeights[index] = Math.log10(current.getTotalTF() / current.getTF(docID));
+                        if (logWeights[index + 1] == 0)
+                            logWeights[index + 1] = Math.log10(next.getTotalTF() / next.getTF(docID));
+                        continue;
+                    }
+                }
+            }catch (Exception e){
+
+            }
+            index++;
+        }//end while
+
+        for(int i = 0 ; i < logWeights.length ; i++){
+            summedWeights += logWeights[i];
+        }
+
+        rank = (weight * consecutive) * summedWeights;
+        return rank;
+    }
+/**
     @Override
     public double rank(CorpusDocument document, ArrayList<Term> termList) {
 
@@ -81,7 +124,7 @@ public class PositionsAlgorithm extends ARankingAlgorithm {
                 tmpSum+=currTp[1]-lastTp[1];
                 minDistance=Math.min(minDistance,tmpSum);
                 if(tmpSum == numberOfTermsInQuery-1)
-                    return (document.getLength()/tmpSum)/document.getLength();
+                    return (document.getLength()/tmpSum)*weight;
                 continue;
 
             }
@@ -95,86 +138,10 @@ public class PositionsAlgorithm extends ARankingAlgorithm {
         }
 
 
-        return (document.getLength()/minDistance)/document.getLength();
+        return (document.getLength()/minDistance)*weight;
+
+**/
 
 
-
-//
-//        int [] currTp;
-//        currTp = positionsQueue.poll();
-//        if(currTp[0] == currSeq) {
-//            if(currSeq == 0) {
-//                tmpSum = 0;
-//                tmpPos = currTp[1];
-//            }
-//
-//
-//
-//            else if(currTp[0] < numberOfTermsInQuery-1){
-//                tmpSum += (currTp[1]-tmpPos);
-//
-//            }
-//
-//
-//            if(currTp[0]==numberOfTermsInQuery-1)
-//                minDistanceBetweenWords=Math.min(minDistanceBetweenWords,)
-//        }
-//        else{
-//            currSeq=0;
-//            tmpSum=Integer.MAX_VALUE;
-//        }
-//
-
-
-
-//        while(!done){
-//            for(int i = 0 ; i < numberOfTermsInQuery ; i++){
-//                if(currPositionOfEachTerm[i] >= totalPositionsOfEachTerm[i]) {
-//                    done = true;
-//                    break;
-//                }
-//                int currTermPositionInDoc = termList.get(i).getPositions(docId).get(currPositionOfEachTerm[i]);
-//                int lastTermPositionInDoc = termList.get((i-1)%numberOfTermsInQuery).getPositions(docId).get(currPositionOfEachTerm[i]);
-//                while()
-//            }
-//        }
-//
-//
-//        int currTermByOrderInQuestion = 0;
-//
-//        while (totalPositionsChecked < totalPositions) {
-//
-//
-//            if (currPositionOfEachTerm[currTermByOrderInQuestion] < totalPositionsOfEachTerm[currTermByOrderInQuestion]) {
-//                for (int i = 0; i <= 300; i++) {
-//                    int[] tp = new int[2];
-//                    tp[0] = currTermByOrderInQuestion;
-//                    tp[1] = termList.get(currTermByOrderInQuestion).getPositions(document.getDocID()).get(currPositionOfEachTerm[currTermByOrderInQuestion]);
-//                    positionsQueue.add(tp);
-//                    currPositionOfEachTerm[currTermByOrderInQuestion]++;
-//                }
-//            }
-//
-//
-//            //got positions of all terms now stop and start find gaps
-//            if (currTermByOrderInQuestion == numberOfTermsInQuery - 1) {
-//                // enqueue the positions
-//                int[] positionsGap = new int[numberOfTermsInQuery];
-//                while (!positionsQueue.isEmpty()) {
-//                    int[] currtp = positionsQueue.poll();
-//
-//
-//                }
-//
-//            }
-//
-//            currTermByOrderInQuestion = (currTermByOrderInQuestion + 1) % numberOfTermsInQuery;
-//
-//        }
-////
-////
-////    }
-
-
-    }}
+    }
 

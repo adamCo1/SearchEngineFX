@@ -20,11 +20,13 @@ public interface IRanker {
      * @param termsPath
      * @param docsPath
      */
-    void setPaths(String termsPath , String docsPath);
+    void setAttributes(String termsPath , String docsPath,double docLength);
 
     /**
      * set the dictionary . usefull when the dictionaries are loaded from memory
      * @param docPositions dictinary containing doc's positions in the posting list
      */
     void setDictionaries(HashMap<Integer, Pair> docPositions);
+
+    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta);
 }

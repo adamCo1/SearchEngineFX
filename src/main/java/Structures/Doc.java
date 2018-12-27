@@ -16,6 +16,7 @@ public class Doc {
     private String docType;
     private String docSubject;
     private String docLang;
+    private int engineID ;
 
     public Doc(String docId, String docDate, String docTitle, String docText,City originCity,String docAuthor,String docLang) {
         this.docId = docId;
@@ -76,6 +77,14 @@ public class Doc {
 
     public String getDocLang() {
         return docLang;
+    }
+
+    public void setEngineID(int id){
+        this.engineID = id;
+    }
+
+    public int getEngineID(){
+        return this.engineID;
     }
 
     @Override

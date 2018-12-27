@@ -1,13 +1,16 @@
 package Structures;
 
+import java.util.LinkedList;
+
 public class CorpusDocument implements IData{
 
     private double rank ;
     private int docID , length , maxTF , uniqueNumberOfTerms;
     private String name , author , city , lang , type;
+    private LinkedList<Integer> entities ;
 
     public CorpusDocument(int docID , int length , int maxTF , int uniqueNumberOfTerms, String name,
-                          String author,String city,String lang, String type){
+                          String author, String city, String lang, String type, LinkedList<Integer> entities){
         this.docID = docID;
         this.length = length;
         this.maxTF = maxTF;
@@ -17,6 +20,15 @@ public class CorpusDocument implements IData{
         this.city = city;
         this.lang = lang;
         this.type = type;
+        this.entities = new LinkedList<>();
+        deepCopyEntities(entities);
+    }
+
+    private void deepCopyEntities(LinkedList<Integer> temp){
+        for (Integer entity:
+             temp) {
+            this.entities.addLast(entity);
+        }
     }
 
     public double getRank() {

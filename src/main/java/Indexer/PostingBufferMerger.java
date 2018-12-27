@@ -228,7 +228,6 @@ public class PostingBufferMerger {
      */
     private void updatePositionOnDocPositionMap(int id){
 
-        System.out.println(id);
         this.docPositions.put(id,new Pair(blockNum,bufferIndex));
     }
 
@@ -385,8 +384,6 @@ public class PostingBufferMerger {
                             if(firstBufferWithID)
                                 if(type.equals("TERMS"))
                                     updatePositionOntermMap(id,outIndicator);
-                                else if(type.equals("DOC"))
-                                    updatePositionOnDocPositionMap(id);
 
                             LinkedList<Integer> termID = new LinkedList<Integer>() {{
                                 add(id);

@@ -21,6 +21,11 @@ public class Model implements IModel {
 
 
     @Override
+    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
+        this.engine.setRankingParameters(k,b,weightK,weightB,weightBM,weightPos,weightTitle,idfLower,idfDelta);
+    }
+
+    @Override
     public TreeMap runSample(String text,boolean stemmerOn) {
         return this.engine.sampleRun(text,stemmerOn);
     }

@@ -6,6 +6,7 @@ import java.io.PrintStream;
 public class PostingWriter {
 
     private PrintStream out ;
+    private int position ;
 
     public PostingWriter(){
 
@@ -13,7 +14,7 @@ public class PostingWriter {
 
     public void write(byte[] block) throws IOException{
         this.out.write(block);
-
+        this.position += 4096 ;
     }
 
     public void setPath(String path) throws IOException {
