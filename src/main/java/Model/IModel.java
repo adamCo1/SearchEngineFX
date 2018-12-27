@@ -10,6 +10,8 @@ import java.util.TreeSet;
 
 public interface IModel {
 
+    void setRankingParameters(double k,double b,double weightK ,double weightB,double weightBM,
+                              double weigtPos,double weightTitle,double idfLower,double idfDelta);
     TreeMap runSample(String text,boolean stemmerOn);
     String LoadDictionaryToMemory()throws Exception;
     String deleteOutputFiles(File file);

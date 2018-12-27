@@ -20,9 +20,10 @@ public class Searcher implements ISearcher {
     private String outTermPath , outDocPath ;
     private TreeMap<String, PostingDataStructure> termIdMap;
     private VariableByteCode vb;
-    private int blockSize;
+    private double avgDocLength;
+    private int blockSize ;
 
-    public Searcher(IParser parser , String termOutPath , String docOutPath , int blockSize) {
+    public Searcher(IParser parser , String termOutPath , String docOutPath , int blockSize ) {
         try {
             this.ranker = new Ranker(docPositions,blockSize);
             this.vb = new VariableByteCode();
@@ -40,11 +41,13 @@ public class Searcher implements ISearcher {
 
         try {
             ArrayList<String> queryTermList = parser.parse(query);
+            checkForUpperCase(queryTermList);
+
             ArrayList<Term> terms = new ArrayList<>();
             long t1 = System.currentTimeMillis();
             ArrayList<CorpusDocument> ans = getDataOnQueryTerms(queryTermList, terms);
             System.out.println("query process time : " + (System.currentTimeMillis()-t1));
-            System.out.println("Best documents found : ");
+            System.out.println("Best documents found : " + ans.size());
             System.out.println(Arrays.toString(ans.toArray()));
             return ans;
         }catch (Exception e){
@@ -52,6 +55,33 @@ public class Searcher implements ISearcher {
         }
 
         return null ;
+    }
+
+    private void checkForUpperCase(ArrayList<String> qTerms){
+
+        ArrayList<String> finalAns = new ArrayList<>();
+
+        char c;
+        for (String term:
+             qTerms) {
+
+            try{
+                String upString = term.toUpperCase();
+                c = term.charAt(0);
+                //if(c >= 65 && c < 91)//upper case
+                    if(termIdMap.get(upString) != null) {
+                        finalAns.add(upString);
+                    }else
+                        finalAns.add(term);
+             //   else
+              //      finalAns.add(term);
+            }catch (Exception e){
+
+            }
+
+        }
+
+        qTerms = finalAns;
     }
 
     @Override
@@ -65,7 +95,7 @@ public class Searcher implements ISearcher {
 
         try {
             fillTermDataList(queryTerms,termList);
-            this.ranker.setPaths(outTermPath,outDocPath);
+            this.ranker.setAttributes(outTermPath,outDocPath,avgDocLength);
             return this.ranker.rankByTerms(termList);
 
         }catch (Exception e){
@@ -114,6 +144,11 @@ public class Searcher implements ISearcher {
     }
 
 
+    @Override
+    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
+        this.ranker.setRankingParameters(k,b,weightK,weightB,weightBM,weightPos,weightTitle,idfLower,idfDelta);
+    }
+
     public void setRanker(IRanker ranker){
         this.ranker = ranker;
     }
@@ -121,7 +156,8 @@ public class Searcher implements ISearcher {
     public IRanker getRanker(){return this.ranker;}
 
     @Override
-    public void setOutPaths(String termsOutPath, String docOutPath) {
+    public void setAttributes(String termsOutPath, String docOutPath,double avgDocLength) {
+        this.avgDocLength = avgDocLength;
         this.outTermPath = termsOutPath;
         this.outDocPath = docOutPath;
     }

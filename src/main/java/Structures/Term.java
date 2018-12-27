@@ -46,6 +46,27 @@ public class Term implements IData {
         return (LinkedList<Integer>)this.docToDataMap.get(docID).getThird();
     }
 
+    /**
+     * check if this term has a consecutive position in a given document to other term position
+     * @param docID
+     * @param position
+     * @return
+     */
+    public boolean consecutivePos(int docID , int position){
+
+        boolean ans = false;
+
+        for (Integer pos:
+             getPositions(docID)) {
+            if(pos > position+1)
+                break;
+            if(pos == position+1)
+                ans = true;
+        }
+
+        return ans ;
+    }
+
     public HashMap<Integer, Triplet> getDocToDataMap() {
         return docToDataMap;
     }
@@ -56,6 +77,14 @@ public class Term implements IData {
 
     public boolean isChampion(int docID){
         return this.champions.contains(docID);
+    }
+
+    public boolean equals(Object o){
+
+        if(!(o instanceof Term))
+            return false;
+
+        return ((Term)o).getId() == this.id;
     }
 
     public int getId() {

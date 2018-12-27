@@ -74,7 +74,7 @@ import java.util.*;
 
             this.docsPositions = new HashMap<>();
             this.docLengths = new HashMap<>();
-            this.parser = new Parser();
+            this.parser = new Parser(this.docLengths);
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
             this.controller = new DocController();
@@ -240,13 +240,14 @@ import java.util.*;
                 while (!this.reader.getDone()) {
                     temp =(Doc) controller.getBuffer();
                     len = temp.getDocText().length();
-                    this.docLengths.put(id++,len);
-                    this.avgDocLength += len;
+                    temp.setEngineID(id++);
                     this.parser.parse(temp);
                     this.docCount++;
                 }
-                this.avgDocLength /= docCount ;
+
                 this.parser.setDone(true);
+                calculateAVGlength();
+
             }catch (Exception e){
                 System.out.println(temp);
             }
@@ -255,6 +256,18 @@ import java.util.*;
         public void setParser(Parser parser){
             this.parser = parser;
         }
+
+     private void calculateAVGlength(){
+
+         Iterator iterator = this.docLengths.entrySet().iterator();
+         while(iterator.hasNext()){
+             Map.Entry entry =(Map.Entry) iterator.next();
+             this.avgDocLength += (int)entry.getValue();
+         }
+
+         this.avgDocLength = this.avgDocLength / this.docLengths.size();
+         this.docsPositions.put(-1,new Pair(0,avgDocLength));
+     }
 
     /**
      * set path for reading from
@@ -331,7 +344,8 @@ import java.util.*;
         }
 
         public ArrayList<CorpusDocument> runQuery(String query){
-            this.searcher.setOutPaths(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT);
+            this.searcher.setAttributes(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT,(double)this.docsPositions.get(-1).getSecondValue());
+
             return this.searcher.analyzeAndRank(query);
         }
 
@@ -349,16 +363,24 @@ import java.util.*;
             }
 
             try {
+                int index = 0 ;
                 FileWriter fw = new FileWriter(pathToWriteToResultsFile+"\\results.txt");
                 BufferedWriter bw = new BufferedWriter(fw);
-//                ObjectOutputStream ou = new ObjectOutputStream(fu);
-//                ou.flush();
                 bw.flush();
-                for(String res:results){
-                    bw.write(res+"\n");
+
+                while(index < results.size()){
+                    bw.write(results.get(index++));
                     bw.newLine();
+                    bw.flush();
                 }
+                //for(String res:results){
+                  //  bw.write(res+"\n");
+                    //bw.newLine();
+                //}
+
+                bw.close();
                 fw.close();
+                //bw.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -366,6 +388,10 @@ import java.util.*;
             }
 
 
+        }
+
+        public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta){
+            this.searcher.setRankingParameters(k,b,weightK,weightB,weightBM,weightPos,weightTitle,idfLower,idfDelta);
         }
 
         public void addDoclength(int docID, int len){

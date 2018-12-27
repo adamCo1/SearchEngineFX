@@ -39,12 +39,11 @@ public class Parser implements IParser {
     private TrieTree stopWordsTrietree;
     private String currentText ;
     private boolean done ;
-//    private HashSet<String> hashSetCountries;
-//    private TreeSet<String> countries;
-//    private static int numberOfDiffrentCounties=0;
+    private HashMap<Integer,Integer> docLengths;
     private Pattern countryPatterns;
 
-    public Parser()  {
+    public Parser(HashMap docLengths)  {
+        this.docLengths = docLengths;
         this.putBufferSem = new Semaphore(5);
         this.getTakeBufferSem = new Semaphore(0);
         this.strategies = new ParsingStrategies();
@@ -54,12 +53,9 @@ public class Parser implements IParser {
         this.done = false;
         this.cityDict = new HashMap<>();
         this.docLangs = new TreeSet<>();
-//        this.hashSetCountries = new HashSet<>();
-//        this.countries = new TreeSet<>();
         if(allCities.size() == 0)
             ReadFromWeb.getCities();
-//        loadAllCountries();
-//
+
         countryPatterns = getCountryPatterns();
 
     }
@@ -85,36 +81,6 @@ public class Parser implements IParser {
         parseText(doc,(byte)0);
     }
 
-//    private void loadAllCountries(){
-//        int parPos=0;
-//        int endParPos=0;
-//        for (String cityName:allCities.keySet()
-//             ) {
-//            String originalCountryName = allCities.get(cityName).getCountry();
-//            if(originalCountryName.length() == 0)
-//                continue;
-//
-//
-//            if(originalCountryName.contains("(")) {
-////                System.out.println("country: "+c.getCountry()+" has paranthsis");
-//                parPos = originalCountryName.indexOf("(");
-//                endParPos = originalCountryName.indexOf(")");
-////                System.out.println("position of paranthsis: "+parPos);
-//                originalCountryName= originalCountryName.substring(0,parPos-1)+originalCountryName.substring(endParPos+1);
-////                System.out.println(ans);
-//            }
-//
-//                this.countries.add(originalCountryName);
-//        }
-//
-//        for(String countryName:countries){
-//            this.hashSetCountries.add(countryName);
-//        }
-//
-//
-//    }
-
-
     private Pattern getCountryPatterns(){
 
         String regex = "";
@@ -128,6 +94,7 @@ public class Parser implements IParser {
 //        countries = new TreeSet<>();
         return countryPattern;
     }
+
 
     public void parseText(Doc doc , byte title) {
 
@@ -520,6 +487,10 @@ public class Parser implements IParser {
             }
 
         }//end while
+
+        if(title == 0)//add the length of this doc to the lengths map
+            this.docLengths.put(doc.getEngineID(),currentTokenList.size());
+
         try {
             storeBuffer(new TokensStructure(deepCopy(currentTokenList), doc.getOriginCity(), doc.getDocId(), doc.getDocLang(),
                     doc.getDocType(), doc.getDocAuthor()));
