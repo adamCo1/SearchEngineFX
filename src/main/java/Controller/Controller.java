@@ -38,7 +38,8 @@ public class Controller {
     @FXML
     private IntegerProperty idP;
     @FXML
-    private TableColumn<String,String> docName,docRank, termCol,tfCol;
+    private TableColumn<String,String> docName,docRank, termCol,tfCol,docNoCol,docRankDoc;
+
 
     //@FXML
    // private TableColumn<CorpusDocument,String>
@@ -46,7 +47,10 @@ public class Controller {
     private ListView<String> listView;
 
     @FXML
-    private TableView<String> tableView , queryResultsView;
+    private TableView<String> tableView ;
+
+    @FXML
+    private ListView<String>  queryResultsView;
 
     public Controller(IView view , IModel model){
         this.view = view;
@@ -153,7 +157,7 @@ public class Controller {
              answer) {
             ansMap.put(index++,document.getName());
         }
-        docList.addAll(ansMap.values().toString());
+        docList.addAll(ansMap.values());
         index =0 ;
         this.queryResultsView.setItems(docList);
 

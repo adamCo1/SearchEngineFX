@@ -80,18 +80,9 @@ public  class ReadQueryFile {
                             //and the start decription word
                             i++;
                             while (!queryContent.get(i).equals("<narr>")) {
-                                //add to the query entities form the desc, and next word after the original query word query
-                                if((queryContent.get(i).charAt(0)>=65 && queryContent.get(i).charAt(0)<=90) && !(originalQueryWords.contains(queryContent.get(i)))) {
-                                    queryText += queryContent.get(i).replace("?|,|.|:|!|/","").toUpperCase() + " ";
-                                    i++;
-                                    continue;
-                                }
-                                else if(originalQueryWords.contains(queryContent.get(i-1)) && !(originalQueryWords.contains(queryContent.get(i))) )
-                                    queryText += queryContent.get(i) + " ";
-                                    i++;
-                                    continue;
-                                }
+                                queryText += queryContent.get(i) + " ";
                                 i++;
+                            }
 
                             ans.add(new Query(queryNum, queryText.substring(0,queryText.length()-1)));
                             break;

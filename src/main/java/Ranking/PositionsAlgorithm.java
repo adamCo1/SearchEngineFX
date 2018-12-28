@@ -15,12 +15,35 @@ public class PositionsAlgorithm extends ARankingAlgorithm {
     }
 
 
-    public double rank(CorpusDocument document , ArrayList<Term> termList){
+    public double rank(CorpusDocument document, ArrayList<Term> termList) {
 
-        if(document == null || termList == null || termList.size() == 1)
+        if (document == null || termList == null || termList.size() == 1)
             return 0;
 
-        int[] foundInSeq = new int[termList.size()];
+        double termListRankInThisDoc = 0;
+        int docLen = document.getLength();
+        //this is the first part of the doc text by % which is refferd as importent (for example 10% from the first)
+        int FromStartInPercent = 10;
+
+        //this is the last position of the importent section of the document
+        int lastImportentPosition = (docLen * 10) / 100;
+
+
+        for (Term t : termList) {
+            for (Integer p : t.getPositions(document.getDocID())) {
+                if (p <= lastImportentPosition)
+                    termListRankInThisDoc += 1;
+
+            }
+        }
+        termListRankInThisDoc = (termListRankInThisDoc / docLen) * weight;
+        return termListRankInThisDoc;
+    }
+}
+
+
+
+        /**   int[] foundInSeq = new int[termList.size()];
         double[] logWeights = new double[termList.size()];
         double rank = 0 , summedWeights = 0;
         int docID = document.getDocID(), index = 0 ,consecutive = 0 ;
@@ -143,5 +166,5 @@ public class PositionsAlgorithm extends ARankingAlgorithm {
 **/
 
 
-    }
+
 
