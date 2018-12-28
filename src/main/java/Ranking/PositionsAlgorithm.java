@@ -37,9 +37,9 @@ public class PositionsAlgorithm extends ARankingAlgorithm {
                         consecutive++;
                         foundInSeq[index] = 1;
                         foundInSeq[index + 1] = 1;
-                        logWeights[index] = Math.log10(current.getTotalTF() / current.getTF(docID));
+                        logWeights[index] = 1/(1+Math.log10(current.getTotalTF() / current.getTF(docID)));
                         if (logWeights[index + 1] == 0)
-                            logWeights[index + 1] = Math.log10(next.getTotalTF() / next.getTF(docID));
+                            logWeights[index + 1] = 1/(1+Math.log10(next.getTotalTF() / next.getTF(docID)));
                         continue;
                     }
                 }
@@ -53,7 +53,7 @@ public class PositionsAlgorithm extends ARankingAlgorithm {
             summedWeights += logWeights[i];
         }
 
-        rank = (weight * consecutive) * summedWeights;
+        rank = weight  * summedWeights;
         return rank;
     }
 /**
