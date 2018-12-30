@@ -1,5 +1,6 @@
 package Ranking;
 
+import Engine.Stemmer;
 import IO.BufferReader;
 import IO.DocBufferReader;
 import Indexer.VariableByteCode;
@@ -13,6 +14,8 @@ import java.util.*;
 
 public class Searcher implements ISearcher {
 
+    private Stemmer stemmer ;
+    private boolean stemmingStatus ;
     private final int DOCS_RETURN_NUMBER = 50;
     private HashMap<Integer, Pair> docPositions ;
     private IRanker ranker ;
@@ -25,6 +28,8 @@ public class Searcher implements ISearcher {
 
     public Searcher(IParser parser , String termOutPath , String docOutPath , int blockSize ) {
         try {
+            this.stemmingStatus = false;
+            this.stemmer = new Stemmer();
             this.ranker = new Ranker(docPositions,blockSize);
             this.vb = new VariableByteCode();
             this.parser = parser;
@@ -37,15 +42,33 @@ public class Searcher implements ISearcher {
     }
 
     @Override
-    public ArrayList<CorpusDocument> analyzeAndRank(String query) {
+    public ArrayList<CorpusDocument> analyzeAndRank(String query,HashSet<String> cities) {
 
         try {
             ArrayList<String> queryTermList = parser.parse(query);
-            checkForUpperCase(queryTermList);
+            ArrayList<String> finalQueryTermList = new ArrayList<>();
+            for (String term:
+                 queryTermList) {
+
+                if(finalQueryTermList.contains(term))
+                    continue;
+
+                if(this.stemmingStatus == true)
+                    if(!(term.charAt(0) >= 65 && term.charAt(0) <= 91)){
+                        finalQueryTermList.add(stemmer.stripAffixes(term));
+                        continue;
+                    }
+
+                if(term.charAt(0) >= 65 && term.charAt(0) <= 91)
+                    finalQueryTermList.add(term.toUpperCase());
+                else
+                    finalQueryTermList.add(term.toLowerCase());
+            };
+            //checkForUpperCase(finalQueryTermList);
 
             ArrayList<Term> terms = new ArrayList<>();
             long t1 = System.currentTimeMillis();
-            ArrayList<CorpusDocument> ans = getDataOnQueryTerms(queryTermList, terms);
+            ArrayList<CorpusDocument> ans = getDataOnQueryTerms(finalQueryTermList, terms,cities);
             System.out.println("query process time : " + (System.currentTimeMillis()-t1));
             System.out.println("Best documents found : " + ans.size());
             System.out.println(Arrays.toString(ans.toArray()));
@@ -55,6 +78,11 @@ public class Searcher implements ISearcher {
         }
 
         return null ;
+    }
+
+    @Override
+    public void setStemmerStatus(boolean stemmerStatus) {
+        this.stemmingStatus = stemmerStatus;
     }
 
     private void checkForUpperCase(ArrayList<String> qTerms){
@@ -91,12 +119,12 @@ public class Searcher implements ISearcher {
         this.ranker.setDictionaries(docPositions);
     }
 
-    private ArrayList<CorpusDocument> getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList){
+    private ArrayList<CorpusDocument> getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList,HashSet<String> cities){
 
         try {
             fillTermDataList(queryTerms,termList);
             this.ranker.setAttributes(outTermPath,outDocPath,avgDocLength);
-            return this.ranker.rankByTerms(termList);
+            return this.ranker.rankByTerms(termList,cities);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -123,8 +151,9 @@ public class Searcher implements ISearcher {
                 continue;
             byte[] data = posting.getEncodedData();
             LinkedList<Integer> decodedData = vb.decode(data);
-            termList.add(bufferReader.getData(decodedData.get(2) * blockSize +
-                    decodedData.get(3)));
+            Term temp = bufferReader.getData(decodedData.get(2)*blockSize+decodedData.get(3));
+            temp.setTermName(term);
+            termList.add(temp);
         }
 
     }

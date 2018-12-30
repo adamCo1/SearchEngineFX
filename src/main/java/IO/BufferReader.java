@@ -60,6 +60,8 @@ public class BufferReader extends ABufferReader {
             tf = vb.decodeNumber(getSingleData());
             champ = vb.decodeNumber(getSingleData());//is this doc a champ of the term?
             onTitle = vb.decodeNumber(getSingleData());
+
+            //LinkedList<Integer> positions = vb.decode(getDataTillZero());
             LinkedList<Integer> positions = openGaps(vb.decode(getDataTillZero()));
             numberOfZeroes++;
 
@@ -74,13 +76,13 @@ public class BufferReader extends ABufferReader {
         return term;
     }
 
-    private LinkedList<Integer> openGaps(LinkedList<Integer> gappedPositions){
+    private LinkedList<Integer> openGaps(LinkedList<Integer> gapedPositions){
 
         LinkedList<Integer> ans = new LinkedList<Integer>();
         int last = 0 , current;
 
-        while(gappedPositions.size() != 0){
-            current = gappedPositions.poll();
+        while(gapedPositions.size() != 0){
+            current = gapedPositions.poll();
             ans.addLast(current + last);
             last = current;
         }

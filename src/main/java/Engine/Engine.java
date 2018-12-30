@@ -15,6 +15,10 @@ import Structures.CorpusDocument;
 import Structures.Doc;
 import Structures.Pair;
 import Structures.PostingDataStructure;
+import javafx.beans.InvalidationListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import org.apache.commons.io.FileUtils;
 import java.io.*;
 import java.util.*;
@@ -153,6 +157,7 @@ import java.util.*;
 
             this.spimi.setParser(this.parser);
             this.spimi.setStemOn(stemmerStatus);
+            this.searcher.setStemmerStatus(stemmerStatus);
             this.spimi.setTargetPath(this.targetPath);
             this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
             //initialize target path for spimi
@@ -343,19 +348,20 @@ import java.util.*;
             return len;
         }
 
-        public ArrayList<CorpusDocument> runQuery(String query){
+        public ArrayList<CorpusDocument> runQuery(String query , boolean stemmerStatus,HashSet<String> cities){
+            this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
+            this.searcher.setStemmerStatus(stemmerStatus);
             this.searcher.setAttributes(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT,(double)this.docsPositions.get(-1).getSecondValue());
-
-            return this.searcher.analyzeAndRank(query);
+            return this.searcher.analyzeAndRank(query,cities);
         }
 
 
-        public void createResultFileForQueries(String pathToQueriesFileDir,String pathToWriteToResultsFile){
+        public void createResultFileForQueries(String pathToQueriesFileDir,String pathToWriteToResultsFile,boolean stemmerStatus,HashSet<String> cities){
             ArrayList<Query> queries = ReadQueryFile.readQueries(pathToQueriesFileDir);
             //result tuple will be query_id, iter, docno, rank, sim, run_id
             ArrayList<String>results = new ArrayList<>();
             for(Query q:queries){
-                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q.getQueryText());
+                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q.getQueryText(),stemmerStatus,cities);
                 for(CorpusDocument doc: currQueryBestDocMatches){
                     double docRank = doc.getRank();
                     results.add(""+q.getQueryNum()+" "+"0"+ " "+ doc.getName()+" "+docRank+" "+docRank+" "+"run_name");
@@ -403,6 +409,19 @@ import java.util.*;
         }
 
         public int getDocCount(){return docCount;}
+
+        public ObservableList<String> getEntitiesNames(LinkedList<Integer> entitiesIDs){
+
+            ObservableList<String> ans = FXCollections.observableArrayList();
+            int index = 0 ;
+
+            for (Integer id:
+                 entitiesIDs) {
+                ans.add(this.idTermMap.get(id) + "   rank : " + index++);
+            }
+
+            return ans;
+        }
 
         public TreeSet<String> getDocsLang(){
             return ((Parser)this.parser).getDocLangs();

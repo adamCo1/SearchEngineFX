@@ -2,11 +2,10 @@ package Model;
 
 import Engine.Engine;
 import Structures.CorpusDocument;
+import javafx.collections.ObservableList;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public interface IModel {
 
@@ -18,9 +17,10 @@ public interface IModel {
     void setTargetPath(String path);
     void setCorpusPath(String path);
     void setEngine(Engine engine);
-    ArrayList<CorpusDocument> runQueryOnEngine(String query);
-    void createResultFileForQueries(String queryFilePath,String resultsFilePath);
+    ArrayList<CorpusDocument> runQueryOnEngine(String query, boolean stemmerStatus, HashSet<String> cities);
+    void createResultFileForQueries(String queryFilePath,String resultsFilePath,boolean stemmerStatus,HashSet<String> cities);
     String runEngine(boolean stemmerStatus);
     TreeMap getDictionary();
     TreeSet getDocsLang();
+    ObservableList<String> getEntitiesName(LinkedList<Integer> entitiesID);
 }

@@ -35,7 +35,7 @@ public class Ranker implements IRanker {
 
 
     @Override
-    public ArrayList<CorpusDocument> rankByTerms(ArrayList<Term> termList) {
+    public ArrayList<CorpusDocument> rankByTerms(ArrayList<Term> termList,HashSet<String> cities) {
 
         PriorityQueue<CorpusDocument> rankStack = new PriorityQueue<>(new DocRankComparator());
         docBuffer = new ArrayList<>();
@@ -52,10 +52,10 @@ public class Ranker implements IRanker {
 
         try {
             ArrayList<Integer> relevantDocIDS = getRelevantDocIDs(termList);
+            //dropDocsByTFIDF(relevantDocIDS,termList);
             //calculateAndSetIDF(termList);
-            fillDocDataBuffer(relevantDocIDS);
+            fillDocDataBuffer(relevantDocIDS,cities);
             initializeRankMap(relevantDocIDS,termList);
-            dropTermsByIDF(termList);
 
             Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
             titleAndPositionThread.start();
@@ -68,7 +68,7 @@ public class Ranker implements IRanker {
             //bm25Thread.join();
             titleAndPositionThread.join();
 
-            System.out.println("Ranked " + this.docRanks.size() + " Documents : ");
+
            // Iterator iterator = this.docRanks.entrySet().iterator();
 
             for (CorpusDocument doc:
@@ -80,8 +80,26 @@ public class Ranker implements IRanker {
             e.printStackTrace();
             return null;
         }
-
+        System.out.println("Ranked " + rankStack.size() + " Documents : ");
         return retrieveBestDocuments(rankStack);
+
+    }
+
+    private void dropDocsByTFIDF(ArrayList<Integer> releventDocs , ArrayList<Term> termList){
+
+        double bar = 3;
+
+        for (Term term:
+             termList) {
+
+            for (Integer docID:
+                 term.getDocToDataMap().keySet()) {
+
+                double tfidf = term.getIdf()*term.getTF(docID);
+                if(tfidf < bar)
+                    releventDocs.remove(docID);
+            }
+        }
 
     }
 
@@ -214,7 +232,7 @@ public class Ranker implements IRanker {
     /**
      * read doc data from the doc posting list and fill a buffer with it .
      */
-    private void fillDocDataBuffer(ArrayList<Integer> relevantDocIDS) {
+    private void fillDocDataBuffer(ArrayList<Integer> relevantDocIDS,HashSet<String> cities) {
 
 
         try {
@@ -223,9 +241,16 @@ public class Ranker implements IRanker {
             for (Integer docID:
                  relevantDocIDS) {
                 Pair p = docPos.get(docID);
+
                 if(p == null)
                     continue;
+
                 int pos = (Integer)p.getFirstValue()*this.blockSize + (Integer)p.getSecondValue();
+                CorpusDocument currentDocument = (CorpusDocument)docBufferReader.getData(pos);
+
+                if(cities.size() != 0 && !(cities.contains(currentDocument.getCity())))//filter by chosen cities
+                    continue;
+
                 docBuffer.add((CorpusDocument)docBufferReader.getData(pos));
             }
 
@@ -285,7 +310,11 @@ public class Ranker implements IRanker {
 
     private void setIDF(Term term){
 
-        double idf = Math.log10(this.docPos.size()/term.getDocToDataMap().size());
+        double ni = term.getDocToDataMap().size()+0.5;//number of docs containing this term
+        double numerator = this.docPos.size() - ni +0.5;
+        double denominator = ni ;
+        double idf = Math.log10(numerator / denominator);
+        System.out.print(idf + "  ");
         term.setIDF(idf);
     }
 }

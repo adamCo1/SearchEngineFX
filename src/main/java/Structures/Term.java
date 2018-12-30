@@ -10,6 +10,7 @@ public class Term implements IData {
     private HashSet<Integer> champions ;
     private int totalTF , id;
     private double idf ;
+    private String termName ;
 
     public Term(int totalTF , int id){
         this.id = id;
@@ -43,7 +44,11 @@ public class Term implements IData {
     }
 
     public LinkedList<Integer> getPositions(int docID){
-        return (LinkedList<Integer>)this.docToDataMap.get(docID).getThird();
+        try {
+            return (LinkedList<Integer>)this.docToDataMap.get(docID).getThird();
+        }catch (Exception e){
+            return null ;
+        }
     }
 
     /**
@@ -85,6 +90,14 @@ public class Term implements IData {
             return false;
 
         return ((Term)o).getId() == this.id;
+    }
+
+    public void setTermName(String name){
+        this.termName = name ;
+    }
+
+    public String getTermName() {
+        return termName;
     }
 
     public int getId() {

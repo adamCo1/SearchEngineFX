@@ -6,6 +6,7 @@ import Structures.Term;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public interface IRanker {
 
@@ -13,7 +14,7 @@ public interface IRanker {
      * the main ranking function
      * @param termList a list of the query terms after parsing
      */
-    ArrayList<CorpusDocument> rankByTerms(ArrayList<Term> termList);
+    ArrayList<CorpusDocument> rankByTerms(ArrayList<Term> termList, HashSet<String> cities);
 
     /**
      * set the paths to the postings lists

@@ -5,6 +5,7 @@ import Structures.Pair;
 import Structures.PostingDataStructure;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 public interface ISearcher {
@@ -15,7 +16,9 @@ public interface ISearcher {
 
     void setAttributes(String termsOutPath , String docOutPath , double avgDocLength);
 
-    ArrayList<CorpusDocument> analyzeAndRank(String query);
+    ArrayList<CorpusDocument> analyzeAndRank(String query, HashSet<String> cities);
+
+    void setStemmerStatus(boolean stemmerStatus);
 
     void setDictionaries(TreeMap<String, PostingDataStructure> termIdMap , HashMap<Integer, Pair> docPositions);
 }
