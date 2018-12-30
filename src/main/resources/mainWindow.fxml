@@ -28,10 +28,10 @@
             <TableColumn fx:id="tfCol" prefWidth="128.0" text="tf" />
         </columns>
       </TableView>
-      <Button layoutX="603.0" layoutY="161.0" mnemonicParsing="false" onAction="#handleDisplayLangs" prefHeight="39.0" prefWidth="105.0" text="Show Langs" />
-      <ListView fx:id="listView" layoutX="555.0" layoutY="203.0" prefHeight="122.0" prefWidth="200.0" />
-      <Button layoutX="43.0" layoutY="417.0" mnemonicParsing="false" onAction="#handleRunQuery" prefHeight="31.0" prefWidth="96.0" text="Run Query" />
-      <TextField fx:id="queryField" layoutX="178.0" layoutY="417.0" />
+      <Button layoutX="596.0" layoutY="31.0" mnemonicParsing="false" onAction="#handleDisplayLangs" prefHeight="39.0" prefWidth="105.0" text="Show Langs" />
+      <ListView fx:id="listView" layoutX="549.0" layoutY="78.0" prefHeight="122.0" prefWidth="200.0" />
+      <Button layoutX="8.0" layoutY="433.0" mnemonicParsing="false" onAction="#handleRunQuery" prefHeight="31.0" prefWidth="96.0" text="Run Query" />
+      <TextField fx:id="queryField" layoutX="121.0" layoutY="433.0" />
       <TextField fx:id="queryFilePathField" layoutX="512.0" layoutY="527.0" />
       <TextField fx:id="resultsFilePathField" layoutX="515.0" layoutY="591.0" />
       <Label layoutX="537.0" layoutY="504.0" text="Query File Results" />
@@ -52,16 +52,16 @@
       <TextField fx:id="weightPos" layoutX="831.0" layoutY="211.0" prefHeight="31.0" prefWidth="73.0" />
       <TextField fx:id="weightBM" layoutX="831.0" layoutY="264.0" prefHeight="31.0" prefWidth="73.0" />
       <TextField fx:id="weightTitle" layoutX="831.0" layoutY="318.0" prefHeight="31.0" prefWidth="73.0" />
-      <TextField fx:id="idfLower" layoutX="665.0" layoutY="87.0" prefHeight="31.0" prefWidth="73.0" />
-      <Label layoutX="592.0" layoutY="92.0" text="IDF lower" />
-      <Label layoutX="596.0" layoutY="40.0" text="idf delta" />
-      <TextField fx:id="idfDelta" layoutX="666.0" layoutY="35.0" prefHeight="31.0" prefWidth="73.0" />
-      <TableView fx:id="queryResultsView" layoutX="56.0" layoutY="504.0" prefHeight="200.0" prefWidth="275.0">
-        <columns>
-          <TableColumn fx:id="docName" prefWidth="75.0" text="C1" />
-          <TableColumn fx:id="docRank" prefWidth="75.0" text="C2" />
-        </columns>
-      </TableView>
-      <Label layoutX="56.0" layoutY="475.0" prefHeight="21.0" prefWidth="88.0" text="Query results" />
+      <Label layoutX="757.0" layoutY="407.0" text="IDF lower" />
+      <TextField fx:id="idfLower" layoutX="831.0" layoutY="402.0" prefHeight="31.0" prefWidth="73.0" />
+      <Label layoutX="759.0" layoutY="361.0" text="idf delta" />
+      <TextField fx:id="idfDelta" layoutX="831.0" layoutY="356.0" prefHeight="31.0" prefWidth="73.0" />
+      <Label layoutX="56.0" layoutY="475.0" prefHeight="27.0" prefWidth="208.0" text="Query results by DOCNO" />
+      <ListView fx:id="queryResultsView" layoutX="14.0" layoutY="502.0" prefHeight="200.0" prefWidth="200.0" />
+      <ListView fx:id="entityView" layoutX="223.0" layoutY="502.0" prefHeight="200.0" prefWidth="200.0" />
+      <Label layoutX="272.0" layoutY="478.0" text="Entities by rank" />
+      <Label layoutX="570.0" layoutY="232.0" text="Cities" />
+      <ListView fx:id="cityList" layoutX="555.0" layoutY="256.0" prefHeight="133.0" prefWidth="200.0" />
+      <Button fx:id="clearCities" onAction="#handleClearFilter" layoutX="633.0" layoutY="222.0" mnemonicParsing="false" prefHeight="0.0" prefWidth="87.0" text="clear filter" />
    </children>
 </AnchorPane>

@@ -149,7 +149,7 @@ public class SpimiInverter implements IIndexer {
             termInfoMap = new HashMap<>();
 
             writeMergedSortedPostings();
-          //  setChampions(targetPath+"\\"+"terms_out_champs");
+           // setChampions(targetPath+"\\"+"terms_out_champs");
             reset();
 
         } catch (Exception e) {
@@ -439,6 +439,8 @@ public class SpimiInverter implements IIndexer {
 
         } catch (Exception e) {
             //  this.termIdMap.put(term,this.key);
+           if(this.termIdMap.containsKey(term))
+                System.out.println("trying to put : " + term + " bute this term is at its place :");
             this.termIdMap.put(term,new PostingDataStructure(this.key,new byte[]{-127,-128,-128,-128}));//3 zeroes
             //this.termIdMap.put(term, new Integer[]{1, this.key, 0, 0, 0});
             this.idTermMap.put(this.key, term);
@@ -588,6 +590,7 @@ public class SpimiInverter implements IIndexer {
         while (idx < data.length) {//move to the main buffer
             if (temp >= mainBuffer.length) {//so its full. write it to disk
                 this.writer.write(mainBuffer);
+              //  this.writer.flush();
                 temp = 0;
 
                 mainBuffer = new byte[4096];
@@ -669,7 +672,7 @@ public class SpimiInverter implements IIndexer {
                 //write the best entities id's
                 numEntities = 0;
                 while(bestEntities.size() > 0 && numEntities < 5 ){
-                    currentPosition = moveDataToMainBuffer(vb.encodeNumber(bestEntities.getFirst()),currentPosition);
+                    currentPosition = moveDataToMainBuffer(encodeCityInfo(this.idTermMap.get(bestEntities.getFirst())),currentPosition);
                     currentPosition = moveDataToMainBuffer(zero,currentPosition);
                     bestEntities.removeFirst();
                     numEntities++;
@@ -760,7 +763,7 @@ public class SpimiInverter implements IIndexer {
                     //the tf of this term on the current document.
                     List<Integer> tf = vb.decode(infoOnDocID);
                     byte[] docTF = encodeNumber(tf.size());
-                    if(term.charAt(0) >= 65 && term.charAt(0) <= 90)//its an entirty
+                    if(term != null && term !="" && term.charAt(0) >= 65 && term.charAt(0) <= 90)//its an entity
                         this.docuemntEntities.addEntityTf(vb.decodeNumber(docid),currentTermID,vb.decodeNumber(docTF));
 
                     index = moveDataToMainBuffer(docid, index);
@@ -1021,9 +1024,9 @@ public class SpimiInverter implements IIndexer {
 
         ic = 0 ;
         boolean takeIntoConsidaration = true ;
-        double idfBar = 0.65;
+        double idfBar = 0.2;
         byte[] td = new byte[]{0,0} ;
-        int index=0,termID,totalTF,currentPositionInMainBuffer = 0,i,docTF , uniqueDocs , k = 500;
+        int termID,totalTF,currentPositionInMainBuffer = 0,i,docTF , uniqueDocs , k = 500;
         Term term;
         PriorityQueue<Pair> champQ ;
         mainBuffer = new byte[4096];
@@ -1034,6 +1037,7 @@ public class SpimiInverter implements IIndexer {
         Arrays.sort(sorted);
 
         try {
+            this.writer.flush();
             this.writer.setPath(targetPath+"\\"+"terms_out_c");
             BufferReader bufferReader = new BufferReader(targetPath + "\\" + "terms_out", 4096);
             for (Integer sortedKey:
@@ -1041,7 +1045,7 @@ public class SpimiInverter implements IIndexer {
 
                // buffer = new byte[4096];
                 takeIntoConsidaration = true ;
-                index =0 ;
+
                 champQ = new PriorityQueue<>(new PairComparator());
                 byte[] encodedData = termIdMap.get(idTermMap.get(sortedKey)).getEncodedData();
                 LinkedList<Integer> decodedData = vb.decode(encodedData);
@@ -1049,10 +1053,10 @@ public class SpimiInverter implements IIndexer {
                 //int initialPosition = bufferReader.getPositinInFile() ;
                 int position = decodedData.get(2)*4096 + decodedData.get(3);
 
-                if(sortedKey == 20)
-                    System.out.println("path = [" + path + "]");
+                if(ic > position)
+                    System.out.println("woooooot");
+
                 i = 0;
-                long t1 = System.currentTimeMillis();
                 term = bufferReader.getData(position);
 
                 uniqueDocs = term.getDocToDataMap().size();

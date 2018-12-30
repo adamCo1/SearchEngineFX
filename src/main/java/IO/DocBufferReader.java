@@ -28,7 +28,7 @@ public class DocBufferReader extends ABufferReader{
         CorpusDocument corpusDocument ;
         int docID , length , maxTF , uniqueTermsNumber ;
         String name , author , city, language , type;
-        LinkedList<Integer> bestEntitiesID = new LinkedList<Integer>();
+        LinkedList<String> bestEntitiesID = new LinkedList<>();
 
         docID = vb.decodeNumber(getSingleData());
 
@@ -42,7 +42,7 @@ public class DocBufferReader extends ABufferReader{
         type = byteToString(getDataTillZero());
         //read the best 5 entities
         while(buffer[index] != 0) {//so there are more entities , max 5
-            bestEntitiesID.addLast(vb.decodeNumber(getDataTillZero()));
+            bestEntitiesID.addLast(byteToString(getDataTillZero()));
         }
         corpusDocument = new CorpusDocument(docID,length,maxTF,uniqueTermsNumber,name,author,
                 city,language,type , bestEntitiesID);

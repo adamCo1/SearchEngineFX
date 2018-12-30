@@ -83,8 +83,9 @@ public  class ReadQueryFile {
                                 queryText += queryContent.get(i) + " ";
                                 i++;
                             }
-                                ans.add(new Query(queryNum, queryText.substring(0, queryText.length() - 1)));
-                                break;
+
+                            ans.add(new Query(queryNum, queryText.substring(0,queryText.length()-1)));
+                            break;
 
                         }
 

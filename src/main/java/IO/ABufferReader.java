@@ -67,6 +67,9 @@ public abstract class ABufferReader {
         return tempList;
     }
 
+
+
+
     /**
      * this function returns linked list filled with all the positions . it stops only
      * at a 0.
@@ -76,24 +79,25 @@ public abstract class ABufferReader {
     protected LinkedList<Byte> getDataTillZero()throws IOException{
 
         LinkedList<Byte> tempList = new LinkedList<>();
-        byte current = 0;
-        do{
-            if(index >= buffer.length)
+        byte current = 0 , lastByte = -1;
+
+        while(true) {
+            // do{
+            if (index >= buffer.length)
                 fillBuffer();
 
             current = buffer[index++];
-            position ++;
-            if(current == 0)
-                break ;
 
+            if (current == 0 && lastByte < 0) {
+                break;
+            }
+
+            lastByte = current;
             tempList.addLast(current);
-        }while(current != 0);
+            //}while(current != 0);
+        }
 
         return tempList;
-    }
-
-    public int getPositinInFile(){
-        return position;
     }
 
     public void close() throws IOException{

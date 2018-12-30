@@ -20,7 +20,6 @@ public class TitleAlgorithm extends ARankingAlgorithm {
              termList) {
             try {
                 if (term.getOnTitle(document.getDocID()) == 1)
-                   // totalAtTitle++;
                     rank += weight;
             }catch (Exception e){
 

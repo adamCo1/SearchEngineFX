@@ -3,11 +3,11 @@ package Model;
 import Controller.Controller;
 import Engine.Engine;
 import Structures.CorpusDocument;
+import javafx.collections.ObservableList;
+import oracle.jrockit.jfr.StringConstantPool;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Model implements IModel {
 
@@ -59,8 +59,8 @@ public class Model implements IModel {
     }
 
     @Override
-    public ArrayList<CorpusDocument> runQueryOnEngine(String query) {
-        return this.engine.runQuery(query);
+    public ArrayList<CorpusDocument> runQueryOnEngine(String query, boolean stemmerStatus, HashSet<String> cities) {
+        return this.engine.runQuery(query,stemmerStatus,cities);
     }
 
     @Override
@@ -81,8 +81,16 @@ public class Model implements IModel {
     public TreeSet<String> getDocsLang(){return this.engine.getDocsLang();}
 
     @Override
-    public void createResultFileForQueries(String queryFilePath,String resultsFilePath){
-        engine.createResultFileForQueries(queryFilePath,resultsFilePath);
+    public ObservableList<String> getEntitiesName(LinkedList<Integer> entitiesID) {
+
+        ObservableList<String> answer = this.engine.getEntitiesNames(entitiesID);
+
+        return answer;
+    }
+
+    @Override
+    public void createResultFileForQueries(String queryFilePath, String resultsFilePath, boolean stemmerStatus, HashSet<String> cities){
+        engine.createResultFileForQueries(queryFilePath,resultsFilePath,stemmerStatus,cities);
 
     }
 }

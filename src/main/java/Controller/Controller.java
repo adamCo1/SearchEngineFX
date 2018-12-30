@@ -2,29 +2,34 @@ package Controller;
 
 import Indexer.VariableByteCode;
 import Model.IModel;
+import ReadFromWeb.*;
 import Structures.CorpusDocument;
 import Structures.PostingDataStructure;
+import View.ErrorBox;
 import View.IView;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Controller {
 
     private IView view ;
     private IModel model;
-    private ObservableList<String> dictResult;
-
+    private ObservableList<String> dictResult , citiesList;
+    private HashSet<String> currentCitiesChosen;
+    private ArrayList<CorpusDocument> currentAnswerList ;
     @FXML
     private AnchorPane anchorPane;
     @FXML
@@ -38,7 +43,8 @@ public class Controller {
     @FXML
     private IntegerProperty idP;
     @FXML
-    private TableColumn<String,String> docName,docRank, termCol,tfCol;
+    private TableColumn<String,String> docName,docRank, termCol,tfCol,docNoCol,docRankDoc;
+
 
     //@FXML
    // private TableColumn<CorpusDocument,String>
@@ -46,15 +52,113 @@ public class Controller {
     private ListView<String> listView;
 
     @FXML
-    private TableView<String> tableView , queryResultsView;
+    private TableView<String> tableView ;
+
+    @FXML
+    private ListView<String>  queryResultsView , entityView , cityList;
 
     public Controller(IView view , IModel model){
         this.view = view;
         this.model = model;
+        currentAnswerList = new ArrayList<>();
+        currentCitiesChosen = new HashSet<>();
     }
 
     public Controller(){
+        currentAnswerList = new ArrayList<>();
+        currentCitiesChosen = new HashSet<>();
+        fillCitiesList();
+    }
 
+    private void fillCitiesList(){
+
+        this.citiesList = FXCollections.observableArrayList();
+        ReadFromWeb.getCities();
+        Iterator iterator = ReadFromWeb.allCities.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry entry = (Map.Entry)iterator.next();
+            if(((String)entry.getKey()).equals(((City)entry.getValue()).getName()))
+                citiesList.add((String)entry.getKey());
+        }
+
+    }
+
+    private String getNameOfDocument(String line){
+
+        if(line == "" || line == null || line.length() == 0)
+            return "";
+
+        String ans = "";
+        char c ;
+        int i = 0;
+
+        while(i < line.length()){
+            c = line.charAt(i++);
+            if(c == ' ')
+                break;
+
+            ans += c ;
+        }
+
+        return ans ;
+    }
+
+    /**
+     * fill the filter list
+     */
+    public void setCityListListeners(){
+
+        this.cityList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                ObservableList<String> selectedCities = cityList.getSelectionModel().getSelectedItems();
+
+                for (String selected:
+                     selectedCities) {
+                    ErrorBox box = new ErrorBox();
+                    box.getErrorBoxStage("Filtering by : " + selected);
+                    currentCitiesChosen.add(selected);
+                }
+            }
+        });
+
+        cityList.setItems(this.citiesList);
+    }
+
+    /**
+     * clear the filter list
+     */
+    public void handleClearFilter(){
+        this.currentCitiesChosen = new HashSet<>();
+    }
+
+    private void setQueryResultsListener(){
+        this.queryResultsView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                String docName = getNameOfDocument(newValue);
+
+                if(docName == "")
+                    return;
+
+                CorpusDocument currentDoc = null;
+                int index = 1 ;
+
+                for (CorpusDocument doc:
+                     currentAnswerList) {
+                    if(docName.equals(doc.getName()))
+                        currentDoc = doc ;
+                }
+
+                ObservableList<String> entList = FXCollections.observableArrayList();
+                for (String entity:
+                     currentDoc.getEntities()) {
+                    entList.add(entity + "   " + index++);
+                }
+
+                entityView.setItems(entList);
+            }
+        });
     }
 
     public void handleShowDictionary(){
@@ -145,16 +249,19 @@ public class Controller {
         if(query.equals(null))
             return;
 
-        ArrayList<CorpusDocument> answer = this.model.runQueryOnEngine(query);
+        setQueryResultsListener();
+        ArrayList<CorpusDocument> answer = this.model.runQueryOnEngine(query,this.stemmerCheckBox.isSelected(),currentCitiesChosen);
+        currentAnswerList = answer;
         ObservableList<String> docList = FXCollections.observableArrayList();
         TreeMap<Integer , String> ansMap = new TreeMap<>();
 
+
         for (CorpusDocument document:
              answer) {
-            ansMap.put(index++,document.getName());
+
+            ansMap.put(index++,document.toString());
         }
-        docList.addAll(ansMap.values().toString());
-        index =0 ;
+        docList.addAll(ansMap.values());
         this.queryResultsView.setItems(docList);
 
         //docRank.setCellValueFactory(cellValue -> new SimpleStringProperty(rankToString(answer.get(index).getRank())));
@@ -215,7 +322,7 @@ public class Controller {
         this.model.setRankingParameters(Double.parseDouble(kField.getText()),Double.parseDouble(bField.getText()),Double.parseDouble(weightK.getText()),Double.parseDouble(weightB.getText()),
                 Double.parseDouble(weightBM.getText()),Double.parseDouble(weightPos.getText()),Double.parseDouble(weightTitle.getText()),Double.parseDouble(idfLower.getText()),Double.parseDouble(idfDelta.getText()));
 
-        this.model.createResultFileForQueries(queryFilePathField.getText()+"\\queries.txt",resultsFilePathField.getText());
+        this.model.createResultFileForQueries(queryFilePathField.getText()+"\\queries.txt",resultsFilePathField.getText(),this.stemmerCheckBox.isSelected(),this.currentCitiesChosen);
 
     }
 
