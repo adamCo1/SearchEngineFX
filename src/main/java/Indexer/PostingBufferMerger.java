@@ -98,7 +98,7 @@ public class PostingBufferMerger {
             this.mainBuffer = new byte[4096];
             this.bufferIndex = 0;
             this.blockNum++;
-            this.writer.flush();
+           // this.writer.flush();
            // this.termToPostingMap.get(currentTermID).setSecondValue(blockNum);
         } catch (Exception e) {
             System.out.println("error in writing main buffer");

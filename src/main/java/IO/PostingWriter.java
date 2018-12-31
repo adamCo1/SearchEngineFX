@@ -14,6 +14,7 @@ public class PostingWriter {
 
     public void write(byte[] block) throws IOException{
         this.out.write(block);
+        this.out.flush();
         this.position += 4096 ;
     }
 
