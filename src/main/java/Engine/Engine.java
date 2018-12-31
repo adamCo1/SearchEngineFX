@@ -1,9 +1,6 @@
 package Engine;
 
-import IO.IReader;
-import IO.Query;
-import IO.ReadFile;
-import IO.ReadQueryFile;
+import IO.*;
 import Indexer.IIndexer;
 import Indexer.SpimiInverter;
 import Parser.IParser;
@@ -369,7 +366,7 @@ import java.util.*;
                 for(int i = 0 ; i < relatedWords.size() ; i ++)
                     query+=" "+relatedWords.get(i);
             }
-            return this.searcher.analyzeAndRank(query);
+            return this.searcher.analyzeAndRank(query,cities);
         }
 
 
