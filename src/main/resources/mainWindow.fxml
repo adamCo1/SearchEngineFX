@@ -12,7 +12,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<AnchorPane fx:id="anchorPane" prefHeight="805.0" prefWidth="1091.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
       <Button layoutX="367.0" layoutY="24.0" mnemonicParsing="false" onAction="#handleBrowseButtonCorpusPath" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" />
       <TextField fx:id="corpusPathField" layoutX="157.0" layoutY="24.0" />
@@ -61,5 +61,9 @@
       <TextField fx:id="idfDelta" layoutX="666.0" layoutY="35.0" prefHeight="31.0" prefWidth="73.0" />
       <Label layoutX="56.0" layoutY="475.0" prefHeight="27.0" prefWidth="208.0" text="Query results by DOCNO" />
       <ListView fx:id="queryResultsView" layoutX="57.0" layoutY="502.0" prefHeight="200.0" prefWidth="200.0" />
+      <Button fx:id="includeSlimSemantics" layoutX="289.0" layoutY="572.0" mnemonicParsing="false" onAction="#HandleSlimSemantics" text="Use slimWiki GLOVE" />
+      <Button fx:id="includeStanfordSemantics" layoutX="289.0" layoutY="630.0" mnemonicParsing="false" onAction="#HandleStanfordSemantics" prefHeight="39.0" prefWidth="193.0" text="Use Stanford GLOVE" />
+      <Label layoutX="285.0" layoutY="475.0" text="Include semantics:" />
+      <Button fx:id="noSemantics" layoutX="292.0" layoutY="512.0" mnemonicParsing="false" onAction="#handleNoSemantic" text="Dont include semantics" />
    </children>
 </AnchorPane>

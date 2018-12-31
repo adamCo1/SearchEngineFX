@@ -1,9 +1,6 @@
 package Engine;
 
-import IO.IReader;
-import IO.Query;
-import IO.ReadFile;
-import IO.ReadQueryFile;
+import IO.*;
 import Indexer.IIndexer;
 import Indexer.SpimiInverter;
 import Parser.IParser;
@@ -98,6 +95,7 @@ import java.util.*;
             stream = new ObjectInputStream(in);
             HashMap docpos = (HashMap)stream.readObject();
             this.docsPositions = docpos;
+            SemanticHandler.corpusPath = corpusPath;
 
             preProcessVectorSpace();
             setDictionariesToSearcher();
@@ -155,6 +153,7 @@ import java.util.*;
             this.spimi.setStemOn(stemmerStatus);
             this.spimi.setTargetPath(this.targetPath);
             this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
+            SemanticHandler.corpusPath = corpusPath;
             //initialize target path for spimi
 
             String status = "OFF";
@@ -345,7 +344,21 @@ import java.util.*;
 
         public ArrayList<CorpusDocument> runQuery(String query){
             this.searcher.setAttributes(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT,(double)this.docsPositions.get(-1).getSecondValue());
+            ArrayList<String>relatedWords = null;
 
+            if(SemanticHandler.includeSemantics){
+                if(corpusPath == null)
+                    SemanticHandler.corpusPath = corpusPath;
+                if(SemanticHandler.wordsVectors==null || SemanticHandler.wordsVectors.size() ==0)
+                    SemanticHandler.readGloveFile();
+                String [] origQwords = query.replace(",|.|'|\"|?|!|","").split(" ");
+                ArrayList<String> queryInArrayList = new ArrayList<>();
+                for(int i = 0 ; i < origQwords.length ; i++)
+                    queryInArrayList.add(origQwords[i]);
+                relatedWords = SemanticHandler.getRelatedWords(queryInArrayList);
+                for(int i = 0 ; i < relatedWords.size() ; i ++)
+                    query+=" "+relatedWords.get(i);
+            }
             return this.searcher.analyzeAndRank(query);
         }
 
