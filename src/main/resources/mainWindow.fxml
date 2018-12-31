@@ -12,7 +12,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
       <Button layoutX="367.0" layoutY="24.0" mnemonicParsing="false" onAction="#handleBrowseButtonCorpusPath" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" />
       <TextField fx:id="corpusPathField" layoutX="157.0" layoutY="24.0" />
@@ -61,14 +61,14 @@
       <TextField fx:id="idfDelta" layoutX="831.0" layoutY="356.0" prefHeight="31.0" prefWidth="73.0" />
       <Label layoutX="56.0" layoutY="475.0" prefHeight="27.0" prefWidth="208.0" text="Query results by DOCNO" />
       <ListView fx:id="queryResultsView" layoutX="57.0" layoutY="502.0" prefHeight="200.0" prefWidth="200.0" />
-       <Button fx:id="includeSlimSemantics" layoutX="289.0" layoutY="572.0" mnemonicParsing="false" onAction="#HandleSlimSemantics" text="Use slimWiki GLOVE" />
-       <Button fx:id="includeStanfordSemantics" layoutX="289.0" layoutY="630.0" mnemonicParsing="false" onAction="#HandleStanfordSemantics" prefHeight="39.0" prefWidth="193.0" text="Use Stanford GLOVE" />
-       <Label layoutX="285.0" layoutY="475.0" text="Include semantics:" />
-       <Button fx:id="noSemantics" layoutX="292.0" layoutY="512.0" mnemonicParsing="false" onAction="#handleNoSemantic" text="Dont include semantics" />
+       <Button fx:id="includeSlimSemantics" layoutX="397.0" layoutY="453.0" mnemonicParsing="false" onAction="#HandleSlimSemantics" prefHeight="31.0" prefWidth="185.0" text="Use slimWiki GLOVE" />
+       <Button fx:id="includeStanfordSemantics" layoutX="592.0" layoutY="453.0" mnemonicParsing="false" onAction="#HandleStanfordSemantics" prefHeight="39.0" prefWidth="193.0" text="Use Stanford GLOVE" />
+       <Label layoutX="400.0" layoutY="375.0" text="Include semantics:" />
+       <Button fx:id="noSemantics" layoutX="400.0" layoutY="402.0" mnemonicParsing="false" onAction="#handleNoSemantic" text="Dont include semantics" />
        <ListView fx:id="entityView" layoutX="223.0" layoutY="502.0" prefHeight="200.0" prefWidth="200.0" />
        <Label layoutX="272.0" layoutY="478.0" text="Entities by rank" />
        <Label layoutX="570.0" layoutY="232.0" text="Cities" />
        <ListView fx:id="cityList" layoutX="555.0" layoutY="256.0" prefHeight="133.0" prefWidth="200.0" />
-       <Button fx:id="clearCities" onAction="#handleClearFilter" layoutX="633.0" layoutY="222.0" mnemonicParsing="false" prefHeight="0.0" prefWidth="87.0" text="clear filter" />
+       <Button fx:id="clearCities" layoutX="633.0" layoutY="222.0" mnemonicParsing="false" onAction="#handleClearFilter" prefHeight="0.0" prefWidth="87.0" text="clear filter" />
    </children>
 </AnchorPane>
