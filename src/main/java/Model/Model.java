@@ -2,6 +2,7 @@ package Model;
 
 import Controller.Controller;
 import Engine.Engine;
+import IO.Query;
 import Structures.CorpusDocument;
 import javafx.collections.ObservableList;
 import oracle.jrockit.jfr.StringConstantPool;
@@ -59,7 +60,7 @@ public class Model implements IModel {
     }
 
     @Override
-    public ArrayList<CorpusDocument> runQueryOnEngine(String query, boolean stemmerStatus, HashSet<String> cities) {
+    public ArrayList<CorpusDocument> runQueryOnEngine(Query query, boolean stemmerStatus, HashSet<String> cities) {
         return this.engine.runQuery(query,stemmerStatus,cities);
     }
 

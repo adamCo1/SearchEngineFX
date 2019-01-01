@@ -79,12 +79,13 @@ public  class ReadQueryFile {
                             i++;
                             //and the start decription word
                             i++;
+                            String queryDesc = "";
                             while (!queryContent.get(i).equals("<narr>")) {
-                                queryText += queryContent.get(i) + " ";
+                                queryDesc += queryContent.get(i) + " ";
                                 i++;
                             }
 
-                            ans.add(new Query(queryNum, queryText.substring(0,queryText.length()-1)));
+                            ans.add(new Query(queryNum, queryText.substring(0,queryText.length()-1),queryDesc.substring(0,queryDesc.length()-1)));
                             break;
 
                         }

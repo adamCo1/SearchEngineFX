@@ -347,7 +347,7 @@ import java.util.*;
             return len;
         }
 
-        public ArrayList<CorpusDocument> runQuery(String query , boolean stemmerStatus,HashSet<String> cities){
+        public ArrayList<CorpusDocument> runQuery(Query query , boolean stemmerStatus,HashSet<String> cities){
             this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
             this.searcher.setStemmerStatus(stemmerStatus);
             this.searcher.setAttributes(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT,(double)this.docsPositions.get(-1).getSecondValue());
@@ -358,15 +358,22 @@ import java.util.*;
                     SemanticHandler.corpusPath = corpusPath;
                 if(SemanticHandler.wordsVectors==null || SemanticHandler.wordsVectors.size() ==0)
                     SemanticHandler.readGloveFile();
-                String [] origQwords = query.replace(",|.|'|\"|?|!|","").split(" ");
+                String [] origQwords = query.getQueryText().replace(",|.|'|\"|?|!|","").split(" ");
                 ArrayList<String> queryInArrayList = new ArrayList<>();
+                String queryRelatedWordsInString ="";
+                //create the semantic handler output
                 for(int i = 0 ; i < origQwords.length ; i++)
                     queryInArrayList.add(origQwords[i]);
                 relatedWords = SemanticHandler.getRelatedWords(queryInArrayList);
+                //chaining the related words to  a string
                 for(int i = 0 ; i < relatedWords.size() ; i ++)
-                    query+=" "+relatedWords.get(i);
+                    queryRelatedWordsInString+=relatedWords.get(i)+" ";
+
+                //append the related words to the query text
+                if(queryRelatedWordsInString.length() > 0)
+                    query.setQueryText(query.getQueryText()+" "+queryRelatedWordsInString.substring(0,queryRelatedWordsInString.length()-1));
             }
-            return this.searcher.analyzeAndRank(query,cities);
+            return this.searcher.analyzeAndRank(query.getQueryText()+" "+query.getQueryDesc(),cities);
         }
 
 
@@ -375,7 +382,7 @@ import java.util.*;
             //result tuple will be query_id, iter, docno, rank, sim, run_id
             ArrayList<String>results = new ArrayList<>();
             for(Query q:queries){
-                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q.getQueryText(),stemmerStatus,cities);
+                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q,stemmerStatus,cities);
                 for(CorpusDocument doc: currQueryBestDocMatches){
                     double docRank = doc.getRank();
                     results.add(""+q.getQueryNum()+" "+"0"+ " "+ doc.getName()+" "+docRank+" "+docRank+" "+"run_name");

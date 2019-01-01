@@ -1,5 +1,6 @@
 package Controller;
 
+import IO.Query;
 import IO.SemanticHandler;
 import Indexer.VariableByteCode;
 import Model.IModel;
@@ -253,7 +254,7 @@ public class Controller {
             return;
 
         setQueryResultsListener();
-        ArrayList<CorpusDocument> answer = this.model.runQueryOnEngine(query,this.stemmerCheckBox.isSelected(),currentCitiesChosen);
+        ArrayList<CorpusDocument> answer = this.model.runQueryOnEngine(new Query("1",query,""),this.stemmerCheckBox.isSelected(),currentCitiesChosen);
         currentAnswerList = answer;
         ObservableList<String> docList = FXCollections.observableArrayList();
         TreeMap<Integer , String> ansMap = new TreeMap<>();
