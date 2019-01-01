@@ -9,9 +9,9 @@ public class BM25Algorithm extends ARankingAlgorithm {
 
     private double k , b , avgDocLength , totalDocCount;
 
-    public BM25Algorithm(double avgDocLength , double weight , double b , double k){
+    public BM25Algorithm(double avgDocLength ,double totalDocCount, double weight , double b , double k){
         super(weight);
-        this.totalDocCount = 472500;
+        this.totalDocCount = totalDocCount;
         this.avgDocLength = avgDocLength;
         this.b = b ;
         this.k = k ;

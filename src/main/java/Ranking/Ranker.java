@@ -176,6 +176,7 @@ public class Ranker implements IRanker {
     @Override
     public void setDictionaries(HashMap<Integer, Pair> docPositions) {
         this.docPos = docPositions;
+        this.avgDocLength = (double)docPositions.get(-1).getSecondValue();
     }
 
     @Override
@@ -256,37 +257,11 @@ public class Ranker implements IRanker {
         }
     }
 
-    private void rankByBM25(ArrayList<Term> termList){
-
-        BM25Algorithm bm25Algorithm = new BM25Algorithm(avgDocLength,BM25_WEIGHT,BM_25_B,BM_25_K);
-        try{
-
-            for (CorpusDocument doc :
-                    this.docBuffer) {
-                double rank = bm25Algorithm.rank(doc,termList);
-                addRank(doc,rank);
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-
-    private void rankByCntainingAlgorithm(ArrayList<Term> termList){
-
-        ContainingAlgorithm containingAlgorithm = new ContainingAlgorithm(0.05);
-
-        for (CorpusDocument document:
-             this.docBuffer) {
-            addRank(document,containingAlgorithm.rank(document,termList));
-        }
-    }
 
     private void rankByTerms(ArrayList<Term> termList){
 
         ContainingAlgorithm containingAlgorithm = new ContainingAlgorithm(CONTAINING_WEIGHT);
-        BM25Algorithm bm25Algorithm = new BM25Algorithm(avgDocLength,BM25_WEIGHT,BM_25_B,BM_25_K);
+        BM25Algorithm bm25Algorithm = new BM25Algorithm(avgDocLength,this.docPos.size()-1,BM25_WEIGHT,BM_25_B,BM_25_K);
       //  uniqueAlgorithm uniqueAlgorithm = new uniqueAlgorithm(UNIQUE_WEIGHT);
 
         try{
@@ -341,7 +316,7 @@ public class Ranker implements IRanker {
         double numerator = this.docPos.size() - ni + 0.5 ;
         double denominator = ni ;
         double idf = Math.log10(numerator/denominator);
-        System.out.println(idf);
+
         term.setIDF(idf);
     }
 }

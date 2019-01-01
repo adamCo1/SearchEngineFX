@@ -97,9 +97,11 @@ import java.util.*;
 
             in = new FileInputStream(targetPath+"\\"+DOC_POSITIONS_OUT);
             stream = new ObjectInputStream(in);
-            HashMap docpos = (HashMap)stream.readObject();
-            this.docsPositions = docpos;
+            Object docpos = stream.readObject();
+            this.docsPositions = (HashMap)docpos;
             SemanticHandler.corpusPath = corpusPath;
+            stream.close();
+            in.close();
 
             preProcessVectorSpace();
             setDictionariesToSearcher();
@@ -271,6 +273,7 @@ import java.util.*;
 
          this.avgDocLength = this.avgDocLength / this.docLengths.size();
          this.docsPositions.put(-1,new Pair(0,avgDocLength));
+         System.out.println("avg len : " + this.avgDocLength);
      }
 
     /**
