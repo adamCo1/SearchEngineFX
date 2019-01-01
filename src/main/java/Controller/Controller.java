@@ -1,5 +1,6 @@
 package Controller;
 
+import IO.Query;
 import IO.SemanticHandler;
 import Indexer.VariableByteCode;
 import Model.IModel;
@@ -235,10 +236,39 @@ public class Controller {
         return ans.toString();
     }
 
+    /**
+     * sometimes the language tag of docs contains garbase like numbers .
+     * this function filters those cases
+     * @param langs original language list
+     * @return
+     */
+    private ArrayList<String> filterGarbageLangs(TreeSet<String> langs){
+
+        ArrayList<String> ans = new ArrayList<>();
+        char c = 0;
+        boolean stop = false;
+
+        for (String lang:
+             langs) {
+            for(int i = 0 ; i < lang.length() && !stop ; i++) {
+                c = lang.charAt(i);
+                if ((c < 65 || c > 90) && (c < 97 || c > 122)) {
+                    stop = true;
+                    continue;
+                }
+            }//end for
+            if(!stop)
+                ans.add(lang);
+            stop = false ;
+        }
+
+        return ans;
+    }
+
     @FXML
     public void handleDisplayLangs(){
         ObservableList<String> langList = FXCollections.observableArrayList();
-        langList.addAll(this.model.getDocsLang());
+        langList.addAll(filterGarbageLangs(this.model.getDocsLang()));
         if(langList == null || langList.size() == 0)
             this.view.errorMessage("No language list to show");
 
@@ -254,7 +284,7 @@ public class Controller {
             return;
 
         setQueryResultsListener();
-        ArrayList<CorpusDocument> answer = this.model.runQueryOnEngine(query,this.stemmerCheckBox.isSelected(),currentCitiesChosen);
+        ArrayList<CorpusDocument> answer = this.model.runQueryOnEngine(new Query("1",query,""),this.stemmerCheckBox.isSelected(),currentCitiesChosen);
         currentAnswerList = answer;
         ObservableList<String> docList = FXCollections.observableArrayList();
         TreeMap<Integer , String> ansMap = new TreeMap<>();

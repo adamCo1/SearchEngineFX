@@ -1,6 +1,7 @@
 package Model;
 
 import Engine.Engine;
+import IO.Query;
 import Structures.CorpusDocument;
 import javafx.collections.ObservableList;
 
@@ -17,7 +18,7 @@ public interface IModel {
     void setTargetPath(String path);
     void setCorpusPath(String path);
     void setEngine(Engine engine);
-    ArrayList<CorpusDocument> runQueryOnEngine(String query, boolean stemmerStatus, HashSet<String> cities);
+    ArrayList<CorpusDocument> runQueryOnEngine(Query query, boolean stemmerStatus, HashSet<String> cities);
     void createResultFileForQueries(String queryFilePath,String resultsFilePath,boolean stemmerStatus,HashSet<String> cities);
     String runEngine(boolean stemmerStatus);
     TreeMap getDictionary();

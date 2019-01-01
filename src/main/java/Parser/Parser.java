@@ -673,4 +673,8 @@ public class Parser implements IParser {
     public TreeSet<String> getDocLangs() {
         return docLangs;
     }
+
+    public void setDocLangs(TreeSet<String> docLangs) {
+        this.docLangs = docLangs;
+    }
 }

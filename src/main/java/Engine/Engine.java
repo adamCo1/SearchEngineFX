@@ -27,7 +27,7 @@ import java.util.*;
     public class Engine {
 
         private double avgDocLength ;
-        private final String TERMS_OUT_CHAMPS = "terms_out_c" ,TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "terms_out" , DOCS_OUT = "docs_out";
+        private final String TERMS_OUT_CHAMPS = "terms_out_c" ,TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "terms_out" , DOCS_OUT = "docs_out", LANGS_OUT="langs_out.data";
         private final int MAX_SIZE_FOR_BUFFERS = 20480000;//20mb;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
@@ -97,8 +97,16 @@ import java.util.*;
 
             in = new FileInputStream(targetPath+"\\"+DOC_POSITIONS_OUT);
             stream = new ObjectInputStream(in);
-            Object docpos = stream.readObject();
-            this.docsPositions = (HashMap)docpos;
+            HashMap docpos = (HashMap)stream.readObject();
+            this.docsPositions = docpos;
+            stream.close();
+            in.close();
+
+            in = new FileInputStream(targetPath+"\\"+LANGS_OUT);
+            stream = new ObjectInputStream(in);
+            TreeSet<String> langs = (TreeSet<String>) stream.readObject();
+            ((Parser)parser).setDocLangs(langs);
+            in.close();
             SemanticHandler.corpusPath = corpusPath;
             stream.close();
             in.close();
@@ -233,6 +241,12 @@ import java.util.*;
                 out.close();
                 stream.close();
 
+                out = new FileOutputStream(targetPath+"\\"+LANGS_OUT);
+                stream = new ObjectOutputStream(out);
+                stream.writeObject(((Parser)parser).getDocLangs());
+                out.close();
+                stream.close();
+
             }catch (IOException e){
                 e.printStackTrace();
             }
@@ -273,7 +287,6 @@ import java.util.*;
 
          this.avgDocLength = this.avgDocLength / this.docLengths.size();
          this.docsPositions.put(-1,new Pair(0,avgDocLength));
-         System.out.println("avg len : " + this.avgDocLength);
      }
 
     /**
@@ -350,7 +363,7 @@ import java.util.*;
             return len;
         }
 
-        public ArrayList<CorpusDocument> runQuery(String query , boolean stemmerStatus,HashSet<String> cities){
+        public ArrayList<CorpusDocument> runQuery(Query query , boolean stemmerStatus,HashSet<String> cities){
             this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
             this.searcher.setStemmerStatus(stemmerStatus);
             this.searcher.setAttributes(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT,(double)this.docsPositions.get(-1).getSecondValue());
@@ -361,15 +374,22 @@ import java.util.*;
                     SemanticHandler.corpusPath = corpusPath;
                 if(SemanticHandler.wordsVectors==null || SemanticHandler.wordsVectors.size() ==0)
                     SemanticHandler.readGloveFile();
-                String [] origQwords = query.replace(",|.|'|\"|?|!|","").split(" ");
+                String [] origQwords = query.getQueryText().replace(",|.|'|\"|?|!|","").split(" ");
                 ArrayList<String> queryInArrayList = new ArrayList<>();
+                String queryRelatedWordsInString ="";
+                //create the semantic handler output
                 for(int i = 0 ; i < origQwords.length ; i++)
                     queryInArrayList.add(origQwords[i]);
                 relatedWords = SemanticHandler.getRelatedWords(queryInArrayList);
+                //chaining the related words to  a string
                 for(int i = 0 ; i < relatedWords.size() ; i ++)
-                    query+=" "+relatedWords.get(i);
+                    queryRelatedWordsInString+=relatedWords.get(i)+" ";
+
+                //append the related words to the query text
+                if(queryRelatedWordsInString.length() > 0)
+                    query.setQueryText(query.getQueryText()+" "+queryRelatedWordsInString.substring(0,queryRelatedWordsInString.length()-1));
             }
-            return this.searcher.analyzeAndRank(query,cities);
+            return this.searcher.analyzeAndRank(query.getQueryText()+" "+query.getQueryDesc(),cities);
         }
 
 
@@ -378,7 +398,7 @@ import java.util.*;
             //result tuple will be query_id, iter, docno, rank, sim, run_id
             ArrayList<String>results = new ArrayList<>();
             for(Query q:queries){
-                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q.getQueryText(),stemmerStatus,cities);
+                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q,stemmerStatus,cities);
                 for(CorpusDocument doc: currQueryBestDocMatches){
                     double docRank = doc.getRank();
                     results.add(""+q.getQueryNum()+" "+"0"+ " "+ doc.getName()+" "+docRank+" "+docRank+" "+"run_name");
