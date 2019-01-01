@@ -10,8 +10,8 @@ import java.util.*;
 
 public class Ranker implements IRanker {
 
-    private  double BM_25_B = 0.75 , BM_25_K = 1.1;
-    private  double IDF_DELTA = 1, TITLE_WEIGHT = 2 , POSITIONS_WEIGHT = 0.9 , BM25_WEIGHT = 0.9 , IDF_LOWER_BOUND = 3.2;
+    private  double BM_25_B = 1.22 , BM_25_K = 0.77 , CONTAINING_WEIGHT = 0.4;
+    private  double IDF_DELTA = 1, TITLE_WEIGHT = 0.45 , POSITIONS_WEIGHT = 0.08 , BM25_WEIGHT = 0.25 , IDF_LOWER_BOUND = 2;
     private  int DOCUMENT_RETRIEVE_COUNT = 50 ;
     private Mutex rankMutex;
     private String termOutPath,docOutPath,cityOutPath;
@@ -22,7 +22,7 @@ public class Ranker implements IRanker {
     private HashMap<Integer, Pair> docPos;
 
     public Ranker(HashMap docPos,int blockSize){
-        this.avgDocLength = 250;
+        this.avgDocLength = 233;
         this.termOutPath = termOutPath;
         this.docOutPath = docOutPath;
         this.cityOutPath = cityOutPath;
@@ -31,6 +31,7 @@ public class Ranker implements IRanker {
         this.docBuffer = new ArrayList<>();
         this.rankMutex = new Mutex();
         this.docRanks = new ArrayList<>();
+
     }
 
 
@@ -57,19 +58,14 @@ public class Ranker implements IRanker {
             fillDocDataBuffer(relevantDocIDS,cities);
             initializeRankMap(relevantDocIDS,termList);
 
-            Thread titleAndPositionThread = new Thread(() -> rankByTitleAndPosition(termList));
-            titleAndPositionThread.start();
-            rankByBM25(termList);
-            //when the 2 threads are done we have all the documents . now we can calculate BM25
-            //Thread bm25Thread = new Thread(() -> rankByBM25(termList));
-            //Thread clusterPrunningThread = new Thread(() -> rankByPruning(termList));
-            //bm25Thread.start();
-            //rankByBM25(termList);
-            //bm25Thread.join();
-            titleAndPositionThread.join();
+            Thread titleAndPositions = new Thread(()->rankByTitleAndPosition(termList));
+            Thread otherRanks = new Thread(()->rankByTerms(termList));
 
+            otherRanks.start();
+            titleAndPositions.start();
 
-           // Iterator iterator = this.docRanks.entrySet().iterator();
+            otherRanks.join();
+            titleAndPositions.join();
 
             for (CorpusDocument doc:
                  this.docBuffer) {
@@ -183,7 +179,7 @@ public class Ranker implements IRanker {
     }
 
     @Override
-    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
+    public void setRankingParameters(double k, double b, double containingWeight, double uniqueWeight, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
         this.BM_25_K = k;
         this.BM_25_B = b ;
         this.POSITIONS_WEIGHT = weightPos;
@@ -191,7 +187,7 @@ public class Ranker implements IRanker {
         this.BM25_WEIGHT = weightBM;
         this.IDF_LOWER_BOUND = idfLower;
         this.IDF_DELTA = idfDelta;
-
+        this.CONTAINING_WEIGHT = containingWeight;
     }
 
     private void readDocsPostings(ArrayList<Integer> docIDS){
@@ -276,6 +272,37 @@ public class Ranker implements IRanker {
         }
     }
 
+
+    private void rankByCntainingAlgorithm(ArrayList<Term> termList){
+
+        ContainingAlgorithm containingAlgorithm = new ContainingAlgorithm(0.05);
+
+        for (CorpusDocument document:
+             this.docBuffer) {
+            addRank(document,containingAlgorithm.rank(document,termList));
+        }
+    }
+
+    private void rankByTerms(ArrayList<Term> termList){
+
+        ContainingAlgorithm containingAlgorithm = new ContainingAlgorithm(CONTAINING_WEIGHT);
+        BM25Algorithm bm25Algorithm = new BM25Algorithm(avgDocLength,BM25_WEIGHT,BM_25_B,BM_25_K);
+      //  uniqueAlgorithm uniqueAlgorithm = new uniqueAlgorithm(UNIQUE_WEIGHT);
+
+        try{
+
+            for (CorpusDocument doc:
+                    this.docBuffer) {
+               // addRank(doc,uniqueAlgorithm.rank(doc,termList));
+                addRank(doc,bm25Algorithm.rank(doc,termList));
+                addRank(doc,containingAlgorithm.rank(doc,termList));
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     /**
      * add the ranking part of the title and positions to each doc
      * @param termList
@@ -299,22 +326,22 @@ public class Ranker implements IRanker {
     }
 
     private void addRank(CorpusDocument doc , double rank ){
-        this.rankMutex.lock();
+        //this.rankMutex.lock();
         try{
             doc.addRank(rank);
         }catch (Exception e){
             //
         }
-        this.rankMutex.unlock();
+      //  this.rankMutex.unlock();
     }
 
     private void setIDF(Term term){
 
         double ni = term.getDocToDataMap().size()+0.5;//number of docs containing this term
-        double numerator = this.docPos.size() - ni +0.5;
+        double numerator = this.docPos.size() - ni + 0.5 ;
         double denominator = ni ;
-        double idf = Math.log10(numerator / denominator);
-        System.out.print(idf + "  ");
+        double idf = Math.log10(numerator/denominator);
+        System.out.println(idf);
         term.setIDF(idf);
     }
 }

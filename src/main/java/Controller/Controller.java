@@ -67,7 +67,7 @@ public class Controller {
     public Controller(){
         currentAnswerList = new ArrayList<>();
         currentCitiesChosen = new HashSet<>();
-        fillCitiesList();
+
     }
 
     private void fillCitiesList(){
@@ -80,7 +80,7 @@ public class Controller {
             if(((String)entry.getKey()).equals(((City)entry.getValue()).getName()))
                 citiesList.add((String)entry.getKey());
         }
-
+        cityList.setItems(this.citiesList);
     }
 
     private String getNameOfDocument(String line){
@@ -122,7 +122,6 @@ public class Controller {
             }
         });
 
-        cityList.setItems(this.citiesList);
     }
 
     /**
@@ -184,6 +183,7 @@ public class Controller {
         this.model.setTargetPath(targetPath);
         String out = this.model.runEngine(stemmerStatus);
         this.view.errorMessage(out);
+        fillCitiesList();
     }
 
     public void handleBrowseButtonTargetPath() {
@@ -197,6 +197,7 @@ public class Controller {
     public void handleLoadDictionary() {
         try {
             String out = this.model.LoadDictionaryToMemory();
+            fillCitiesList();
             this.view.errorMessage(out);
         }catch (Exception e){
             this.view.errorMessage("Could not load a dictionary");

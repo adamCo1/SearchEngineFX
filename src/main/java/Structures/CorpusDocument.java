@@ -1,11 +1,14 @@
 package Structures;
 
+import sun.awt.Mutex;
+
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 public class CorpusDocument implements IData{
 
+    private Mutex mutex ;
     private double rank ;
     private int docID , length , maxTF , uniqueNumberOfTerms;
     private String name , author , city , lang , type;
@@ -26,7 +29,7 @@ public class CorpusDocument implements IData{
         this.entities = new LinkedList<>();
         this.loopupEntities = new HashSet<>();
         deepCopyEntities(entities);
-
+        this.mutex = new Mutex();
     }
 
     private void deepCopyEntities(LinkedList<String> temp){
@@ -46,7 +49,9 @@ public class CorpusDocument implements IData{
     }
 
     public void addRank(double rank){
+        this.mutex.lock();
         this.rank += rank;
+        this.mutex.unlock();
     }
 
     public int getDocID() {
