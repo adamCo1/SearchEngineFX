@@ -1,5 +1,6 @@
 package Controller;
 
+import IO.SemanticHandler;
 import Indexer.VariableByteCode;
 import Model.IModel;
 import ReadFromWeb.*;
@@ -33,7 +34,7 @@ public class Controller {
     @FXML
     private AnchorPane anchorPane;
     @FXML
-    private CheckBox stemmerCheckBox;
+    private CheckBox stemmerCheckBox  ;
     @FXML
     private TextField corpusPathField , targetPathField , sampleField , queryField , queryFilePathField, resultsFilePathField;
     @FXML
@@ -44,6 +45,8 @@ public class Controller {
     private IntegerProperty idP;
     @FXML
     private TableColumn<String,String> docName,docRank, termCol,tfCol,docNoCol,docRankDoc;
+    @FXML
+    private Button noSemantics,includeSlimSemantics,includeStanfordSemantics;
 
 
     //@FXML
@@ -325,6 +328,35 @@ public class Controller {
 
         this.model.createResultFileForQueries(queryFilePathField.getText()+"\\queries.txt",resultsFilePathField.getText(),this.stemmerCheckBox.isSelected(),this.currentCitiesChosen);
 
+    }
+
+    @FXML
+    public void handleNoSemantic(){
+
+        SemanticHandler.clearWordsVecs();
+        SemanticHandler.includeSemantics = false;
+
+
+    }
+
+    @FXML
+    public void HandleSlimSemantics(){
+        SemanticHandler.gloveFile = "SlimWikiGlove200D.txt";
+        SemanticHandler.includeSemantics = true;
+        if(SemanticHandler.corpusPath == null)
+            SemanticHandler.corpusPath = corpusPathField.getText();
+        if(SemanticHandler.wordsVectors == null || SemanticHandler.wordsVectors.size() ==0)
+            SemanticHandler.readGloveFile();
+    }
+
+    @FXML
+    public void HandleStanfordSemantics(){
+        SemanticHandler.gloveFile = "Stanford_glove.6B.50d.txt";
+        SemanticHandler.includeSemantics = true;
+        if(SemanticHandler.corpusPath == null)
+            SemanticHandler.corpusPath = corpusPathField.getText();
+        if(SemanticHandler.wordsVectors == null || SemanticHandler.wordsVectors.size() ==0)
+            SemanticHandler.readGloveFile();
     }
 
     public void setView(IView view){

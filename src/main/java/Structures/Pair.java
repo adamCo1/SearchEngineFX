@@ -2,7 +2,7 @@ package Structures;
 
 import java.io.Serializable;
 
-public class Pair<K,V> implements Serializable {
+public class Pair<K,V> implements Serializable ,Comparable {
 
     private K firstValue;
     private V secondValue;
@@ -32,4 +32,9 @@ public class Pair<K,V> implements Serializable {
         return ""+firstValue+","+secondValue+" ";
     }
 
+    //this compareTo implementation is for handle semantic class
+    @Override
+    public int compareTo(Object o) {
+        return (int)((Double)((Pair)o).firstValue-(Double)this.firstValue);
+    }
 }
