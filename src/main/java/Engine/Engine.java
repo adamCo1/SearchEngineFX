@@ -27,7 +27,7 @@ import java.util.*;
     public class Engine {
 
         private double avgDocLength ;
-        private final String TERMS_OUT_CHAMPS = "terms_out_c" ,TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "terms_out" , DOCS_OUT = "docs_out";
+        private final String TERMS_OUT_CHAMPS = "terms_out_c" ,TERM_ID_MAP_PATH = "term_id.data" , ID_TERM_MAP_PATH = "id_term.data" , DOC_POSITIONS_OUT = "docs_positions.data" , TERMS_OUT = "terms_out" , DOCS_OUT = "docs_out", LANGS_OUT="langs_out.data";
         private final int MAX_SIZE_FOR_BUFFERS = 20480000;//20mb;
         private String corpusPath , targetPath ;
         private boolean stemmerOn ;
@@ -99,6 +99,13 @@ import java.util.*;
             stream = new ObjectInputStream(in);
             HashMap docpos = (HashMap)stream.readObject();
             this.docsPositions = docpos;
+            in.close();
+
+            in = new FileInputStream(targetPath+"\\"+LANGS_OUT);
+            stream = new ObjectInputStream(in);
+            TreeSet<String> langs = (TreeSet<String>) stream.readObject();
+            ((Parser)parser).setDocLangs(langs);
+            in.close();
             SemanticHandler.corpusPath = corpusPath;
 
             preProcessVectorSpace();
@@ -228,6 +235,12 @@ import java.util.*;
                 out = new FileOutputStream(targetPath+"\\"+DOC_POSITIONS_OUT);
                 stream = new ObjectOutputStream(out);
                 stream.writeObject(this.docsPositions);
+                out.close();
+                stream.close();
+
+                out = new FileOutputStream(targetPath+"\\"+LANGS_OUT);
+                stream = new ObjectOutputStream(out);
+                stream.writeObject(((Parser)parser).getDocLangs());
                 out.close();
                 stream.close();
 

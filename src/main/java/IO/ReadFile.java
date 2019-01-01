@@ -203,7 +203,7 @@ public class ReadFile implements IReader {
         if (fTags.size() > 0)
             for (org.jsoup.nodes.Element fTag : fTags) {
                 if (fTag.toString().substring(6, 9).equals("105")) {
-                    lang = fTag.text().replace(" ","");
+                    lang = fTag.text().replace(" |[0-9]|and|,|.","");
                 }
             }
 
