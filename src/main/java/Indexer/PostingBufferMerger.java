@@ -368,8 +368,7 @@ public class PostingBufferMerger {
                 }
 
                 firstBufferWithID = true;//so it will update the position in the first match
-                if(currentIDOnMerge == 8572)
-                    System.out.println("");
+
                 for(int i = 0 ; i < buffers.size() ; i++){
                     PostingBuffer buffer = buffers.get(i);
                     try {

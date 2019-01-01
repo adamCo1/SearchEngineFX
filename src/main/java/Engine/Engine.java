@@ -99,6 +99,7 @@ import java.util.*;
             stream = new ObjectInputStream(in);
             HashMap docpos = (HashMap)stream.readObject();
             this.docsPositions = docpos;
+            stream.close();
             in.close();
 
             in = new FileInputStream(targetPath+"\\"+LANGS_OUT);
@@ -107,6 +108,8 @@ import java.util.*;
             ((Parser)parser).setDocLangs(langs);
             in.close();
             SemanticHandler.corpusPath = corpusPath;
+            stream.close();
+            in.close();
 
             preProcessVectorSpace();
             setDictionariesToSearcher();

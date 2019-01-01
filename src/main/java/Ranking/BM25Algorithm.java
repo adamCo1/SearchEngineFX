@@ -9,9 +9,9 @@ public class BM25Algorithm extends ARankingAlgorithm {
 
     private double k , b , avgDocLength , totalDocCount;
 
-    public BM25Algorithm(double avgDocLength , double weight , double b , double k){
+    public BM25Algorithm(double avgDocLength ,double totalDocCount, double weight , double b , double k){
         super(weight);
-        this.totalDocCount = 472500;
+        this.totalDocCount = totalDocCount;
         this.avgDocLength = avgDocLength;
         this.b = b ;
         this.k = k ;
@@ -26,7 +26,7 @@ public class BM25Algorithm extends ARankingAlgorithm {
 
             for (Term term : termList) {
                 double tfInDoc = (Integer) term.getDocToDataMap().get(document.getDocID()).getFirst();
-                docRank += (term.getIdf()) * ( 1 + (tfInDoc * (k + 1)) / (tfInDoc + k * (1 - b + b * (document.getLength() / avgDocLength))));
+                docRank += (term.getIdf()) * ( 1 + (tfInDoc * (k + 1)) / (tfInDoc + k * (1 - b + b * (document.getLength()) / avgDocLength)));
             }
         }catch (NullPointerException e){//in case that the term is not in the given document
             docRank += 0;

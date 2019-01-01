@@ -71,7 +71,7 @@ public class Controller {
     public Controller(){
         currentAnswerList = new ArrayList<>();
         currentCitiesChosen = new HashSet<>();
-        fillCitiesList();
+
     }
 
     private void fillCitiesList(){
@@ -84,7 +84,7 @@ public class Controller {
             if(((String)entry.getKey()).equals(((City)entry.getValue()).getName()))
                 citiesList.add((String)entry.getKey());
         }
-
+        cityList.setItems(this.citiesList);
     }
 
     private String getNameOfDocument(String line){
@@ -126,7 +126,6 @@ public class Controller {
             }
         });
 
-        cityList.setItems(this.citiesList);
     }
 
     /**
@@ -188,6 +187,7 @@ public class Controller {
         this.model.setTargetPath(targetPath);
         String out = this.model.runEngine(stemmerStatus);
         this.view.errorMessage(out);
+        fillCitiesList();
     }
 
     public void handleBrowseButtonTargetPath() {
@@ -201,6 +201,7 @@ public class Controller {
     public void handleLoadDictionary() {
         try {
             String out = this.model.LoadDictionaryToMemory();
+            fillCitiesList();
             this.view.errorMessage(out);
         }catch (Exception e){
             this.view.errorMessage("Could not load a dictionary");
@@ -235,10 +236,39 @@ public class Controller {
         return ans.toString();
     }
 
+    /**
+     * sometimes the language tag of docs contains garbase like numbers .
+     * this function filters those cases
+     * @param langs original language list
+     * @return
+     */
+    private ArrayList<String> filterGarbageLangs(TreeSet<String> langs){
+
+        ArrayList<String> ans = new ArrayList<>();
+        char c = 0;
+        boolean stop = false;
+
+        for (String lang:
+             langs) {
+            for(int i = 0 ; i < lang.length() && !stop ; i++) {
+                c = lang.charAt(i);
+                if ((c < 65 || c > 90) && (c < 97 || c > 122)) {
+                    stop = true;
+                    continue;
+                }
+            }//end for
+            if(!stop)
+                ans.add(lang);
+            stop = false ;
+        }
+
+        return ans;
+    }
+
     @FXML
     public void handleDisplayLangs(){
         ObservableList<String> langList = FXCollections.observableArrayList();
-        langList.addAll(this.model.getDocsLang());
+        langList.addAll(filterGarbageLangs(this.model.getDocsLang()));
         if(langList == null || langList.size() == 0)
             this.view.errorMessage("No language list to show");
 
