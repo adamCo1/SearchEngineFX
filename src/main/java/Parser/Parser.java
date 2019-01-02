@@ -513,6 +513,11 @@ public class Parser implements IParser {
         return true;
     }
 
+    /**
+     * check if a word has no upper case letters
+     * @param word
+     * @return
+     */
     private boolean noUpper(String word){
 
         return !(word.charAt(0)>=64 && word.charAt(0) < 90);
@@ -560,6 +565,11 @@ public class Parser implements IParser {
 
     }
 
+    /**
+     * check if a given word is a stop word using the trie tree
+     * @param word
+     * @return
+     */
     private boolean isStopWord(String word){
         try {
             char c = word.charAt(0);
@@ -659,6 +669,10 @@ public class Parser implements IParser {
         }
     }
 
+    /**
+     * initialize a trie tree on the given path
+     * @param path
+     */
     public void initializeStopWordsTreeAndStrategies(String path) {
         try {
             this.strategies = new ParsingStrategies();
@@ -666,7 +680,7 @@ public class Parser implements IParser {
             this.done = false;
             this.stopWordsTrietree.insertFromTextFile(path + "\\stop_words.txt");
         }catch (IOException e){
-            e.printStackTrace();
+
         }
     }
 

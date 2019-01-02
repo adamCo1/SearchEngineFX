@@ -6,9 +6,18 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * class that is implementing the variable byte code methods as shown in the book
+ */
+
 public class VariableByteCode {
 
 
+    /**
+     * encode a single number
+     * @param n encoded byte array of the number
+     * @return
+     */
     public byte[] encodeNumber(int n) {
         if (n == 0) {
             return new byte[]{-128};
@@ -24,7 +33,9 @@ public class VariableByteCode {
         return rv;
     }
 
-
+    /**
+     * encode a list of number one after the other using the encode() method for single numbers
+     */
     public byte[] encode(List<Integer> numbers) {
         byte[] rv;
         try {
@@ -42,6 +53,11 @@ public class VariableByteCode {
         return rv;
     }
 
+    /**
+     * decode a stream of bytes
+     * @param byteStream encoded bytes
+     * @return
+     */
     public LinkedList<Integer> decode(byte[] byteStream) {
         LinkedList<Integer> numbers = new LinkedList<Integer>();
         int n = 0;
@@ -57,6 +73,11 @@ public class VariableByteCode {
         return numbers;
     }
 
+    /**
+     * decode a stream given as a list
+     * @param byteStream
+     * @return
+     */
     public LinkedList<Integer> decode(LinkedList<Byte> byteStream) {
         LinkedList<Integer> numbers = new LinkedList<Integer>();
         int n = 0;
@@ -72,6 +93,11 @@ public class VariableByteCode {
         return numbers;
     }
 
+    /**
+     * decode a single number given as byte stream
+     * @param byteStream
+     * @return
+     */
     public int decodeNumber(byte[] byteStream){
 
         int n = 0;
@@ -88,6 +114,11 @@ public class VariableByteCode {
         return ans;
     }
 
+    /**
+     * decode a single number given in a list
+     * @param byteStream
+     * @return
+     */
     public int decodeNumber(LinkedList<Byte> byteStream){
 
         int n = 0;

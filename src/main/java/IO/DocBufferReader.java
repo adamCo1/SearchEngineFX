@@ -6,6 +6,10 @@ import Structures.IData;
 import java.io.IOException;
 import java.util.LinkedList;
 
+/**
+ * buffer reader for documents posting file
+ */
+
 public class DocBufferReader extends ABufferReader{
 
 
@@ -22,7 +26,11 @@ public class DocBufferReader extends ABufferReader{
         return readAllDocData();
     }
 
-
+    /**
+     * read all the data from the posting file in the form it was written and decode all of it.
+     * @return
+     * @throws IOException
+     */
     private CorpusDocument readAllDocData() throws IOException{
 
         CorpusDocument corpusDocument ;
@@ -50,6 +58,11 @@ public class DocBufferReader extends ABufferReader{
         return corpusDocument;
     }
 
+    /**
+     * convert a stream of bytes to string
+     * @param stream list of bytes
+     * @return
+     */
     private String byteToString(LinkedList<Byte> stream){
         String ans = "";
         LinkedList<Integer> decoded = vb.decode(stream);

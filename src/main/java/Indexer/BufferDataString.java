@@ -2,14 +2,14 @@ package Indexer;
 
 import java.util.LinkedList;
 
+/**
+ * buffer used for holding information on cities . the strings are expected to be in in the format of bytes[]
+ * using the father's functions and getters and setters
+ */
+
 public class BufferDataString extends ABufferData {
 
-    /**
-     * key - docID
-     * value - Arraylist , where each odd element is docID and each even element is the info on it
-     */
-
-    private LinkedList<byte[]> data ;
+    //private LinkedList<byte[]> data ;
     private String fullName , currency, population , countryName;
     private int termID;
 

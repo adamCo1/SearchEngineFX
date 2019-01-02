@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
 
+/**
+ * abstract class to be extended by posting file's readers
+ */
+
 public abstract class ABufferReader {
 
     protected VariableByteCode vb ;
@@ -24,6 +28,12 @@ public abstract class ABufferReader {
         this.buffer = new byte[blockSize];
     }
 
+    /**
+     *
+     * @param positionInFile starting position in the posting file
+     * @return IData structure , filled with the data that's available
+     * @throws IOException
+     */
     public abstract IData getData(int positionInFile) throws IOException;
 
 
@@ -66,9 +76,6 @@ public abstract class ABufferReader {
 
         return tempList;
     }
-
-
-
 
     /**
      * this function returns linked list filled with all the positions . it stops only

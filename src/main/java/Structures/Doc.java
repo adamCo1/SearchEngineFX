@@ -4,6 +4,8 @@ import ReadFromWeb.City;
 
 /**
  * this class represents the docs which will load to the doc buffer from ReadFile class
+ *
+ * has getters and setters
  */
 public class Doc {
 

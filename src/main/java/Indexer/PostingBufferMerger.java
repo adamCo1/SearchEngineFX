@@ -14,6 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * a class for merging the temporary files made by the indexer .
+ * this class using the PostingBuffer class for each temporary file , and initializes them to 4KB each .
+ */
+
 public class PostingBufferMerger {
 
     private int currentTermID , blockNum ;
@@ -30,6 +35,17 @@ public class PostingBufferMerger {
     private PostingWriter writer;
     private SpimiInverter spimi;
 
+    /**
+     *
+     * @param termIdMap a map from terms to their id's
+     * @param docPositions table of positions of final index file for docs
+     * @param vb reference to the encoder used by the indexer
+     * @param spimi reference to the indexer
+     * @param paths paths to terms temp's
+     * @param docPaths paths to docs temp's
+     * @param cityPaths paths to city temp's
+     * @param targetPath path to the target out directory
+     */
     public PostingBufferMerger(HashMap<String, PostingDataStructure> termIdMap,HashMap docPositions , VariableByteCode vb, SpimiInverter spimi, ArrayList<String> paths, ArrayList<String> docPaths, ArrayList<String> cityPaths, String targetPath) {
         this.spimi = spimi;
         this.targetPath = targetPath;
@@ -182,15 +198,24 @@ public class PostingBufferMerger {
         moveToMainBuffer(allData);
     }
 
+    /**
+     * move all the needed data on a current term to the main buffer
+     * @param alldata list of bytes with all the data
+     */
     private void moveDataToMainBuffer( LinkedList<Byte> alldata){
-      //  moveToMainBuffer(vb.encode(tf));
         moveToMainBuffer(alldata);
     }
 
+    /**
+     * move all the needed data on a current term to the main buffer
+     * @param termID term id as bytes
+     * @param allData list of bytes with all the data
+     */
     private void moveDataToMainBuffer(byte[] termID , LinkedList<Byte> allData){
         moveToMainBuffer(termID);
         moveToMainBuffer(allData);
     }
+
 
     private void moveDataToMainBuffer(LinkedList<Byte> termID, LinkedList<Integer> termTF, LinkedList<Byte> docid,
                                       LinkedList<Byte> docTF, LinkedList<Byte> onTitle, LinkedList<Byte> positions) {
@@ -257,7 +282,17 @@ public class PostingBufferMerger {
         }
     }
 
-
+    /**
+     * merging method for docs and cities .
+     * initializes a list of PostngBuffers , 1 for each temp file .
+     *
+     * initialize's the wanted id at 1 and advances untill all the files are fully read . when a file is fully read ,
+     * delete it from the system.
+     *
+     * @param paths list of paths to the temporary files
+     * @param maxBlockSize the maximum size of a block
+     * @param type terms/docs/cities
+     */
     public void merge(ArrayList<String> paths , int maxBlockSize , String type){
         initializeBuffers(paths);
 
@@ -339,11 +374,21 @@ public class PostingBufferMerger {
 
     }
 
-    /**
-     * the merging method on term id . can implement more methods
-     *
-     * @param maxBlockSize max size of the buffers
-     */
+/**
+ * this function mainly deals with terms . there is a small change for the documents and the cities because
+ * of the temporary files structure .
+ *
+ * merging method for docs and cities .
+ * initializes a list of PostngBuffers , 1 for each temp file .
+ *
+ * initialize's the wanted id at 1 and advances untill all the files are fully read . when a file is fully read ,
+ * delete it from the system.
+ *
+ * @param paths list of paths to the temporary files
+ * @param maxBlockSize the maximum size of a block
+ * @param type terms/docs/cities
+ */
+
     public void mergeOnTermID(ArrayList<String> paths , int maxBlockSize,String type) {
 
         initializeBuffers(paths);
@@ -418,7 +463,7 @@ public class PostingBufferMerger {
                     }
 
                  }
-                 //add 00
+                 //add 00 and remove temp files if there are any that's fully read
                   moveToMainBuffer(termDelimiter);
                   buffers.removeAll(toRemove);
                   toRemove=new ArrayList<>();

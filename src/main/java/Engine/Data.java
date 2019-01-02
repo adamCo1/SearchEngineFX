@@ -1,7 +1,13 @@
 package Engine;
 
-
 import java.util.LinkedList;
+
+/**
+ * class that encapsulates data of a term in a document after being parsed.
+ *
+ * lastPositionNormalizer : positions are saved as gaps . this will hold the last real position .
+ * atHeadLine : is this term at the head line or not
+ */
 
 public class Data {
 
@@ -20,6 +26,11 @@ public class Data {
         }};
     }
 
+    /**
+     * initialize a term's data object
+     * @param position first seen position
+     * @param atHeadline at headline of current document or not
+     */
     public Data(int position, byte atHeadline)
     {
         this.positionList = new LinkedList<>();
@@ -36,15 +47,19 @@ public class Data {
 
     }
 
+    /**
+     * adds a position to the positions list
+     * @param position position to be added
+     */
     public void addPosition(int position){
         this.lastPositionNormalizer += position;
         this.positionList.add(new Integer(position));
     }
 
-    public void setAtHeadline(byte at){
-        this.atHeadline = at;
-    }
-
+    /**
+     * get the last position of this term
+     * @return
+     */
     public Integer getLastPosition(){
         int ans = this.lastPositionNormalizer;
         return ans;

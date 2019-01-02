@@ -2,6 +2,10 @@ package Structures;
 
 import java.util.Comparator;
 
+/**
+ * comparator for pairs
+ */
+
 public class PairComparator implements Comparator<Pair> {
     @Override
     public int compare(Pair o1, Pair o2) {

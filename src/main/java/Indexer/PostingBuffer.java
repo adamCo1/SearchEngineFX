@@ -4,6 +4,13 @@ import java.io.EOFException;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
 
+/**
+ * a class that encapsulates the reading of a temporary index file .
+ * the files are written as encoded bytes , thus this class has a decoder for the only purpose of figuring out
+ * the id of the current object that is read .
+ *
+ */
+
 public class PostingBuffer {
 
     private String tempPostingPath;
@@ -34,6 +41,11 @@ public class PostingBuffer {
         return this.index >= buffer.length;
     }
 
+    /**
+     * get the next byte in the file . if the block is empty , read a new one
+     * @return the next byte
+     * @throws Exception
+     */
     private byte getNextByte() throws Exception{
 
         if(this.index >= 4096) {
@@ -44,15 +56,22 @@ public class PostingBuffer {
     }
 
     /**
-     * read only untill the first negative byte
-     * @param vb
-     * @param wantedID
+     * read only untill the first negative byte .
+     * if the current object's id is not the id that is wanted , save it as the last that is seen . the reason is
+     * that the blocks can be changed in the middle of the  reading , thus creating a situation that the buffer
+     * cant go back to the last id .
+     *
+     * @param vb decoder for reading information
+     * @param wantedID the id that is wanted next .
      * @return
      * @throws Exception
      */
     public int readTermID(VariableByteCode vb , int wantedID) throws Exception{
 
         int zeronum = 0 ;
+        /**check if the last id that was saved is the one that is wanted . if the value is not -1 ,
+         * it mans the last read was the id wanted , so read a new one .
+         **/
 
         if(nextID != -1) {
             if(nextID == wantedID){
@@ -69,6 +88,7 @@ public class PostingBuffer {
         byte b = 1;
         boolean changed = false;
 
+        //the reading loop
         do{
             if(index == buffer.length) {
                 fillBuffer();
@@ -96,6 +116,7 @@ public class PostingBuffer {
         if(changed)
             nextID = currentID; // so we don't need to go back in the buffer
 
+        //check if the current id that is read is the id that's expected .
         if(currentID == wantedID) {
             nextID = -1;
             return currentID;

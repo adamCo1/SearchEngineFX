@@ -11,7 +11,12 @@ import java.util.LinkedList;
 
 public class BufferReader extends ABufferReader {
 
-
+    /**
+     *
+     * @param path path to the posting file
+     * @param blockSize the size to read
+     * @throws IOException
+     */
     public BufferReader(String path , int blockSize )throws IOException{
         super(path,blockSize);
     }
@@ -76,6 +81,11 @@ public class BufferReader extends ABufferReader {
         return term;
     }
 
+    /**
+     * restore the original term's positions from the encoded form
+     * @param gapedPositions list of positions by gaps
+     * @return
+     */
     private LinkedList<Integer> openGaps(LinkedList<Integer> gapedPositions){
 
         LinkedList<Integer> ans = new LinkedList<Integer>();

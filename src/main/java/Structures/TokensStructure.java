@@ -2,6 +2,12 @@ package Structures;
 
 import java.util.ArrayList;
 
+/**
+ * a structure to hold tokens out of the parser for being saved as token's buffers .
+ *
+ * has getters and setters
+ */
+
 public class TokensStructure {
 
     private ArrayList<String> tokenList;

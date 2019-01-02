@@ -18,7 +18,18 @@ import java.util.*;
 import java.util.List;
 
 /**
- * implement a variation of the SPIMI algorithm for building posting lists
+ * implement a variation of the SPIMI algorithm for building posting lists .
+ *
+ * general way of work :
+ *
+ * create temporary files using buffers . the buffers will be filled and written to the disk when it's size are over
+ * a maximum size set by the engine . when a buffer is written , it is deleted from the main memory , starting a new buffer.
+ *
+ * when all files are written , use PostingBufferMerger to merge all of them to one single index file .
+ *
+ * all the writings / readings are made from a path passed from the engine .
+ * writings are made by 4KB each , as the size of windows ALU .
+ *
  */
 
 public class SpimiInverter implements IIndexer {
@@ -103,7 +114,7 @@ public class SpimiInverter implements IIndexer {
                 if (tempBuffer == null)
                     break;
 
-                 if(currentBufferSize >= maxSize){
+                 if(currentBufferSize >= maxSize){//so the buffers needs to be written to disk and free the memory .
                     writePostingList(buffer, path);
                     writeDocumentsPostingList(docBuffer, docpath);
                     writeCityBufferToPostingList(cityPath);
@@ -140,7 +151,7 @@ public class SpimiInverter implements IIndexer {
                 }
 
             }
-            if (buffer.size() != 0) {
+            if (buffer.size() != 0) {//if there's left a buffer not written at the end , write it
                 writePostingList(buffer, path);
                 writeCityBufferToPostingList(cityPath);
                 writeDocumentsPostingList(docBuffer,docpath);
@@ -158,7 +169,9 @@ public class SpimiInverter implements IIndexer {
         }
     }
 
-
+    /**
+     * free all the memory taken by this object .
+     */
     public void reset(){
         this.termInfoMap = new HashMap<>();
         this.vb = new VariableByteCode();
@@ -175,6 +188,10 @@ public class SpimiInverter implements IIndexer {
 
     }
 
+    /**
+     * get the canonical path given a target path from the engine
+     * @return
+     */
     private String getCanonicalPath() {
         return this.targetPath + "\\";
     }
@@ -324,11 +341,12 @@ public class SpimiInverter implements IIndexer {
     }
 
     /**
-     * add encoded data to the main buffer .
+     * add encoded data to the main buffer from the unencoded temp buffer .
+     *
      * we leave the Integer key not coded so we can add more encoded data to it easily
      *
-     * @param buffer
-     * @param tempBuffer
+     * @param buffer the final buffer thats wanted . this buffer maps from id to a buffer of bytes .
+     * @param tempBuffer the teporary buffer filled in the index process , this buffer holds non-encoded data .
      */
     public void addToBuffer(HashMap<Integer, ABufferData> buffer, HashMap<Integer, HashMap<Integer, Data>> tempBuffer) {
 
@@ -851,7 +869,7 @@ public class SpimiInverter implements IIndexer {
             PostingDataStructure data = this.termIdMap.get(upperTerm);
             if (data != null) {
                 String proccessedTerm = stem(term);
-                Integer termid =  data.getTermID();
+                Integer termid = data.getTermID();
                 // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
                 //Integer tf = vb.decodeNumber(data.getTf());
                 //this.termIdMap.put(upperTerm,termid);
@@ -862,58 +880,24 @@ public class SpimiInverter implements IIndexer {
                     //so need to remove the old id and put the capital id on this instance since for sure capital came first
                     idTermMap.remove(otherSmallLetterInstance.getTermID());
                     idTermMap.put(otherSmallLetterInstance.getTermID(), proccessedTerm);
-                }
-                else
+                } else
                     this.idTermMap.put(termid, proccessedTerm);
                 //PostingDataStructure pdata = this.termIdMap.get(term);
                 this.termIdMap.remove(upperTerm);
                 PostingDataStructure temp = termIdMap.get(proccessedTerm);
                 if (temp != null) {
-                    LinkedList<Integer> templist = (LinkedList<Integer>)vb.decode(temp.getEncodedData());
-                    LinkedList<Integer> dlist = (LinkedList<Integer>)vb.decode(data.getEncodedData());
+                    LinkedList<Integer> templist = (LinkedList<Integer>) vb.decode(temp.getEncodedData());
+                    LinkedList<Integer> dlist = (LinkedList<Integer>) vb.decode(data.getEncodedData());
                     int updatedTF = templist.pollFirst() + dlist.pollFirst();
                     templist.addFirst(updatedTF);
-                    this.termIdMap.put(proccessedTerm, new PostingDataStructure(data.getTermID(),vb.encode(templist)));
-                }else
+                    this.termIdMap.put(proccessedTerm, new PostingDataStructure(data.getTermID(), vb.encode(templist)));
+                } else
                     this.termIdMap.put(proccessedTerm, new PostingDataStructure(data));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-      /**
-        try {
-            String upperTerm = term.toUpperCase();
-            Integer[] data = this.termIdMap.get(upperTerm) , data2;
-            if (data != null) {
-                String stemmed = stem(term);
-                Integer termid = (Integer) data[1];
-                // Integer termid = (Integer) this.termIdMap.get(term).getSecondValue();
-                Integer tf = (Integer) data[0];
-                //this.termIdMap.put(upperTerm,termid);
-                this.idTermMap.remove(termid);
-
-                if (!idTermMap.containsValue(stemmed))
-                    this.idTermMap.put(termid, stemmed);
-
-                data2 = termIdMap.get(stemmed);
-                if(data2 != null){
-                    idTermMap.remove(data2[1]);
-                    idTermMap.put(termid,stemmed);
-                }
-
-                this.termIdMap.remove(upperTerm);
-                Integer[] temp = termIdMap.get(stemmed);
-                if (temp != null)
-                    this.termIdMap.put(stemmed, new Integer[]{data[0] + temp[0], termid, data[2], data[3], data[4]});
-                else
-                    this.termIdMap.put(stemmed, new Integer[]{data[0], data[1], data[2], data[3], data[4]});
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-       **/
 
 
     private int determineID(int upper , int lower){
@@ -1004,22 +988,16 @@ public class SpimiInverter implements IIndexer {
         currentInMain = moveDataToMainBuffer(new byte[]{0},currentInMain);
 
         return currentInMain;
-        /**
-        int totalLength = edocID.length+edocTF.length+echamp.length+etitle.length+epositions.length;
-        byte[] ans = new byte[totalLength+1];
-
-        ansPos = moveFromTempToAns(edocID,ans,ansPos);
-        ansPos = moveFromTempToAns(edocTF,ans,ansPos);
-        ansPos = moveFromTempToAns(echamp,ans,ansPos);
-        ansPos = moveFromTempToAns(etitle,ans,ansPos);
-        ansPos = moveFromTempToAns(epositions,ans,ansPos);
-        ans[ans.length-1] = (byte)0;//doc delimiter
-
-        return moveDataToMainBuffer(ans,currentInMain);
-
-         **/
     }
 
+
+    /**
+     * funcion for setting the champions list for each term .
+     *
+     * ****BUGGED OUT OF USE ******
+     *
+     * @param path
+     */
     private void setChampions(String path){
 
         ic = 0 ;

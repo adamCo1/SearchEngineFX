@@ -1,5 +1,11 @@
 package IO;
 
+/**
+ * encapsulates a query
+ *
+ * has getters and setters
+ */
+
 public class Query {
     private String queryNum;
     private String queryText;

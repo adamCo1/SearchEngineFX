@@ -12,6 +12,13 @@ import Structures.Term;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * searcher class.
+ * this class gets a query , analyzes it and sends it to the ranker for ranking .
+ *
+ * finally returning the ranked results
+ */
+
 public class Searcher implements ISearcher {
 
     private Stemmer stemmer ;
@@ -85,6 +92,10 @@ public class Searcher implements ISearcher {
         this.stemmingStatus = stemmerStatus;
     }
 
+    /**
+     * check if a term starts with an upper case letter
+     * @param qTerms
+     */
     private void checkForUpperCase(ArrayList<String> qTerms){
 
         ArrayList<String> finalAns = new ArrayList<>();
@@ -119,6 +130,15 @@ public class Searcher implements ISearcher {
         this.ranker.setDictionaries(docPositions);
     }
 
+    /**
+     * read the data on the terms and create a list of Term sructure according to them .
+     * finally send the list of terms to the ranker and return the results
+     *
+     * @param queryTerms array of strings , the terms from the query
+     * @param termList a list of Terms to be filled
+     * @param cities list of cities to filter by
+     * @return ranked list of documents
+     */
     private ArrayList<CorpusDocument> getDataOnQueryTerms(ArrayList<String> queryTerms, ArrayList<Term> termList,HashSet<String> cities){
 
         try {
@@ -170,12 +190,6 @@ public class Searcher implements ISearcher {
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
-
-
-    @Override
-    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
-        this.ranker.setRankingParameters(k,b,weightK,weightB,weightBM,weightPos,weightTitle,idfLower,idfDelta);
     }
 
     public void setRanker(IRanker ranker){

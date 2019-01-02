@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
@@ -12,7 +9,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<AnchorPane fx:id="anchorPane" prefHeight="719.0" prefWidth="944.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
       <Button layoutX="367.0" layoutY="24.0" mnemonicParsing="false" onAction="#handleBrowseButtonCorpusPath" prefHeight="31.0" prefWidth="149.0" text="Browse CorpusPath" />
       <TextField fx:id="corpusPathField" layoutX="157.0" layoutY="24.0" />
@@ -41,28 +38,9 @@
       <Button layoutX="754.0" layoutY="543.0" mnemonicParsing="false" onAction="#handleBrowseButtonQueryFilePath" text="Browse Query File" />
       <Button layoutX="752.0" layoutY="591.0" mnemonicParsing="false" onAction="#handleBrowseTargetResultFilePath" text="Choose Results dir" />
       <Button layoutX="515.0" layoutY="656.0" mnemonicParsing="false" onAction="#handleCreateResultsFile" prefHeight="39.0" prefWidth="186.0" text="Create Results File" />
-      <Label layoutX="765.0" layoutY="29.0" prefHeight="21.0" prefWidth="43.0" text="set k" />
-      <Label layoutX="770.0" layoutY="71.0" text="set b" />
-      <Label layoutX="774.0" layoutY="129.0" text="W k" />
-      <Label layoutX="774.0" layoutY="177.0" text="W b" />
-      <Label layoutX="765.0" layoutY="216.0" text="W pos" />
-      <Label layoutX="768.0" layoutY="269.0" text="W bm" />
-      <Label layoutX="766.0" layoutY="323.0" text="W title" />
-      <TextField fx:id="kField" layoutX="831.0" layoutY="24.0" prefHeight="31.0" prefWidth="73.0" />
-      <TextField fx:id="bField" layoutX="831.0" layoutY="71.0" prefHeight="31.0" prefWidth="73.0" />
-      <TextField fx:id="weightK" layoutX="831.0" layoutY="124.0" prefHeight="31.0" prefWidth="73.0" />
-      <TextField fx:id="weightB" layoutX="831.0" layoutY="172.0" prefHeight="31.0" prefWidth="73.0" />
-      <TextField fx:id="weightPos" layoutX="831.0" layoutY="211.0" prefHeight="31.0" prefWidth="73.0" />
-      <TextField fx:id="weightBM" layoutX="831.0" layoutY="264.0" prefHeight="31.0" prefWidth="73.0" />
-      <TextField fx:id="weightTitle" layoutX="831.0" layoutY="318.0" prefHeight="31.0" prefWidth="73.0" />
-      <Label layoutX="757.0" layoutY="407.0" text="IDF lower" />
-      <TextField fx:id="idfLower" layoutX="831.0" layoutY="402.0" prefHeight="31.0" prefWidth="73.0" />
-      <Label layoutX="759.0" layoutY="361.0" text="idf delta" />
-      <TextField fx:id="idfDelta" layoutX="831.0" layoutY="356.0" prefHeight="31.0" prefWidth="73.0" />
       <Label layoutX="56.0" layoutY="475.0" prefHeight="27.0" prefWidth="208.0" text="Query results by DOCNO" />
       <ListView fx:id="queryResultsView" layoutX="57.0" layoutY="502.0" prefHeight="200.0" prefWidth="200.0" />
        <Button fx:id="includeSlimSemantics" layoutX="397.0" layoutY="453.0" mnemonicParsing="false" onAction="#HandleSlimSemantics" prefHeight="31.0" prefWidth="185.0" text="Use slimWiki GLOVE" />
-       <Button fx:id="includeStanfordSemantics" layoutX="592.0" layoutY="453.0" mnemonicParsing="false" onAction="#HandleStanfordSemantics" prefHeight="39.0" prefWidth="193.0" text="Use Stanford GLOVE" />
        <Label layoutX="400.0" layoutY="375.0" text="Include semantics:" />
        <Button fx:id="noSemantics" layoutX="400.0" layoutY="402.0" mnemonicParsing="false" onAction="#handleNoSemantic" text="Dont include semantics" />
        <ListView fx:id="entityView" layoutX="223.0" layoutY="502.0" prefHeight="200.0" prefWidth="200.0" />
