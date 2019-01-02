@@ -5,8 +5,11 @@ import Structures.CorpusDocument;
 import Structures.Pair;
 import Structures.Term;
 import sun.awt.Mutex;
-
 import java.util.*;
+
+/**
+ * ranker class . gets a list of terms and ranks all relevant documents by them by the weights set below
+ */
 
 public class Ranker implements IRanker {
 
@@ -81,24 +84,6 @@ public class Ranker implements IRanker {
 
     }
 
-    private void dropDocsByTFIDF(ArrayList<Integer> releventDocs , ArrayList<Term> termList){
-
-        double bar = 3;
-
-        for (Term term:
-             termList) {
-
-            for (Integer docID:
-                 term.getDocToDataMap().keySet()) {
-
-                double tfidf = term.getIdf()*term.getTF(docID);
-                if(tfidf < bar)
-                    releventDocs.remove(docID);
-            }
-        }
-
-    }
-
     /**
      * get the best scores and return an array filled with the document's names from the best
      * to the worst
@@ -118,6 +103,10 @@ public class Ranker implements IRanker {
         return bestDocumentsByOrder;
     }
 
+    /**
+     * if a term has a low idf , dont rank documents by it
+     * @param termList
+     */
     private void dropTermsByIDF(ArrayList<Term> termList){
 
         int numberOfLowerTerms = 0 ;
@@ -146,6 +135,11 @@ public class Ranker implements IRanker {
 
     }
 
+    /**
+     * checks if an idf of a term is lower than the set bound
+     * @param idf
+     * @return true if its idf is higher than the bound
+     */
     private boolean idfMoreThanBound(double idf){
 
         if(idf < IDF_LOWER_BOUND)
@@ -177,18 +171,6 @@ public class Ranker implements IRanker {
     public void setDictionaries(HashMap<Integer, Pair> docPositions) {
         this.docPos = docPositions;
         this.avgDocLength = (double)docPositions.get(-1).getSecondValue();
-    }
-
-    @Override
-    public void setRankingParameters(double k, double b, double containingWeight, double uniqueWeight, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
-        this.BM_25_K = k;
-        this.BM_25_B = b ;
-        this.POSITIONS_WEIGHT = weightPos;
-        this.TITLE_WEIGHT = weightTitle;
-        this.BM25_WEIGHT = weightBM;
-        this.IDF_LOWER_BOUND = idfLower;
-        this.IDF_DELTA = idfDelta;
-        this.CONTAINING_WEIGHT = containingWeight;
     }
 
     private void readDocsPostings(ArrayList<Integer> docIDS){
@@ -300,6 +282,11 @@ public class Ranker implements IRanker {
         }
     }
 
+    /**
+     * add rank to a document
+     * @param doc the document to add rank to
+     * @param rank rank to be added
+     */
     private void addRank(CorpusDocument doc , double rank ){
         //this.rankMutex.lock();
         try{
@@ -310,6 +297,10 @@ public class Ranker implements IRanker {
       //  this.rankMutex.unlock();
     }
 
+    /**
+     * set idf to terms
+     * @param term
+     */
     private void setIDF(Term term){
 
         double ni = term.getDocToDataMap().size()+0.5;//number of docs containing this term

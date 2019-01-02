@@ -5,6 +5,10 @@ import Structures.Term;
 
 import java.util.ArrayList;
 
+/**
+ * implementation of the bm25 okapi algorithm
+ */
+
 public class BM25Algorithm extends ARankingAlgorithm {
 
     private double k , b , avgDocLength , totalDocCount;

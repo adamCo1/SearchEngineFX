@@ -2,8 +2,11 @@ package Ranking;
 
 import Structures.CorpusDocument;
 import Structures.Term;
-
 import java.util.ArrayList;
+
+/**
+ * check if terms are at the title of the given document
+ */
 
 public class TitleAlgorithm extends ARankingAlgorithm {
 

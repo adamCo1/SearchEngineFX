@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 /**
  *Class for holding data for the main dictionary
+ *
+ * holds all the encoded data on a term id
  */
 
 public class PostingDataStructure implements Serializable {
@@ -23,6 +25,11 @@ public class PostingDataStructure implements Serializable {
         copyArr(this.encodedData,other.encodedData);
     }
 
+    /**
+     * used for deep copying an array of bytes
+     * @param toSave
+     * @param toCopy
+     */
     private void copyArr(byte[] toSave , byte[] toCopy){
         int i = 0;
 
@@ -42,6 +49,10 @@ public class PostingDataStructure implements Serializable {
         this.termID = termID;
     }
 
+    /**
+     * sets encoded data on the current term
+     * @param encodedData
+     */
     public void setEncodedData(byte[] encodedData) {
         this.encodedData = new byte[encodedData.length];
         copyArr(this.encodedData,encodedData);

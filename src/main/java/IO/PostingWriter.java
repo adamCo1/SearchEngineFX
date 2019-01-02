@@ -3,6 +3,10 @@ package IO;
 import java.io.IOException;
 import java.io.PrintStream;
 
+/**
+ * class for writing buffers of bytes of size 4KB to the disk
+ */
+
 public class PostingWriter {
 
     private PrintStream out ;

@@ -1,5 +1,9 @@
 package Structures;
 
+/**
+ * a node of the trie tree used for the stop words
+ */
+
 public class TrieNode {
     TrieNode[] arr;
     boolean isEnd;

@@ -2,6 +2,12 @@ package Structures;
 
 import java.io.Serializable;
 
+/**
+ * generic pair implementation
+ * @param <K>
+ * @param <V>
+ */
+
 public class Pair<K,V> implements Serializable ,Comparable {
 
     private K firstValue;

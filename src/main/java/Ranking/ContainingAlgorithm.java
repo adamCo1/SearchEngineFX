@@ -6,6 +6,10 @@ import Structures.Term;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+/**
+ * checks if a term is an entity of the given document .
+ */
+
 public class ContainingAlgorithm extends ARankingAlgorithm {
 
     public ContainingAlgorithm(double weight) {

@@ -1,5 +1,11 @@
 package Indexer;
 
+/**
+ * buffer for info on doc's
+ * this buffer does'nt need to change because the documents don't change .
+ * has only getters and setters
+ */
+
 public class BufferDataDoc {
 
     private int ID;

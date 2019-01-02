@@ -1,5 +1,12 @@
 package Structures;
 
+/**
+ * implementation of generic triplet
+ * @param <V>
+ * @param <K>
+ * @param <T>
+ */
+
 public class Triplet<V,K,T> {
 
     private V first ;

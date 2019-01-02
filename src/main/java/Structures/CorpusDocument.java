@@ -6,6 +6,12 @@ import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+/**
+ * encapsulating a document in the corpus with all of its relevant data .
+ *
+ * this class also holds a list of the id's of the entities of each document
+ */
+
 public class CorpusDocument implements IData{
 
     private Mutex mutex ;
@@ -32,6 +38,10 @@ public class CorpusDocument implements IData{
         this.mutex = new Mutex();
     }
 
+    /**
+     * deep copy the list of entities
+     * @param temp entity list of this document
+     */
     private void deepCopyEntities(LinkedList<String> temp){
         for (String entity:
              temp) {
@@ -40,6 +50,11 @@ public class CorpusDocument implements IData{
         }
     }
 
+    /**
+     * check if a given term is an entity of this document
+     * @param term true if its an entity
+     * @return
+     */
     public boolean isEntity(String term){
         return this.loopupEntities.contains(term);
     }

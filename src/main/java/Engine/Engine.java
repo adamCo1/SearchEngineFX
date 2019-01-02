@@ -21,8 +21,13 @@ import java.io.*;
 import java.util.*;
 
 /**
-     * Class for the engine itself . holds all the parts needed for a search engine to work
-     */
+ * Class for the engine itself . holds all the parts needed for a search engine to work.
+ * all thats needed is to call the run() method after initialization .
+ *
+ * this class holds all of the dictionaries , paths , size caps
+ *
+ *
+ */
 
     public class Engine {
 
@@ -41,7 +46,6 @@ import java.util.*;
         private IReader reader;
         private ISearcher searcher;
         private IBufferController controller;
-      //  private Thread readThread , indexThread , parseThread;
         private int docCount;
 
         public Engine(boolean stemmerOn , String corpusPath) {
@@ -54,6 +58,13 @@ import java.util.*;
             this.docsPositions = new HashMap<>();
         }
 
+    /**
+     * initialize an engine with given objects
+     * @param spimi
+     * @param parser
+     * @param reader
+     * @param controller
+     */
         public Engine(IIndexer spimi , IParser parser , IReader reader , IBufferController controller){
             this.termIdMap = new HashMap<>();
             this.idTermMap = new HashMap<>();
@@ -69,9 +80,10 @@ import java.util.*;
 
         }
 
-
-
-        public Engine(){
+    /**
+     * empty constructor that initializes all parts of the engine with the default options.
+     */
+    public Engine(){
 
             this.docsPositions = new HashMap<>();
             this.docLengths = new HashMap<>();
@@ -85,7 +97,12 @@ import java.util.*;
         }
 
 
-        public String loadDictionaryToMemory() throws Exception{
+    /**
+     * load all needed dictionaries to main memory from the disk .
+     * @return a massage to be shown if all went good
+     * @throws Exception throw for the caller to handle
+     */
+    public String loadDictionaryToMemory() throws Exception{
 
 
             FileInputStream in = new FileInputStream(targetPath+"\\"+TERM_ID_MAP_PATH);
@@ -116,11 +133,20 @@ import java.util.*;
             return "Dictionary loaded to memory.";
         }
 
-
-        private void setDictionariesToSearcher(){
+    /**
+     * set the needed dictionaries for the Searcher to work on . should call this function after using run()
+     * or the loadDictionaryToMemory() functions
+     */
+    private void setDictionariesToSearcher(){
             this.searcher.setDictionaries(this.termIdTreeMap , this.docsPositions);
         }
 
+    /**
+     * a feature for debugging the parser .
+     * @param text free text written to the GUI for checking the parser
+     * @param stemmerOn use stemming or not
+     * @return a map of the terms found
+     */
         public TreeMap sampleRun(String text , boolean stemmerOn){
 
             int maxsize = 40*1000;
@@ -161,7 +187,14 @@ import java.util.*;
             return this.termIdTreeMap;
         }
 
-        public String run(boolean stemmerStatus) {
+    /**
+     * the main building function of the engine . this engine uses the reader / parser / indexer to build
+     * the final indexes on the read documents . after bulding those indexes , it writes them to the disk
+     *
+     * @param stemmerStatus
+     * @return
+     */
+    public String run(boolean stemmerStatus) {
 
             this.spimi.setParser(this.parser);
             this.spimi.setStemOn(stemmerStatus);
@@ -197,7 +230,7 @@ import java.util.*;
                  */
                 convertTermIdToTreeMap();
                 storeDictionariesOnDisk();
-                preProcessVectorSpace();
+                //preProcessVectorSpace();
                 setDictionariesToSearcher();
 
                 String out = "";
@@ -212,6 +245,7 @@ import java.util.*;
             }
         }
 
+
         public TreeMap getTermIDDictionary(){
 
             return this.termIdTreeMap;
@@ -219,7 +253,7 @@ import java.util.*;
 
 
     /**
-     * store searcher's dictionaires
+     * store all the needed dictionaries for the engine's functioning of the disk
      */
     private void storeDictionariesOnDisk(){
             try{
@@ -252,7 +286,11 @@ import java.util.*;
             }
         }
 
-        private void parse(){
+    /**
+     * called from run() .
+     * this method gets documents from the reader and send's them to the parser.
+     */
+    private void parse(){
             Doc temp = null;
             int id = 1 , len;
 
@@ -277,7 +315,10 @@ import java.util.*;
             this.parser = parser;
         }
 
-     private void calculateAVGlength(){
+    /**
+     * calculate the average length of the documents found .
+     */
+    private void calculateAVGlength(){
 
          Iterator iterator = this.docLengths.entrySet().iterator();
          while(iterator.hasNext()){
@@ -329,7 +370,7 @@ import java.util.*;
         }
 
     /**
-     * initialize new maps and delete all the recent files in the
+     * initialize new maps and delete all the recent files in the directory
      * @param file
      */
     public String deleteAllFiles(File file){
@@ -363,7 +404,15 @@ import java.util.*;
             return len;
         }
 
-        public ArrayList<CorpusDocument> runQuery(Query query , boolean stemmerStatus,HashSet<String> cities){
+    /**
+     * sets all the needed things for the Searcher object and sends the query to it to be ranked .
+     *
+     * @param query query with all its fields from the file
+     * @param stemmerStatus use stem or not
+     * @param cities list filled with cities to be filtered by
+     * @return a list of CorpusDocuments ranked from the best to the worse .
+     */
+        public ArrayList<CorpusDocument> runQuery(Query query , boolean stemmerStatus,HashSet<String> cities)throws Exception{
             this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
             this.searcher.setStemmerStatus(stemmerStatus);
             this.searcher.setAttributes(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT,(double)this.docsPositions.get(-1).getSecondValue());
@@ -393,7 +442,7 @@ import java.util.*;
         }
 
 
-        public void createResultFileForQueries(String pathToQueriesFileDir,String pathToWriteToResultsFile,boolean stemmerStatus,HashSet<String> cities){
+        public void createResultFileForQueries(String pathToQueriesFileDir,String pathToWriteToResultsFile,boolean stemmerStatus,HashSet<String> cities)throws Exception{
             ArrayList<Query> queries = ReadQueryFile.readQueries(pathToQueriesFileDir);
             //result tuple will be query_id, iter, docno, rank, sim, run_id
             ArrayList<String>results = new ArrayList<>();
@@ -416,25 +465,19 @@ import java.util.*;
                     bw.newLine();
                     bw.flush();
                 }
-                //for(String res:results){
-                  //  bw.write(res+"\n");
-                    //bw.newLine();
-                //}
 
                 bw.close();
                 fw.close();
                 //bw.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
+                throw e;
             } catch (IOException e) {
                 e.printStackTrace();
+                throw e;
             }
 
 
-        }
-
-        public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta){
-            this.searcher.setRankingParameters(k,b,weightK,weightB,weightBM,weightPos,weightTitle,idfLower,idfDelta);
         }
 
         public void addDoclength(int docID, int len){
@@ -460,7 +503,11 @@ import java.util.*;
             return ans;
         }
 
-        public TreeSet<String> getDocsLang(){
+    /**
+     *
+     * @return the language of the doc
+     */
+    public TreeSet<String> getDocsLang(){
             return ((Parser)this.parser).getDocLangs();
         }
     }

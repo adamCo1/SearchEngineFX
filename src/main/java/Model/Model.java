@@ -22,11 +22,6 @@ public class Model implements IModel {
 
 
     @Override
-    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta) {
-        this.engine.setRankingParameters(k,b,weightK,weightB,weightBM,weightPos,weightTitle,idfLower,idfDelta);
-    }
-
-    @Override
     public TreeMap runSample(String text,boolean stemmerOn) {
         return this.engine.sampleRun(text,stemmerOn);
     }
@@ -60,7 +55,7 @@ public class Model implements IModel {
     }
 
     @Override
-    public ArrayList<CorpusDocument> runQueryOnEngine(Query query, boolean stemmerStatus, HashSet<String> cities) {
+    public ArrayList<CorpusDocument> runQueryOnEngine(Query query, boolean stemmerStatus, HashSet<String> cities)throws Exception {
         return this.engine.runQuery(query,stemmerStatus,cities);
     }
 
@@ -90,7 +85,7 @@ public class Model implements IModel {
     }
 
     @Override
-    public void createResultFileForQueries(String queryFilePath, String resultsFilePath, boolean stemmerStatus, HashSet<String> cities){
+    public void createResultFileForQueries(String queryFilePath, String resultsFilePath, boolean stemmerStatus, HashSet<String> cities)throws Exception{
         engine.createResultFileForQueries(queryFilePath,resultsFilePath,stemmerStatus,cities);
 
     }

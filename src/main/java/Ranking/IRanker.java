@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * contract for being a ranker
+ */
+
 public interface IRanker {
 
     /**
@@ -29,5 +33,4 @@ public interface IRanker {
      */
     void setDictionaries(HashMap<Integer, Pair> docPositions);
 
-    public void setRankingParameters(double k, double b, double weightK, double weightB, double weightBM, double weightPos, double weightTitle, double idfLower, double idfDelta);
 }

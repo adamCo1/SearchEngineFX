@@ -1,8 +1,11 @@
 package Ranking;
 
 import Structures.CorpusDocument;
-
 import java.util.Comparator;
+
+/**
+ * comparator class for comparing doc ranks
+ */
 
 public class DocRankComparator implements Comparator<CorpusDocument> {
 

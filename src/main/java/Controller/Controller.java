@@ -273,16 +273,22 @@ public class Controller {
             this.view.errorMessage("No language list to show");
 
         this.listView.setItems(langList);
-
+        this.view.errorMessage("showing language list");
     }
 
     public void handleRunQuery(){
         String query = queryField.getText();
         int index = 0;
+        ErrorBox box = new ErrorBox();
 
-        if(query.equals(null))
+
+        if(query.equals(null) || query.equals("")) {
+            box.getErrorBoxStage("Must fill a query first");
             return;
 
+        }
+
+        try {
         setQueryResultsListener();
         ArrayList<CorpusDocument> answer = this.model.runQueryOnEngine(new Query("1",query,""),this.stemmerCheckBox.isSelected(),currentCitiesChosen);
         currentAnswerList = answer;
@@ -296,7 +302,12 @@ public class Controller {
             ansMap.put(index++,document.toString());
         }
         docList.addAll(ansMap.values());
-        this.queryResultsView.setItems(docList);
+
+            this.queryResultsView.setItems(docList);
+            box.getErrorBoxStage("Ranking done");
+        }catch (Exception e){
+            box.getErrorBoxStage("load or run first");
+        }
 
         //docRank.setCellValueFactory(cellValue -> new SimpleStringProperty(rankToString(answer.get(index).getRank())));
 
@@ -348,15 +359,22 @@ public class Controller {
 
     public void handleCreateResultsFile(){
 
+        ErrorBox box = new ErrorBox();
         String f1 =queryFilePathField.getText();
         String f2 = resultsFilePathField.getText();
 
-        if(f1 == null || f2 == null)
+        if(f1 == null || f2 == null || f1.equals("") || f2.equals("")) {
+            box.getErrorBoxStage("Must fill source and target first");
             return;
-        this.model.setRankingParameters(Double.parseDouble(kField.getText()),Double.parseDouble(bField.getText()),Double.parseDouble(weightK.getText()),Double.parseDouble(weightB.getText()),
-                Double.parseDouble(weightBM.getText()),Double.parseDouble(weightPos.getText()),Double.parseDouble(weightTitle.getText()),Double.parseDouble(idfLower.getText()),Double.parseDouble(idfDelta.getText()));
 
-        this.model.createResultFileForQueries(queryFilePathField.getText()+"\\queries.txt",resultsFilePathField.getText(),this.stemmerCheckBox.isSelected(),this.currentCitiesChosen);
+        }
+        try {
+            this.model.createResultFileForQueries(queryFilePathField.getText() + "\\queries.txt", resultsFilePathField.getText(), this.stemmerCheckBox.isSelected(), this.currentCitiesChosen);
+            box.getErrorBoxStage("Ranking done");
+
+        }catch (Exception e){
+            box.getErrorBoxStage("load or run first");
+        }
 
     }
 

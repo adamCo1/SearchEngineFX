@@ -1,5 +1,8 @@
 package Structures;
 
+/**
+ * implementation of a trie tree
+ */
 
 import java.io.*;
 import java.util.ArrayList;

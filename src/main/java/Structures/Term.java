@@ -4,9 +4,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+/**
+ * class for a term in the corpus .
+ * a term has all of its saved data on the posting file .
+ *
+ * has mainly getters and setters
+ */
+
 public class Term implements IData {
 
-    private HashMap<Integer,Triplet> docToDataMap;
+    private HashMap<Integer,Triplet> docToDataMap; // a map from docID to all of the term's data on it
     private HashSet<Integer> champions ;
     private int totalTF , id;
     private double idf ;
@@ -19,6 +26,13 @@ public class Term implements IData {
         this.docToDataMap = new HashMap<>();
     }
 
+    /**
+     * add a new entry for a given document id
+     * @param docID new document id
+     * @param tf tf in the document
+     * @param onTitle is the term on the document's title or not
+     * @param positions the positions of the term in this document
+     */
     public void addDocEntry(int docID , int tf, int onTitle, LinkedList<Integer> positions){
         this.docToDataMap.put(docID,new Triplet(tf,onTitle,positions));
     }
