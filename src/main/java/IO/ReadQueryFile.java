@@ -24,7 +24,7 @@ public  class ReadQueryFile {
      *
      * @param sourcePath the corpus dir
      */
-    public static ArrayList<Query>  readQueries(String sourcePath) {
+    public static ArrayList<Query>  readQueries(String sourcePath)throws Exception {
 
 //        String queriesPath = sourcePath + "\\" + "queries.txt";
         String queriesPath = sourcePath;
@@ -34,8 +34,6 @@ public  class ReadQueryFile {
         //fill the file collection with the files from the sub folders
 
         try {
-//            Document fileText = Jsoup.parse(new String(Files.readAllBytes(Paths.get(queriesPath))));
-//            org.jsoup.select.Elements allQueries = fileText.select("top");
             String fileText= new String(Files.readAllBytes(Paths.get(queriesPath)));
             int currWord = 0;
             String[] unProssecedFileTextWords = fileText.split(" |\r|\n|\b");
@@ -98,16 +96,11 @@ public  class ReadQueryFile {
 
                 }
 
-
-
-
-
-
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
             System.out.println("unable to read the file");
-        } catch (IOException e) {
-            e.printStackTrace();
+            throw e;
+        } catch (Exception e) {
+            throw e;
         }
 
         return ans;

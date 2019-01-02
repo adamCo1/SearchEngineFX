@@ -443,24 +443,26 @@ import java.util.*;
 
 
         public void createResultFileForQueries(String pathToQueriesFileDir,String pathToWriteToResultsFile,boolean stemmerStatus,HashSet<String> cities)throws Exception{
-            ArrayList<Query> queries = ReadQueryFile.readQueries(pathToQueriesFileDir);
-            //result tuple will be query_id, iter, docno, rank, sim, run_id
-            ArrayList<String>results = new ArrayList<>();
-            for(Query q:queries){
-                ArrayList <CorpusDocument> currQueryBestDocMatches = runQuery(q,stemmerStatus,cities);
-                for(CorpusDocument doc: currQueryBestDocMatches){
-                    double docRank = doc.getRank();
-                    results.add(""+q.getQueryNum()+" "+"0"+ " "+ doc.getName()+" "+docRank+" "+docRank+" "+"run_name");
-                }
-            }
 
             try {
-                int index = 0 ;
-                FileWriter fw = new FileWriter(pathToWriteToResultsFile+"\\results.txt");
+                ArrayList<Query> queries = ReadQueryFile.readQueries(pathToQueriesFileDir);
+                //result tuple will be query_id, iter, docno, rank, sim, run_id
+                ArrayList<String> results = new ArrayList<>();
+                for (Query q : queries) {
+                    ArrayList<CorpusDocument> currQueryBestDocMatches = runQuery(q, stemmerStatus, cities);
+                    for (CorpusDocument doc : currQueryBestDocMatches) {
+                        double docRank = doc.getRank();
+                        results.add("" + q.getQueryNum() + " " + "0" + " " + doc.getName() + " " + docRank + " " + docRank + " " + "run_name");
+                    }
+                }
+
+
+                int index = 0;
+                FileWriter fw = new FileWriter(pathToWriteToResultsFile + "\\results.txt");
                 BufferedWriter bw = new BufferedWriter(fw);
                 bw.flush();
 
-                while(index < results.size()){
+                while (index < results.size()) {
                     bw.write(results.get(index++));
                     bw.newLine();
                     bw.flush();
@@ -469,6 +471,8 @@ import java.util.*;
                 bw.close();
                 fw.close();
                 //bw.close();
+            }catch (NoSuchFieldException e){
+                throw e;
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 throw e;
