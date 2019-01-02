@@ -23,6 +23,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class Controller {
@@ -133,6 +134,7 @@ public class Controller {
      */
     public void handleClearFilter(){
         this.currentCitiesChosen = new HashSet<>();
+        this.view.errorMessage("City filter reseted");
     }
 
     private void setQueryResultsListener(){
@@ -373,7 +375,10 @@ public class Controller {
             box.getErrorBoxStage("Ranking done");
 
         }catch (Exception e){
-            box.getErrorBoxStage("load or run first");
+            if(e instanceof IOException)
+                box.getErrorBoxStage("couldnt find queries file");
+            else
+                box.getErrorBoxStage("load or run first");
         }
 
     }
