@@ -11,9 +11,19 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+
+/**
+ * A class used to handle semantics.
+ * given a word check for her vector in a glove file and calculate similarity between it and other words
+ * bring back the  3 most relevant words
+ */
 public class SemanticHandler {
 
-
+    /**
+     * wordVectors collection as a hashmap
+     * a stopwords collection as a trie tree
+     * the corpus and glove file paths
+     */
     public static HashMap<String,ArrayList<Double>> wordsVectors = new HashMap<>();
     private static TrieTree sw;
     //corpus path is set on engine run or load
@@ -23,7 +33,7 @@ public class SemanticHandler {
 
 
     /**
-     * this will read and load the word vectors into wordsVectors hashmap
+     * this will read  from the glove file and load the word vectors into wordsVectors hashmap
      *
      */
 
@@ -68,7 +78,7 @@ public class SemanticHandler {
     }
 
     /**
-     *
+     *this will return all the related words for a given query (3 for each word)
      * @param originalQueryWords list of the query words
      * @return realted words for a given query
      */
@@ -88,7 +98,7 @@ public class SemanticHandler {
 
 
     /**
-     *
+     *return words this maximum simalirty over all the corpus
      * @param unProcessedWord 1 query word
      * @return  3 related words by word2Vec model
      */
@@ -134,7 +144,7 @@ public class SemanticHandler {
 
 
     /**
-     * calcualting  similarity with cosine
+     * calcualting  similarity
      * @param unprocessedWord
      * @param unprocessedOtherWord
      * @return
@@ -154,7 +164,9 @@ public class SemanticHandler {
 
     }
 
-
+    /**
+     * use it to clear the memory
+     */
     public static void clearWordsVecs(){
         wordsVectors = new HashMap<>();
     }

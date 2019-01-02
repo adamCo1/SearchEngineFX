@@ -74,29 +74,6 @@ public class ReadFromWeb {
             String fullCityName = ((JsonObject) c).get("capital").toString().toUpperCase().replaceAll("[,'\".]","");
             long lPopultion = ((JsonObject) c).get("population").getAsLong();
             String popultion = longFormat(lPopultion);
-//            int parPos=-1;
-//            int endParPos=-1;
-//            int numOfWordsInCountryName=1;
-//            String tempFullCountryName="";
-//            String [] brokenCountry=null;
-//            if(fullCountryName.contains("(")) {
-//                parPos = fullCountryName.indexOf("(");
-//                endParPos = fullCountryName.indexOf(")");
-//                tempFullCountryName= fullCountryName.substring(0,parPos-1)+fullCountryName.substring(endParPos+1);
-//
-//            }
-//            else{
-//                tempFullCountryName = fullCountryName;
-//            }
-//            brokenCountry = tempFullCountryName.split(" ");
-//            if(brokenCountry.length>1) {
-//                numOfWordsInCountryName = brokenCountry.length;
-//                tempFullCountryName = brokenCountry[0];
-//            }
-
-
-
-            //now transform the number
             String currency = ((JsonObject) (((JsonObject) c).getAsJsonArray("currencies").get(0))).get("code").toString();
             if(capital != null && capital[0].length()>0) {
 
@@ -110,15 +87,6 @@ public class ReadFromWeb {
 
                 }
 
-
-//
-//                countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
-//               // System.out.println("added: "+tempFullCountryName);
-//                for(int i =1; i<numOfWordsInCountryName;i++){
-//                    tempFullCountryName+=" " + brokenCountry[i];
-//                    countrySet.put(tempFullCountryName,new Pair<>(fullCountryName,numOfWordsInCountryName));
-//                   // System.out.println("added: "+tempFullCountryName);
-//                }
 
 
             }
