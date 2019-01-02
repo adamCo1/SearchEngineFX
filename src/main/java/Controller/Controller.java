@@ -396,6 +396,11 @@ public class Controller {
     public void HandleSlimSemantics(){
         SemanticHandler.gloveFile = "SlimWikiGlove200D.txt";
         SemanticHandler.includeSemantics = true;
+        if (this.corpusPathField.getText().equals("")) {
+            this.view.errorMessage("must specify target path first");
+            return;
+        }
+
         if(SemanticHandler.corpusPath == null)
             SemanticHandler.corpusPath = corpusPathField.getText();
         if(SemanticHandler.wordsVectors == null || SemanticHandler.wordsVectors.size() ==0)
