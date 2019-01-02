@@ -100,7 +100,7 @@ public class SemanticHandler {
     /**
      *return words this maximum simalirty over all the corpus
      * @param unProcessedWord 1 query word
-     * @return  3 related words by word2Vec model
+     * @return  3 related words by GLOVE model
      */
     public  static ArrayList<String> getThreeBestMatches(String unProcessedWord){
         String word = unProcessedWord.toLowerCase();
