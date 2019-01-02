@@ -413,31 +413,36 @@ import java.util.*;
      * @return a list of CorpusDocuments ranked from the best to the worse .
      */
         public ArrayList<CorpusDocument> runQuery(Query query , boolean stemmerStatus,HashSet<String> cities)throws Exception{
-            this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
-            this.searcher.setStemmerStatus(stemmerStatus);
-            this.searcher.setAttributes(targetPath+"\\"+TERMS_OUT,targetPath+"\\"+DOCS_OUT,(double)this.docsPositions.get(-1).getSecondValue());
-            ArrayList<String>relatedWords = null;
+           try {
+               this.parser.initializeStopWordsTreeAndStrategies(corpusPath);
+               this.searcher.setStemmerStatus(stemmerStatus);
+               this.searcher.setAttributes(targetPath + "\\" + TERMS_OUT, targetPath + "\\" + DOCS_OUT, (double) this.docsPositions.get(-1).getSecondValue());
+               ArrayList<String> relatedWords = null;
 
-            if(SemanticHandler.includeSemantics){
-                if(corpusPath == null)
-                    SemanticHandler.corpusPath = corpusPath;
-                if(SemanticHandler.wordsVectors==null || SemanticHandler.wordsVectors.size() ==0)
-                    SemanticHandler.readGloveFile();
-                String [] origQwords = query.getQueryText().replace(",|.|'|\"|?|!|","").split(" ");
-                ArrayList<String> queryInArrayList = new ArrayList<>();
-                String queryRelatedWordsInString ="";
-                //create the semantic handler output
-                for(int i = 0 ; i < origQwords.length ; i++)
-                    queryInArrayList.add(origQwords[i]);
-                relatedWords = SemanticHandler.getRelatedWords(queryInArrayList);
-                //chaining the related words to  a string
-                for(int i = 0 ; i < relatedWords.size() ; i ++)
-                    queryRelatedWordsInString+=relatedWords.get(i)+" ";
+               if (SemanticHandler.includeSemantics) {
+                   if (corpusPath == null)
+                       SemanticHandler.corpusPath = corpusPath;
+                   if (SemanticHandler.wordsVectors == null || SemanticHandler.wordsVectors.size() == 0)
+                       SemanticHandler.readGloveFile();
+                   String[] origQwords = query.getQueryText().replace(",|.|'|\"|?|!|", "").split(" ");
+                   ArrayList<String> queryInArrayList = new ArrayList<>();
+                   String queryRelatedWordsInString = "";
+                   //create the semantic handler output
+                   for (int i = 0; i < origQwords.length; i++)
+                       queryInArrayList.add(origQwords[i]);
+                   relatedWords = SemanticHandler.getRelatedWords(queryInArrayList);
+                   //chaining the related words to  a string
+                   for (int i = 0; i < relatedWords.size(); i++)
+                       queryRelatedWordsInString += relatedWords.get(i) + " ";
 
-                //append the related words to the query text
-                if(queryRelatedWordsInString.length() > 0)
-                    query.setQueryText(query.getQueryText()+" "+queryRelatedWordsInString.substring(0,queryRelatedWordsInString.length()-1));
-            }
+                   //append the related words to the query text
+                   if (queryRelatedWordsInString.length() > 0)
+                       query.setQueryText(query.getQueryText() + " " + queryRelatedWordsInString.substring(0, queryRelatedWordsInString.length() - 1));
+               }
+           }catch (Exception e){
+               throw e;
+           }
+
             return this.searcher.analyzeAndRank(query.getQueryText()+" "+query.getQueryDesc(),cities);
         }
 
